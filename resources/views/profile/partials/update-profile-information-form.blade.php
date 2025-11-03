@@ -18,9 +18,15 @@
         @method('patch')
 
         <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+            <x-input-label for="shop_name" :value="__('Shop Name')" />
+            <x-text-input id="shop_name" name="shop_name" type="text" class="mt-1 block w-full" :value="old('shop_name', $user->shop->shop_name ?? '')" required autofocus />
+            <x-input-error class="mt-2" :messages="$errors->get('shop_name')" />
+        </div>
+
+        <div>
+            <x-input-label for="shop_description" :value="__('Shop Description')" />
+            <textarea id="shop_description" name="shop_description" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="3">{{ old('shop_description', $user->shop->shop_description ?? '') }}</textarea>
+            <x-input-error class="mt-2" :messages="$errors->get('shop_description')" />
         </div>
 
         <div>

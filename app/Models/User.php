@@ -24,8 +24,6 @@ class User extends Authenticatable
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'shop_name',
-        'shop_description',
         'email',
         'password',
         'login_date',
@@ -61,5 +59,13 @@ class User extends Authenticatable
     public function getEmailForPasswordReset()
     {
         return $this->email;
+    }
+
+    /**
+     * Get the shop associated with the user.
+     */
+    public function shop()
+    {
+        return $this->hasOne(Shop::class, 'user_id', 'id');
     }
 }
