@@ -21,9 +21,9 @@ Schema::create('entries', function (Blueprint $table) {
     $table->string('interview_url', 200);
     $table->string('status', 200)->index();
     
-    // created, updated カラムは指定された命名とデフォルト値で定義
-    $table->dateTime('created')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
-    $table->dateTime('updated')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
+    // created_at, updated_at カラムは指定された命名とデフォルト値で定義
+    $table->dateTime('created_at')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
+    $table->dateTime('updated_at')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
 });
     }
 

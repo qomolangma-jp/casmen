@@ -19,9 +19,9 @@ Schema::create('notice', function (Blueprint $table) {
     $table->text('text');
     $table->unsignedBigInteger('category_id')->index(); // category_idの型をBIGINTに修正
     
-    // created, updated カラムは指定された命名とデフォルト値で定義
-    $table->dateTime('created')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
-    $table->dateTime('updated')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
+    // created_at, updated_at カラムは指定された命名とデフォルト値で定義
+    $table->dateTime('created_at')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
+    $table->dateTime('updated_at')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
 
     // 外部キー制約
     $table->foreign('category_id')->references('category_id')->on('mst_categories')->onDelete('restrict');

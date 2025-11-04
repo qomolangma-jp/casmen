@@ -108,9 +108,9 @@ services:
         environment:
             PMA_HOST: mysql
             PMA_PORT: 3306
-            PMA_USER: '${DB_USERNAME}'
-            PMA_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            PMA_USER: sail
+            PMA_PASSWORD: password
+            MYSQL_ROOT_PASSWORD: password
         networks:
             - sail
         depends_on:

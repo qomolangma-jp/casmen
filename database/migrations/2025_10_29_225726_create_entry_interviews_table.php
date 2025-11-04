@@ -18,7 +18,7 @@ Schema::create('entry_interviews', function (Blueprint $table) {
     $table->unsignedBigInteger('entry_id')->index(); // entry_idの型に注意
     $table->unsignedBigInteger('question_id')->index(); // question_idの型をBIGINTに修正
     $table->string('file_path', 255)->nullable();
-    $table->dateTime('created')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
+    $table->dateTime('created_at')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
 
     // 外部キー制約 (mst_questionsはまだ作成されていませんが、先に定義)
     $table->foreign('entry_id')->references('entry_id')->on('entries')->onDelete('cascade');

@@ -16,9 +16,9 @@ Schema::create('shops', function (Blueprint $table) {
     $table->text('shop_description')->nullable();
     $table->dateTime('login_date')->nullable()->index();
     
-    // created, updated カラムは指定された命名とデフォルト値で定義
-    $table->dateTime('created')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
-    $table->dateTime('updated')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
+    // created_at, updated_at カラムは指定された命名とデフォルト値で定義
+    $table->dateTime('created_at')->default(DB::raw('CURRENT_TIMESTAMP'))->index();
+    $table->dateTime('updated_at')->default(DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
 
     // 外部キー制約
     $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
