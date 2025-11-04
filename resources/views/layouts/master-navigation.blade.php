@@ -12,18 +12,18 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-nav-link :href="route('master.dashboard')" :active="request()->routeIs('master.dashboard')">
+                    <x-master-nav-link :href="route('master.dashboard')" :active="request()->routeIs('master.dashboard')">
                         {{ __('マスターTOP') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('master.shop.index')" :active="request()->routeIs('master.shop.*')">
+                    </x-master-nav-link>
+                    <x-master-nav-link :href="route('master.shop.index')" :active="request()->routeIs('master.shop.*')">
                         {{ __('登録店舗') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('master.link.index')" :active="request()->routeIs('master.link.*')">
+                    </x-master-nav-link>
+                    <x-master-nav-link :href="route('master.link.index')" :active="request()->routeIs('master.link.*')">
                         {{ __('面接URL') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('master.notice.index')" :active="request()->routeIs('master.notice.*')">
+                    </x-master-nav-link>
+                    <x-master-nav-link :href="route('master.notice.index')" :active="request()->routeIs('master.notice.*')">
                         {{ __('お知らせ管理') }}
-                    </x-nav-link>
+                    </x-master-nav-link>
                 </div>
             </div>
 
@@ -77,18 +77,18 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('master.dashboard')" :active="request()->routeIs('master.dashboard')">
+            <x-master-responsive-nav-link :href="route('master.dashboard')" :active="request()->routeIs('master.dashboard')">
                 {{ __('マスターTOP') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('master.shop.index')" :active="request()->routeIs('master.shop.*')">
+            </x-master-responsive-nav-link>
+            <x-master-responsive-nav-link :href="route('master.shop.index')" :active="request()->routeIs('master.shop.*')">
                 {{ __('登録店舗') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('master.link.index')" :active="request()->routeIs('master.link.*')">
+            </x-master-responsive-nav-link>
+            <x-master-responsive-nav-link :href="route('master.link.index')" :active="request()->routeIs('master.link.*')">
                 {{ __('面接URL') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('master.notice.index')" :active="request()->routeIs('master.notice.*')">
+            </x-master-responsive-nav-link>
+            <x-master-responsive-nav-link :href="route('master.notice.index')" :active="request()->routeIs('master.notice.*')">
                 {{ __('お知らせ管理') }}
-            </x-responsive-nav-link>
+            </x-master-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->
@@ -100,19 +100,19 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
+                <x-master-responsive-nav-link :href="route('profile.edit')">
                     {{ __('プロフィール') }}
-                </x-responsive-nav-link>
+                </x-master-responsive-nav-link>
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
 
-                    <x-responsive-nav-link :href="route('logout')"
+                    <x-master-responsive-nav-link :href="route('logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('ログアウト') }}
-                    </x-responsive-nav-link>
+                    </x-master-responsive-nav-link>
                 </form>
             </div>
         </div>

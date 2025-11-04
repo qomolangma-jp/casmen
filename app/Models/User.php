@@ -67,6 +67,6 @@ class User extends Authenticatable
      */
     public function shop()
     {
-        return $this->hasOne(Shop::class, 'user_id', 'id');
+        return $this->hasOne(Shop::class);
     }
 }

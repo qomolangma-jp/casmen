@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Interview URL Configuration
+    |--------------------------------------------------------------------------
+    |
+    | These values control the behavior of interview URL generation and
+    | validation. Administrators can modify these values to control
+    | the expiration period and other URL-related settings.
+    |
+    */
+
+    'interview_url_expiration_days' => env('INTERVIEW_URL_EXPIRATION_DAYS', 14),
+
 ];
