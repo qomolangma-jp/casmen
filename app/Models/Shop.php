@@ -15,6 +15,7 @@ class Shop extends Model
      * The table associated with the model.
      */
     protected $table = 'shops';
+    public $timestamps = true; // 標準のcreated_at, updated_atを使用
 
     /**
      * The attributes that are mass assignable.

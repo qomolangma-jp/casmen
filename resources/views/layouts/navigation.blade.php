@@ -5,16 +5,35 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
+                    <a href="{{ route('admin.dashboard') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('admin.entry.index')" :active="request()->routeIs('admin.entry.*')">
+                        {{ __('応募者一覧') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('admin.link.create')" :active="request()->routeIs('admin.link.*')">
+                        {{ __('面接URL発行') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('admin.notice.index')" :active="request()->routeIs('admin.notice.*')">
+                        {{ __('お知らせ') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('admin.setting.index')" :active="request()->routeIs('admin.setting.*')">
+                        {{ __('設定') }}
+                    </x-nav-link>
+
+                    <!-- マスター権限を持つユーザーのみ表示 -->
+                    @if(Auth::user()->rank === 'master')
+                        <x-nav-link :href="route('master.dashboard')" :active="request()->routeIs('master.*')" class="text-red-600 font-bold">
+                            {{ __('MASTER') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -37,6 +56,13 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
+
+                        <!-- マスター権限を持つユーザーのみ表示 -->
+                        @if(Auth::user()->rank === 'master')
+                            <x-dropdown-link :href="route('master.dashboard')" class="text-red-600 font-bold">
+                                {{ __('MASTER管理画面') }}
+                            </x-dropdown-link>
+                        @endif
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -67,9 +93,28 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+            <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.entry.index')" :active="request()->routeIs('admin.entry.*')">
+                {{ __('応募者一覧') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.link.create')" :active="request()->routeIs('admin.link.*')">
+                {{ __('面接URL発行') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.notice.index')" :active="request()->routeIs('admin.notice.*')">
+                {{ __('お知らせ') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.setting.index')" :active="request()->routeIs('admin.setting.*')">
+                {{ __('設定') }}
+            </x-responsive-nav-link>
+
+            <!-- マスター権限を持つユーザーのみ表示 -->
+            @if(Auth::user()->rank === 'master')
+                <x-responsive-nav-link :href="route('master.dashboard')" :active="request()->routeIs('master.*')" class="text-red-600 font-bold">
+                    {{ __('MASTER管理画面') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
@@ -83,6 +128,13 @@
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
+
+                <!-- マスター権限を持つユーザーのみ表示 -->
+                @if(Auth::user()->rank === 'master')
+                    <x-responsive-nav-link :href="route('master.dashboard')" class="text-red-600 font-bold">
+                        {{ __('MASTER管理画面') }}
+                    </x-responsive-nav-link>
+                @endif
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">

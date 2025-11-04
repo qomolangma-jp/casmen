@@ -1,12 +1,24 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TopController;
+use App\Http\Controllers\RecordController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\LinkController;
+use App\Http\Controllers\Admin\NoticeController;
+use App\Http\Controllers\Admin\EntryController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Master\MasterTopController;
+use App\Http\Controllers\Master\ShopController as MasterShopController;
+use App\Http\Controllers\Master\LinkController as MasterLinkController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// 求職者向けページ（サイトマップ ID: 1, 2）
+Route::get('/', [TopController::class, 'index'])->name('top.index'); // ID: 1 - TOP
+Route::get('/index', [TopController::class, 'index'])->name('top.index.alt'); // 別名ルート
+Route::get('/record', [RecordController::class, 'record'])->name('record.index'); // ID: 2 - らくらくセルフ面接
 
+// 店舗向けダッシュボード（認証必要）
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -18,3 +30,46 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// 店舗向け管理画面（サイトマップ ID: 5〜11）
+Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+    // ID: 5 - ダッシュボード（店舗管理画面TOP）
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // ID: 6 - 面接URL発行
+    Route::get('/create_link', [LinkController::class, 'create'])->name('link.create');
+    Route::post('/create_link', [LinkController::class, 'store'])->name('link.store');
+
+        // ID: 7, 8 - お知らせ一覧・詳細
+    Route::get('/notice', [NoticeController::class, 'index'])->name('notice.index');
+    Route::get('/notice/{id}', [NoticeController::class, 'show'])->name('notice.show');
+
+    // ID: 9, 10 - 応募者一覧・詳細
+    Route::get('/entry', [EntryController::class, 'index'])->name('entry.index');
+    Route::get('/entry/{id}', [EntryController::class, 'show'])->name('entry.show');
+    Route::get('/entry/{id}/interview', [EntryController::class, 'interview'])->name('entry.interview');
+
+    // ID: 11 - 各種設定（プロフィール）
+    Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
+    Route::patch('/setting', [SettingController::class, 'update'])->name('setting.update');
+});
+
+// 管理者向け機能（サイトマップ ID: 12〜19）
+Route::prefix('master')->name('master.')->middleware(['auth', 'master.role'])->group(function () {
+    // ID: 12 - マスターTOP
+    Route::get('/', [MasterTopController::class, 'index'])->name('dashboard');
+
+    // ID: 13, 14 - 登録店舗（リソースコントローラー）
+    Route::resource('shop', MasterShopController::class)->only(['index', 'show']);
+
+    // ID: 15, 16 - 面接URL（リソースコントローラー）
+    Route::resource('link', MasterLinkController::class)->only(['index', 'show']);
+
+    // ID: 17, 18, 19 - お知らせ管理
+    Route::get('/notice', [\App\Http\Controllers\Master\NoticeController::class, 'index'])->name('notice.index');
+    Route::get('/notice/create', [\App\Http\Controllers\Master\NoticeController::class, 'create'])->name('notice.create');
+    Route::post('/notice', [\App\Http\Controllers\Master\NoticeController::class, 'store'])->name('notice.store');
+    Route::get('/notice/{id}/edit', [\App\Http\Controllers\Master\NoticeController::class, 'edit'])->name('notice.edit');
+    Route::patch('/notice/{id}', [\App\Http\Controllers\Master\NoticeController::class, 'update'])->name('notice.update');
+    Route::delete('/notice/{id}', [\App\Http\Controllers\Master\NoticeController::class, 'destroy'])->name('notice.destroy');
+});
