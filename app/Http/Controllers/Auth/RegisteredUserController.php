@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Shop;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,14 +39,9 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'email' => $request->email,
             'password' => Hash::make($request->password),
-        ]);
-
-        // Create associated shop
-        Shop::create([
-            'user_id' => $user->id,
             'shop_name' => $request->shop_name,
             'shop_description' => $request->shop_description,
-            'login_date' => now(),
+            'logined_at' => now(),
         ]);
 
         event(new Registered($user));

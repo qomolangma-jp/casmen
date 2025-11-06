@@ -11,12 +11,16 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Master\MasterTopController;
 use App\Http\Controllers\Master\ShopController as MasterShopController;
 use App\Http\Controllers\Master\LinkController as MasterLinkController;
+use App\Http\Controllers\Master\QuestionController as MasterQuestionController;
+use App\Http\Controllers\Master\CategoryController as MasterCategoryController;
 use Illuminate\Support\Facades\Route;
 
 // 求職者向けページ（サイトマップ ID: 1, 2）
 Route::get('/', [TopController::class, 'index'])->name('top.index'); // ID: 1 - TOP
 Route::get('/index', [TopController::class, 'index'])->name('top.index.alt'); // 別名ルート
 Route::get('/record', [RecordController::class, 'record'])->name('record.index'); // ID: 2 - らくらくセルフ面接
+Route::post('/record/upload', [RecordController::class, 'upload'])->name('record.upload'); // 面接動画アップロード
+Route::get('/record/complete', [RecordController::class, 'complete'])->name('record.complete'); // 面接完了ページ
 
 // 店舗向けダッシュボード（認証必要）
 Route::get('/dashboard', function () {
@@ -64,6 +68,12 @@ Route::prefix('master')->name('master.')->middleware(['auth', 'master.role'])->g
 
     // ID: 15, 16 - 面接URL（リソースコントローラー）
     Route::resource('link', MasterLinkController::class)->only(['index', 'show']);
+
+    // マスター質問管理
+    Route::resource('question', MasterQuestionController::class);
+
+    // マスターカテゴリー管理
+    Route::resource('category', MasterCategoryController::class);
 
     // ID: 17, 18, 19 - お知らせ管理
     Route::get('/notice', [\App\Http\Controllers\Master\NoticeController::class, 'index'])->name('notice.index');

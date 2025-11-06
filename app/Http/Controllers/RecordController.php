@@ -49,4 +49,65 @@ class RecordController extends Controller
             'errorMessage' => $errorMessage
         ]);
     }
+
+    /**
+     * 面接動画をアップロード
+     */
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'video' => 'required|file|mimetypes:video/webm,video/mp4|max:102400', // 100MB
+            'token' => 'required|string'
+        ]);
+
+        $token = $request->input('token');
+        $entry = Entry::where('interview_uuid', $token)->first();
+
+        if (!$entry) {
+            return response()->json([
+                'success' => false,
+                'message' => '無効なトークンです。'
+            ], 400);
+        }
+
+        if ($entry->status === 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'この面接は既に完了しています。'
+            ], 400);
+        }
+
+        try {
+            // 動画ファイルを保存
+            $videoFile = $request->file('video');
+            $fileName = 'interview_' . $entry->entry_id . '_' . time() . '.webm';
+            $path = $videoFile->storeAs('interviews', $fileName, 'public');
+
+            // Entryレコードを更新
+            $entry->update([
+                'status' => 'completed',
+                'video_path' => $path,
+                'completed_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => '面接動画がアップロードされました。'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'アップロードに失敗しました: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * 面接完了ページ
+     */
+    public function complete()
+    {
+        return view('record.complete');
+    }
 }

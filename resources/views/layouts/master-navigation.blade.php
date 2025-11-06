@@ -21,6 +21,12 @@
                     <x-master-nav-link :href="route('master.link.index')" :active="request()->routeIs('master.link.*')">
                         {{ __('面接URL') }}
                     </x-master-nav-link>
+                    <x-master-nav-link :href="route('master.question.index')" :active="request()->routeIs('master.question.*')">
+                        {{ __('質問管理') }}
+                    </x-master-nav-link>
+                    <x-master-nav-link :href="route('master.category.index')" :active="request()->routeIs('master.category.*')">
+                        {{ __('カテゴリー管理') }}
+                    </x-master-nav-link>
                     <x-master-nav-link :href="route('master.notice.index')" :active="request()->routeIs('master.notice.*')">
                         {{ __('お知らせ管理') }}
                     </x-master-nav-link>
@@ -33,7 +39,9 @@
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-300 bg-black hover:text-white focus:outline-none transition ease-in-out duration-150">
                             <div class="text-red-400 font-bold">MASTER</div>
-                            <div class="ml-2">{{ Auth::user()->name }}</div>
+                            @if(Auth::check())
+                                <div class="ml-2">{{ Auth::user()->name }}</div>
+                            @endif
 
                             <div class="ml-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -93,11 +101,13 @@
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-700">
-            <div class="px-4">
-                <div class="font-medium text-base text-white">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-red-400">MASTER</div>
-                <div class="font-medium text-sm text-gray-300">{{ Auth::user()->email }}</div>
-            </div>
+            @if(Auth::check())
+                <div class="px-4">
+                    <div class="font-medium text-base text-white">{{ Auth::user()->name }}</div>
+                    <div class="font-medium text-sm text-red-400">MASTER</div>
+                    <div class="font-medium text-sm text-gray-300">{{ Auth::user()->email }}</div>
+                </div>
+            @endif
 
             <div class="mt-3 space-y-1">
                 <x-master-responsive-nav-link :href="route('profile.edit')">

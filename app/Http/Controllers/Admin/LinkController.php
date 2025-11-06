@@ -47,16 +47,34 @@ class LinkController extends Controller
         $expiresAt = now()->addDays($expirationDays);
 
 
+        // デバッグ: 保存前の状態確認
+        Log::info('保存前の状態確認', [
+            'user_id' => Auth::id(),
+            'is_authenticated' => Auth::check(),
+            'name' => $request->name,
+            'email' => $request->email,
+            'tel' => $request->phone,
+            'interview_url' => $interviewUrl,
+            'interview_uuid' => $token,
+            'token_length' => strlen($token),
+        ]);
+
         // Entryテーブルに保存
         try {
-            $entry = Entry::create([
-                'user_id' => Auth::id(),
-                'name' => $request->name,
-                'email' => $request->email,
-                'tel' => $request->phone,
-                'interview_url' => $interviewUrl,
-                'interview_uuid' => $token,
-                'status' => 'url_issued', // URL発行済み
+            // 個別設定方式で保存を試行
+            $entry = new Entry();
+            $entry->user_id = Auth::id();
+            $entry->name = $request->name;
+            $entry->email = $request->email;
+            $entry->tel = $request->phone;
+            $entry->interview_url = $interviewUrl;
+            $entry->interview_uuid = $token;
+            $entry->status = 'url_issued';
+            $saved = $entry->save();
+
+            Log::info('Entry save result', [
+                'saved' => $saved,
+                'entry_id' => $entry->entry_id
             ]);
         } catch (\Exception $e) {
             // エラー詳細をログに記録
@@ -75,6 +93,7 @@ class LinkController extends Controller
                 ->withErrors(['error' => 'データ保存に失敗しました: ' . $e->getMessage()])
                 ->withInput();
         }
+
 
         // 成功メッセージを設定
         $successMessage = "面接URLが正常に発行されました。応募者: {$request->name}";

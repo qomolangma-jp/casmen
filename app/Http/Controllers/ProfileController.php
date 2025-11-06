@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\Shop;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,32 +29,14 @@ class ProfileController extends Controller
         $user = $request->user();
         $validated = $request->validated();
 
-        // Update user email if changed
-        if (isset($validated['email'])) {
-            $user->fill(['email' => $validated['email']]);
-            
-            if ($user->isDirty('email')) {
-                $user->email_verified_at = null;
-            }
-            
-            $user->save();
+        // Update user information including shop data
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        // Update or create shop information
-        $shop = $user->shop;
-        if ($shop) {
-            $shop->update([
-                'shop_name' => $validated['shop_name'],
-                'shop_description' => $validated['shop_description'],
-            ]);
-        } else {
-            Shop::create([
-                'user_id' => $user->id,
-                'shop_name' => $validated['shop_name'],
-                'shop_description' => $validated['shop_description'],
-                'login_date' => now(),
-            ]);
-        }
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

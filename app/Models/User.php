@@ -24,10 +24,14 @@ class User extends Authenticatable
      * The attributes that are mass assignable.
      */
     protected $fillable = [
+        'name',
         'email',
         'password',
         'rank',
-        'login_date',
+        'logined_at',
+        'shop_name',
+        'shop_description',
+        'tel',
     ];
 
     /**
@@ -42,7 +46,8 @@ class User extends Authenticatable
      * The attributes that should be cast.
      */
     protected $casts = [
-        'login_date' => 'datetime',
+        'logined_at' => 'datetime',
+        'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
 
@@ -63,10 +68,10 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the shop associated with the user.
+     * Check if user has shop information.
      */
-    public function shop()
+    public function hasShop()
     {
-        return $this->hasOne(Shop::class);
+        return !empty($this->shop_name);
     }
 }
