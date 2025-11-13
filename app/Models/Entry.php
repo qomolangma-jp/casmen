@@ -22,13 +22,16 @@ class Entry extends Model
         'interview_uuid',
         'status',
         'video_path',
-        'completed_at'
+        'completed_at',
+        'retake_count',
+        'decision_at'
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'completed_at' => 'datetime',
+        'decision_at' => 'datetime',
     ];
 
     public function user()

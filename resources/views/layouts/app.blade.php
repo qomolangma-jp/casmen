@@ -13,6 +13,10 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <!-- 共通ローディング機能 -->
+        <link rel="stylesheet" href="{{ asset('css/loading-manager.css') }}">
+        <script src="{{ asset('js/loading-manager.js') }}" defer></script>
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">

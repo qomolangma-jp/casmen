@@ -28,7 +28,7 @@
             </div>
 
             <div class="space-y-4">
-                <a href="{{ route('welcome') }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+                <a href="{{ route('top.index') }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
                     トップページに戻る
                 </a>
             </div>

@@ -20,12 +20,11 @@ Route::get('/', [TopController::class, 'index'])->name('top.index'); // ID: 1 - 
 Route::get('/index', [TopController::class, 'index'])->name('top.index.alt'); // 別名ルート
 Route::get('/record', [RecordController::class, 'record'])->name('record.index'); // ID: 2 - らくらくセルフ面接
 Route::post('/record/upload', [RecordController::class, 'upload'])->name('record.upload'); // 面接動画アップロード
+Route::post('/record/preview', [RecordController::class, 'preview'])->name('record.preview'); // 動画プレビュー
+Route::post('/record/submit', [RecordController::class, 'submit'])->name('record.submit'); // 最終送信
+Route::post('/record/retake', [RecordController::class, 'retake'])->name('record.retake'); // 録り直し
+Route::get('/record/video/{filename}', [RecordController::class, 'serveVideo'])->name('record.video'); // 動画配信
 Route::get('/record/complete', [RecordController::class, 'complete'])->name('record.complete'); // 面接完了ページ
-
-// 店舗向けダッシュボード（認証必要）
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -52,6 +51,8 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('/entry', [EntryController::class, 'index'])->name('entry.index');
     Route::get('/entry/{id}', [EntryController::class, 'show'])->name('entry.show');
     Route::get('/entry/{id}/interview', [EntryController::class, 'interview'])->name('entry.interview');
+    Route::post('/entry/{id}/reject', [EntryController::class, 'reject'])->name('entry.reject');
+    Route::post('/entry/{id}/pass', [EntryController::class, 'pass'])->name('entry.pass');
 
     // ID: 11 - 各種設定（プロフィール）
     Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');

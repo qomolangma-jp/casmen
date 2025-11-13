@@ -28,7 +28,10 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // ログイン成功メッセージをセッションに追加
+        session()->flash('login_success', 'ログインが完了しました。');
+
+        return redirect()->intended(route('admin.dashboard'));
     }
 
     /**

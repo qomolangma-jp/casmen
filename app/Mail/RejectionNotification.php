@@ -1,0 +1,61 @@
+<?php
+
+namespace App\Mail;
+
+use App\Models\Entry;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
+
+class RejectionNotification extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    public $entry;
+
+    /**
+     * Create a new message instance.
+     */
+    public function __construct(Entry $entry)
+    {
+        $this->entry = $entry;
+    }
+
+    /**
+     * Get the message envelope.
+     */
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            subject: '【面接結果】ご応募いただきありがとうございました',
+        );
+    }
+
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
+    {
+        return new Content(
+            view: 'emails.rejection-notification',
+            with: [
+                'entry' => $this->entry,
+                'candidateName' => $this->entry->name,
+                'email' => $this->entry->email,
+            ]
+        );
+    }
+
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array
+    {
+        return [];
+    }
+}

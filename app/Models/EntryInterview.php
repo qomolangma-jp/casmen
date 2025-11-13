@@ -11,9 +11,9 @@ class EntryInterview extends Model
 
     protected $table = 'entry_interviews';
     protected $primaryKey = 'interview_id';
-    public $timestamps = false;
+    public $timestamps = true;
 
-    const CREATED_AT = 'created';
+    const CREATED_AT = 'created_at';
     const UPDATED_AT = null;
 
     protected $fillable = [
@@ -23,7 +23,7 @@ class EntryInterview extends Model
     ];
 
     protected $casts = [
-        'created' => 'datetime',
+        'created_at' => 'datetime',
     ];
 
     public function entry()

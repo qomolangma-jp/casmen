@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Entry;
+use App\Mail\InterviewLinkMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class LinkController extends Controller
 {
@@ -95,8 +97,24 @@ class LinkController extends Controller
         }
 
 
+        // メール送信
+        try {
+            Mail::to($request->email)->send(new InterviewLinkMail($entry, $interviewUrl));
+            Log::info('面接URLメール送信成功', [
+                'entry_id' => $entry->entry_id,
+                'email' => $request->email
+            ]);
+            $mailStatus = 'メールを送信しました。';
+        } catch (\Exception $e) {
+            Log::error('面接URLメール送信失敗: ' . $e->getMessage(), [
+                'entry_id' => $entry->entry_id,
+                'email' => $request->email
+            ]);
+            $mailStatus = 'メール送信に失敗しました: ' . $e->getMessage();
+        }
+
         // 成功メッセージを設定
-        $successMessage = "面接URLが正常に発行されました。応募者: {$request->name}";
+        $successMessage = "面接URLが正常に発行されました。応募者: {$request->name} - {$mailStatus}";
 
         return redirect()->route('admin.link.create')
             ->with('success', $successMessage)
@@ -107,6 +125,7 @@ class LinkController extends Controller
                 'phone' => $request->phone,
                 'expires_at' => $expiresAt->format('Y年m月d日 H:i'),
                 'entry_id' => $entry->entry_id,
+                'mail_status' => $mailStatus,
             ]);
     }
 }

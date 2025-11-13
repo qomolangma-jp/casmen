@@ -84,6 +84,14 @@
                                     <span class="font-medium text-gray-600">有効期限:</span>
                                     <span class="ml-2 text-red-600 font-medium">{{ session('applicant_info.expires_at') }}</span>
                                 </div>
+                                @if (session('applicant_info.mail_status'))
+                                    <div class="mt-2 text-sm">
+                                        <span class="font-medium text-gray-600">メール送信:</span>
+                                        <span class="ml-2 {{ str_contains(session('applicant_info.mail_status'), '失敗') ? 'text-red-600' : 'text-green-600' }} font-medium">
+                                            {{ session('applicant_info.mail_status') }}
+                                        </span>
+                                    </div>
+                                @endif
                             </div>
                         @endif
 
