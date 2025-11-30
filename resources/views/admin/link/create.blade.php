@@ -1,10 +1,10 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('面接URL発行') }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
+@section('title', 'CASMEN｜面接URL発行')
+
+@section('content')
+<main>
+    <div class="main-container">
     <div class="py-6 bg-gray-50 min-h-screen">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -289,4 +289,6 @@
         });
         @endif
     </script>
-</x-app-layout>
+    </div>
+</main>
+@endsection

@@ -1,11 +1,10 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('店舗管理ダッシュボード') }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
+@section('title', 'CASMEN｜ダッシュボード')
+
+@section('content')
+<main>
+    <div class="main-container">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- ログイン成功メッセージ -->
             @if(session('login_success'))
@@ -128,4 +127,5 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</main>
+@endsection

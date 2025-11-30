@@ -1,95 +1,132 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('応募者一覧') }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full table-auto">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ID
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        氏名
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        メールアドレス
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        電話番号
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ステータス
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        登録日時
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        操作
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($entries as $entry)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $entry->entry_id }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $entry->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $entry->email }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $entry->tel ?? '未登録' }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                                @if($entry->status === '完了')
-                                                    bg-green-100 text-green-800
-                                                @elseif($entry->status === '録画中')
-                                                    bg-yellow-100 text-yellow-800
-                                                @else
-                                                    bg-gray-100 text-gray-800
-                                                @endif
-                                            ">
-                                                {{ $entry->status }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $entry->created_at->format('Y/m/d H:i') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="{{ route('admin.entry.show', $entry->entry_id) }}"
-                                               class="text-indigo-600 hover:text-indigo-900 mr-3">
-                                                詳細
-                                            </a>
-                                            <a href="{{ route('admin.entry.interview', $entry->entry_id) }}"
-                                               class="text-green-600 hover:text-green-900">
-                                                面接URL
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                                            応募者データがありません
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+@section('title', 'CASMEN｜応募者一覧')
+
+@section('content')
+<main>
+    <div class="main-container">
+        <div class="breadcrumbs">
+            <span><a href="{{ route('admin.dashboard') }}">TOP</a> > 応募者一覧</span>
+        </div>
+        <div class="ray-content applicant-content">
+            <div class="applicant-heading">
+                <h2>応募者一覧</h2>
+                <a href="{{ route('admin.link.create') }}" class="create-url">
+                    <img src="{{ asset('assets/admin/img/plus-icon.png') }}" alt="プラスアイコン">
+                    <span>面接URL発行</span>
+                </a>
+            </div>
+            <input id="tab1" name="tab" type="radio" checked>
+            <input id="tab2" name="tab" type="radio">
+            <div class="tabs">
+                <label for="tab1">評価待ち</label>
+                <label for="tab2">すべて</label>
+            </div>
+            <ul class="waiting-review-list">
+                @php
+                    $waitingEntries = $entries->filter(function($entry) {
+                        return $entry->status === 'completed' && empty($entry->decision_at);
+                    });
+                @endphp
+                @forelse ($waitingEntries as $entry)
+                    <li>
+                        <a href="{{ route('admin.entry.show', $entry->entry_id) }}">
+                            <div class="user-status">
+                                <div class="status-label">
+                                    <span class="review-request">評価を行ってください</span>
+                                    <span class="label waiting-review">評価待ち</span>
+                                </div>
+                                <span>
+                                    <span class="user-icon"><img src="{{ asset('assets/admin/img/user-icon.png') }}" alt="ユーザーアイコン"></span>
+                                    <span class="user-name">{{ $entry->name }}</span>
+                                </span>
+                            </div>
+                            <div class="user-contact">
+                                <ul class="contact-icon-list">
+                                    @if($entry->email)
+                                        <li><img src="{{ asset('assets/admin/img/email-icon-gray.png') }}" alt="メールアイコン"></li>
+                                    @endif
+                                    @if($entry->tel)
+                                        <li><img src="{{ asset('assets/admin/img/tel-icon.png') }}" alt="TELアイコン"></li>
+                                    @endif
+                                    @if($entry->video_path)
+                                        <li><img src="{{ asset('assets/admin/img/movie-icon.png') }}" alt="動画アイコン"></li>
+                                    @endif
+                                </ul>
+                                @if($entry->completed_at)
+                                    <span>動画提出: <time datetime="{{ $entry->completed_at->format('Y-m-d\TH:i') }}">{{ $entry->completed_at->format('Y/m/d H:i') }}</time></span>
+                                @endif
+                            </div>
+                        </a>
+                    </li>
+                @empty
+                    <li>
+                        <div class="user-status" style="padding: 2rem; text-align: center; color: #666;">
+                            評価待ちの応募者はいません
+                        </div>
+                    </li>
+                @endforelse
+            </ul>
+            <ul class="all-applicant-list">
+                @forelse ($entries as $entry)
+                    <li>
+                        <a href="{{ route('admin.entry.show', $entry->entry_id) }}">
+                            <div class="user-status">
+                                <div class="status-label">
+                                    @if($entry->status === 'completed' && empty($entry->decision_at))
+                                        <span class="review-request">評価を行ってください</span>
+                                        <span class="label waiting-review">評価待ち</span>
+                                    @elseif($entry->status === 'passed')
+                                        <span></span>
+                                        <span class="label passed">通過</span>
+                                    @elseif($entry->status === 'rejected')
+                                        <span></span>
+                                        <span class="label rejected">見送り</span>
+                                    @elseif(empty($entry->video_path))
+                                        <span class="resend-interview-request">面接依頼を再送できます（あと{{ 3 - ($entry->retake_count ?? 0) }}回）</span>
+                                        <span class="label not-submitted">未提出</span>
+                                    @endif
+                                </div>
+                                <span>
+                                    <span class="user-icon"><img src="{{ asset('assets/admin/img/user-icon.png') }}" alt="ユーザーアイコン"></span>
+                                    <span class="user-name">{{ $entry->name }}</span>
+                                </span>
+                            </div>
+                            <div class="user-contact">
+                                <ul class="contact-icon-list">
+                                    @if($entry->email)
+                                        <li><img src="{{ asset('assets/admin/img/email-icon-gray.png') }}" alt="メールアイコン"></li>
+                                    @endif
+                                    @if($entry->tel)
+                                        <li><img src="{{ asset('assets/admin/img/tel-icon.png') }}" alt="TELアイコン"></li>
+                                    @endif
+                                    @if($entry->video_path)
+                                        <li><img src="{{ asset('assets/admin/img/movie-icon.png') }}" alt="動画アイコン"></li>
+                                    @endif
+                                </ul>
+                                @if($entry->completed_at)
+                                    <span>動画提出: <time datetime="{{ $entry->completed_at->format('Y-m-d\TH:i') }}">{{ $entry->completed_at->format('Y/m/d H:i') }}</time></span>
+                                @endif
+                            </div>
+                        </a>
+                    </li>
+                @empty
+                    <li>
+                        <div class="user-status" style="padding: 2rem; text-align: center; color: #666;">
+                            応募者データがありません
+                        </div>
+                    </li>
+                @endforelse
+            </ul>
+            <div class="paging">
+                <div class="paging-btns">
+                    <a href="#">1</a>
                 </div>
             </div>
         </div>
+        <div class="privacy-policy">
+            <a href="#">個人情報の取り扱いについて</a>
+        </div>
     </div>
-</x-app-layout>
+</main>
+@endsection

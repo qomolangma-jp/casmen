@@ -1,10 +1,10 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            テスト用お知らせ一覧
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
+@section('title', 'CASMEN｜テスト用お知らせ')
+
+@section('content')
+<main>
+    <div class="main-container">
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -21,4 +21,6 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+    </div>
+</main>
+@endsection

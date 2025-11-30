@@ -170,7 +170,7 @@ main {
 	border-radius: .8rem;
 	width: 600px;
 	margin: 0 auto;
-	padding: 2rem;
+	padding: 3rem 2rem 2rem 2rem;
 }
 
 /* === パンくずリスト === */
@@ -474,7 +474,7 @@ main {
 
 .ray-content h2 {
 	color: #343434;
-	font-size: 3.8rem;
+	font-size: 2.8rem;
 	line-height: 1;
 }
 
@@ -721,6 +721,7 @@ input[type="radio"] {
 	justify-content: center;
 	border-radius: .5rem;
 	border: .2rem solid #4d9aff;
+	padding: 1rem 0;
 }
 
 .tabs > label:hover {
@@ -959,6 +960,83 @@ input[type="radio"] {
 	margin: 4rem 0;
 }
 
+.registration-info {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.registration-info > dt {
+	width: 32%;
+	border-left: 1px solid #aaa;
+	border-right: 1px solid #aaa;
+	border-bottom: 1px solid #aaa;
+	color: #666;
+	font-size: 2rem;
+	padding: 2rem 0 0 2rem;
+	font-weight: bold;
+	background-color: #e7e7e7;
+}
+
+.registration-info > dt:nth-child(1) {
+	border-top: 1px solid #aaa;
+}
+
+.registration-info > dd {
+	width: 68%;
+	color: #666;
+	font-size: 2.4rem;
+	padding: 2rem 0 2rem 2rem;
+	border-right: 1px solid #aaa;
+	border-bottom: 1px solid #aaa;
+}
+
+.registration-info > dd:nth-child(2) {
+	border-top: 1px solid #aaa;
+}
+
+.contact {
+	white-space: nowrap;
+	padding: 4rem 0 2rem 0;
+	color: #666;
+}
+
+.email {
+	display: flex;
+	align-items: center;
+}
+
+.email-icon {
+	margin: 0 1rem 0 0;
+}
+
+.email > a {
+	color: #4d9aff;
+}
+
+.registration-content {
+	padding: 3rem 2rem 5rem 2rem;
+}
+
+.problem {
+	background-color: #ffd0d0;
+	border-radius: 9px;
+	color: #ff4848;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 3rem 0;
+	margin: 0 0 5rem 0;
+}
+
+.problem strong {
+	text-align: center;
+	font-size: 2.8rem;
+}
+
+.problem p {
+	padding: 2rem 0 1rem 0;
+}
+
 /* === フッター共通 === */
 footer {
 	background-color: #deecfa;
@@ -1008,6 +1086,10 @@ footer {
 	width: 50rem;
 	display: flex;
 	justify-content: space-between;
+}
+
+.submit-modal-btns {
+	padding: 5rem 0 3rem 0;
 }
 
 .modal-btns > button {

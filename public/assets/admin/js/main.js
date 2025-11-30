@@ -1,20 +1,5 @@
 'use strict';
 
-// === 不採用モーダル ===
-$(function () {
-	$('.iziModal-rejected').iziModal();
-});
-
-// ==== 通過モーダル ===
-$(function () {
-	$('.iziModal-passed').iziModal();
-});
-
-// === 面接URL送信モーダル ===
-$(function () {
-	$('.iziModal-submit').iziModal();
-});
-
 // === ハンバーガーメニューが開いているとき、背景を暗くする
 $('#open').on('click', () => {
 	$('body').toggleClass('is-open');
@@ -64,3 +49,29 @@ $('.visible-icons img').on('click', function () {
 
 // 初期表示：visibleアイコンを隠す
 $('.visible-icons .visible').hide();
+
+
+// === 電話番号入力時のハイフン表示 ===
+$('#tel').on('input', function () {
+	let $telInput = $(this).val();
+	let $telNumber = $telInput.replace(/[^0-9]/g, '');
+
+	const $pattern = /^0(7|8|9)/;
+
+	if (!$pattern.test($telNumber)) {
+		$(this).val($telNumber.slice(0, 1));
+		return;
+	}
+
+	let $formatted = '';
+
+	if ($telNumber.length <= 3) {
+		$formatted = $telNumber;
+	} else if ($telNumber.length <= 7) {
+		$formatted = $telNumber.replace(/^(\d{3})(\d{1,4})/, '$1-$2');
+	} else {
+        $formatted = $telNumber.replace(/^(\d{3})(\d{4})(\d{1,4}).*/, '$1-$2-$3');
+    }
+
+	$(this).val($formatted);
+});
