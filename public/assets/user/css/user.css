@@ -1,0 +1,705 @@
+/* === 応募者ページのCSS === */
+
+@charset "UTF-8";
+
+/* === 共通指定 === */
+*,
+::before,
+::after {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html {
+	font-size: 10px;
+}
+
+body {
+	font-size: 2.4rem;
+	background-color: #fff5fa;
+	font-family: "M PLUS Rounded 1c";
+	color: #5c5c5c;
+}
+
+a {
+	text-decoration: none;
+}
+
+ul {
+	list-style: none;
+}
+
+img {
+	display: block;
+}
+
+/* === ヘッダー共通 === */
+
+.header-container {
+	width: 640px;
+	margin: 0 auto;
+	border-top: .1rem solid #ccc;
+	border-left: .1rem solid #ccc;
+	border-right: .1rem solid #ccc;
+	padding: 4rem 0 0 0;
+}
+
+.header-container-inner {
+	width: 600px;
+	margin: 0 auto;
+}
+
+.welcome-ribbon {
+	display: flex;
+	justify-content: center;
+}
+
+.logo-imgs {
+	display: flex;
+	justify-content: center;
+	align-items: end;
+	padding: 1.5rem 0 0 0;
+	gap: 2.5rem;
+}
+
+.logo img:nth-child(1) {
+	margin: 0 0 2rem 0;
+	height: 18rem;
+	width: 40rem;
+}
+
+.main-container {
+	width: 640px;
+	margin: 0 auto;
+	border-left: .1rem solid #ccc;
+	border-right: .1rem solid #ccc;
+	padding: 1.9rem 1.9rem 4rem 1.9rem;
+}
+
+.preview-container {
+	padding: .3rem 1.9rem 4rem 1.9rem;
+}
+
+/* === コンテンツ共通 === */
+.main-content {
+	background-color: #d9c1fc;
+	border: .6rem solid #fff;
+	width: 600px;
+	margin: 0 auto;
+	border-radius: 2rem;
+}
+
+.preview-content {
+	padding: 0 0 1rem 0;
+	position: relative;
+}
+
+.preview-content::before {
+	content: '';
+	width: 60rem;
+	height: 53rem;
+	display: block;
+	background-image: url('../img/frill-medium.png');
+	background-repeat: no-repeat;
+	background-position: 50%;
+	position: absolute;
+	left: -0.5rem;
+	top: 0;
+	z-index: 0;
+}
+
+/* === welcomeページ === */
+.short-content {
+	padding: 2rem 0;
+	position: relative;
+	z-index: 0;
+}
+
+.short-content::before {
+	content: '';
+	width: 60rem;
+	height: 50rem;
+	background-image: url('../img/frill-short.png');
+	background-repeat: no-repeat;
+	background-position: 50%;
+	display: block;
+	position: absolute;
+	top: .5rem;
+	left: -0.5rem;
+	z-index: 1;
+}
+
+.short-description {
+	position: relative;
+	z-index: 2;
+	padding: 4rem 0 5rem 1.5rem;
+}
+
+.short-description>h2 {
+	color: #bc70dd;
+	text-align: center;
+	line-height: 1;
+}
+
+.short-description h2::before {
+	content: '';
+	display: block;
+	width: 35.8rem;
+	height: 4rem;
+	background-image: url('../img/top-decoration.png');
+	background-repeat: no-repeat;
+	margin: 0 auto;
+}
+
+.short-description h2::after {
+	content: '';
+	display: block;
+	width: 35.8rem;
+	height: 4rem;
+	background-image: url('../img/bottom-decoration.png');
+	background-repeat: no-repeat;
+	margin: 0 auto;
+}
+
+.point {
+	font-size: 3rem;
+	padding: 1rem 0 1rem 3.3rem;
+}
+
+.point li {
+	display: flex;
+	align-items: center;
+}
+
+.point li::before {
+	content: '';
+	display: block;
+	width: 3rem;
+	height: 3.3rem;
+	background-image: url('../img/star.png');
+	background-repeat: no-repeat;
+	margin: 0 1rem 0 0;
+}
+
+.short-description p {
+	padding: 0 0 0 3.5rem;
+}
+
+/* === interview_countdown, interview, interview_previewページ === */
+.count {
+	font-size: 8rem;
+	color: #af60ff;
+	border: 1.5rem solid #af60ff;
+	background-color: #fff;
+	font-weight: 700;
+	border-radius: 50%;
+	width: 12.5rem;
+	height: 12.5rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.preview-header-container {
+	padding: 1rem 0 0 0;
+}
+
+.line-logo {
+	display: flex;
+	justify-content: center;
+}
+
+.count-logo {
+	display: flex;
+	justify-content: space-between;
+}
+
+.medium-description {
+	padding: 4rem 0;
+	height: 53.3rem;
+	position: relative;
+	z-index: 1;
+}
+
+.medium-description::before {
+	content: '';
+	display: block;
+	width: 48rem;
+	height: 7.3rem;
+	background-image: url('../img/ribbon.png');
+	background-repeat: no-repeat;
+	margin: 0 auto;
+}
+
+.preview-text {
+	font-size: 3.6rem;
+	padding: 4rem 0 0 4.5rem;
+}
+
+.question-text {
+	font-size: 7rem;
+	padding: 0 0 0 5.4rem;
+}
+
+.question-card-num {
+	font-size: 8rem;
+	color: #fb9ecd;
+	font-weight: 700;
+	display: block;
+	text-align: center;
+	line-height: 1;
+}
+
+.start-count {
+	font-size: 21.518rem;
+	color: #fb9ecd;
+	font-weight: 700;
+	border: 3rem solid #fb9ecd;
+	display: flex;
+	width: 33.6rem;
+	height: 33.6rem;
+	border-radius: 50%;
+	justify-content: center;
+	align-items: center;
+	margin: 2rem auto 0 auto;
+}
+
+.video {
+	display: flex;
+	width: 56rem;
+	margin: 0 auto;
+}
+
+video {
+	width: 17.3rem;
+	height: 29.2rem;
+	border: .6rem solid #373737;
+	border-radius: .6rem;
+	background-color: #373737;
+}
+
+.lg-video {
+	display: flex;
+	justify-content: space-between;
+	padding: 0 0 0 2.4rem;
+}
+
+.lg-video video {
+	width: 22rem;
+	height: 37.6rem;
+}
+
+.character {
+	position: relative;
+	padding: 0 0 0 2.4rem;
+}
+
+.character>img {
+	height: 25rem;
+	position: absolute;
+	bottom: 0;
+	left: 21rem;
+}
+
+.character-short>img {
+	width: 11.6rem;
+	margin: -5.5rem 2rem 0 auto;
+}
+
+.bubble-lg {
+	width: 28.7rem;
+	height: 26.6rem;
+	background-image: url('../img/bubble.png');
+	background-repeat: no-repeat;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0 0 0 1.2rem;
+}
+
+.bubble {
+	width: 22.4rem;
+	height: 22.7rem;
+	background-image: url('../img/bubble.png');
+	background-size: contain;
+	background-repeat: no-repeat;
+	padding: 0 1rem 2rem 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.well-done {
+	margin: -2rem 1rem 0 0;
+}
+
+.complete-character {
+	display: flex;
+	justify-content: center;
+	padding: 3rem 0 4rem 0;
+}
+
+.start-btn {
+	margin: 1rem auto 0 auto;
+}
+
+#submit-btn {
+	border: none;
+}
+
+.question-counter {
+	background-image: url('../img/wave-line.png');
+	background-repeat: no-repeat;
+	background-position: center;
+	margin: 1rem 0 0 0;
+	color: #fff;
+	display: flex;
+	justify-content: space-between;
+	font-size: 2.2rem;
+	font-weight: 500;
+}
+
+.current-question {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	background-image: url('../img/pink-heart.png');
+	background-repeat: no-repeat;
+	width: 5.1rem;
+	height: 4.6rem;
+	transition: transform .3s ease;
+}
+
+.question-num {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	background-image: url('../img/purple-heart.png');
+	background-repeat: no-repeat;
+	width: 5.1rem;
+	height: 4.6rem;
+}
+
+/* === howtoページ === */
+.lg-content {
+	padding: 0 0 3rem 0;
+	position: relative;
+
+}
+
+.lg-content::before {
+	content: '';
+	width: 56rem;
+	height: 79.9rem;
+	display: block;
+	background-image: url('../img/frill-lg.png');
+	background-repeat: no-repeat;
+	background-position: 50%;
+	position: absolute;
+	left: 1.4rem;
+	top: .9rem;
+}
+
+.lg-description {
+	padding: 6rem 0;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.lg-description::before {
+	content: '';
+	width: 48rem;
+	height: 7.3rem;
+	background-image: url('../img/ribbon.png');
+	background-repeat: no-repeat;
+	position: absolute;
+	top: 3.5rem;
+}
+
+.lg-description::after {
+	content: '';
+	background-image: url('../img/bear.png');
+	background-repeat: no-repeat;
+	display: block;
+	width: 14.2rem;
+	height: 20.6rem;
+	background-size: 14.2rem 20.6rem;
+	position: absolute;
+	bottom: 6.5rem;
+	right: 5rem;
+}
+
+.lg-description h2 {
+	width: 50rem;
+	margin: 0 auto;
+	font-weight: 400;
+	text-align: center;
+	margin: 6rem auto 1rem auto;
+}
+
+.interview-description {
+	width: 50rem;
+	margin: 0 auto;
+}
+
+.interview-description dt {
+	display: flex;
+	align-items: center;
+	color: #bc70dd;
+	font-weight: 600;
+	padding: .5rem 0 0 0;
+}
+
+.interview-description dt::before {
+	content: '';
+	display: block;
+	width: 3rem;
+	height: 3.3rem;
+	background-image: url('../img/blue-star.png');
+	background-repeat: no-repeat;
+	margin: 0 .8rem 0 0;
+}
+
+.interview-description dd {
+	padding: 0 0 0 3.8rem;
+}
+
+/* === confirmページ === */
+.complete-content {
+	position: relative;
+}
+
+.complete-content::before {
+	content: '';
+	width: 59rem;
+	height: 36rem;
+	display: block;
+	background-image: url('../img/frill-complete.png');
+	background-repeat: no-repeat;
+	background-position: 50%;
+	position: absolute;
+	top: 0;
+}
+
+.complete-description {
+	padding: 12rem 0 9rem 0;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	font-size: 3.6rem;
+}
+
+.complete-description::before {
+	content: '';
+	display: flex;
+	width: 48rem;
+	height: 7.3rem;
+	background-image: url('../img/ribbon.png');
+	background-repeat: no-repeat;
+	position: absolute;
+	top: 3.5rem;
+}
+
+.complete-message {
+	text-align: center;
+}
+
+.complete-message span {
+	color: #fb9ecd;
+	font-weight: 700;
+	display: block;
+}
+
+/* === completeページ === */
+.done-message {
+	padding: 0 0 0 2.5rem;
+}
+
+/* === confirm_previewページ === */
+.preview-video {
+	background-image: url('../img/frill-mlg.png');
+	background-repeat: no-repeat;
+	display: flex;
+	justify-content: center;
+	position: relative;
+}
+
+.preview-video::before {
+	content: '';
+	display: flex;
+	width: 48rem;
+	height: 7.3rem;
+	background-image: url('../img/ribbon.png');
+	background-repeat: no-repeat;
+	position: absolute;
+	top: 3.8rem;
+}
+
+.preview-video video {
+	width: 32rem;
+	height: 55rem;
+	margin: 13rem 0 7rem 0;
+}
+
+.preview-now {
+	pointer-events: none;
+}
+
+.rest {
+	font-size: 2rem;
+}
+
+/* === 個人情報の取り扱いについて === */
+.privacy-policy {
+	color: #3f7eff;
+	display: block;
+	text-align: center;
+	text-decoration: underline;
+	margin: 2rem 0 0 0;
+	font-size: 2.2rem;
+}
+
+/* === 紫のブロックボタン === */
+.purple-btn {
+	background-color: #9f4ecd;
+	display: block;
+	margin: 4rem auto 0 auto;
+	width: 56rem;
+	color: #fff;
+	border-radius: 2.7rem;
+	text-align: center;
+	padding: 1rem 0;
+	font-weight: 500;
+	font-size: 2.6rem;
+	font-family: "M PLUS Rounded 1c";
+	border: none;
+}
+
+.purple-btn:hover {
+	background-color: #c78bea;
+}
+
+button[type="submit"] {
+	padding: 2rem 0;
+	border-radius: 3.7rem;
+}
+
+/* === インラインボタン === */
+.preview-btns {
+	display: flex;
+	justify-content: space-between;
+	width: 56.2rem;
+	margin: 0 auto;
+	padding: 1rem 0 1.3rem 0;
+	font-weight: 500;
+}
+
+.inline-purple-btn {
+	background-color: #9f4ecd;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 27rem;
+	font-size: 2.6rem;
+	color: #fff;
+	border-radius: 2.7rem;
+	padding: 1rem 0;
+}
+
+.inline-purple-btn:hover {
+	background-color: #c78bea;
+}
+
+.inline-pink-btn {
+	background-color: #f250e2;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 27rem;
+	font-size: 2.6rem;
+	color: #fff;
+	border-radius: 2.7rem;
+	padding: 1rem 0;
+}
+
+.inline-pink-btn:hover {
+	background-color: #ff99f5;
+}
+
+.disabled {
+	background-color: #ccc;
+	pointer-events: none;
+}
+
+/* === errorページ === */
+.error-content {
+	padding: 0 0 1rem 0;
+	height: 84.5rem;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.error-content::before {
+	content: '';
+	background-image: url('../img/frill-gradient-lg.png');
+	background-repeat: no-repeat;
+	background-position: 50%;
+	width: 59.4rem;
+	height: 83.3rem;
+	display: block;
+	position: absolute;
+	top: -1rem;
+}
+
+.error-lg-description {
+	padding: 6rem 0 7rem 0;
+	position: relative;
+	z-index: 1;
+}
+
+.error-lg-description span {
+	color: #ff1e1e;
+	font-size: 3rem;
+}
+
+.bi-exclamation-triangle-fill {
+	margin: 0 .9rem 0 0;
+}
+
+.checklist {
+	font-size: 2.2rem;
+}
+
+.checklist li {
+	padding: 2.5rem 0 0 0;
+	line-height: 1.3;
+}
+
+/* === フッター共通 === */
+.footer-container {
+	width: 640px;
+	margin: 0 auto;
+	border-left: .1rem solid #ccc;
+	border-right: .1rem solid #ccc;
+	border-bottom: .1rem solid #ccc;
+	padding: 0 0 21rem 0;
+}
+
+.footer-container p {
+	width: 56rem;
+	margin: 0 auto 1rem auto;
+}
+
+.footer-container a {
+	display: block;
+	width: 56rem;
+	margin: 0 auto;
+	color: #3f7eff;
+	text-decoration: underline;
+}

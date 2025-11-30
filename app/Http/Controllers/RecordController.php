@@ -260,96 +260,106 @@ class RecordController extends Controller
             ], 400);
         }
 
+        // 動画ファイルを確認
+        if (!$request->hasFile('video')) {
+            return response()->json([
+                'success' => false,
+                'message' => '動画ファイルがアップロードされていません。'
+            ], 400);
+        }
+
         try {
             Log::info("送信処理開始: entry_id={$entry->entry_id}");
 
-            // entry_interviewsから動画を取得（重複を防ぐために各質問の最新のもののみ）
-            $interviews = EntryInterview::where('entry_id', $entry->entry_id)
-                                      ->with('question')
-                                      ->orderBy('question_id')
-                                      ->orderBy('created_at', 'desc')
-                                      ->get()
-                                      ->groupBy('question_id')
-                                      ->map(function ($group) {
-                                          return $group->first(); // 各質問の最新のもののみ
-                                      })
-                                      ->sortBy('question_id')
-                                      ->values();
+            $videoFile = $request->file('video');
 
-            Log::info("EntryInterview検索結果: entry_id={$entry->entry_id}, count=" . $interviews->count());
+            Log::info("アップロードファイル情報: ", [
+                'original_name' => $videoFile->getClientOriginalName(),
+                'size' => $videoFile->getSize(),
+                'mime_type' => $videoFile->getMimeType(),
+                'extension' => $videoFile->getClientOriginalExtension()
+            ]);
 
-            // 各動画の詳細をログ出力
-            foreach ($interviews as $interview) {
-                Log::info("質問{$interview->question_id}: {$interview->file_path}");
+            // ファイルの検証
+            if (!$videoFile->isValid()) {
+                throw new \Exception('アップロードされた動画ファイルが無効です。');
             }
 
-            // 期待される質問数を確認（category_id=2の質問のみ）
-            $totalQuestions = Question::where('category_id', 2)->count();
-            Log::info("期待される質問数: {$totalQuestions}, 実際の面接動画数: " . $interviews->count());
+            // ファイル名を生成
+            $fileName = 'interview_' . $entry->entry_id . '_' . time() . '.webm';
+            $filePath = 'interviews/' . $fileName;
 
-            if ($interviews->isEmpty()) {
-                // デバッグ情報を追加
-                $allInterviews = EntryInterview::all();
-                Log::info("全EntryInterview件数: " . $allInterviews->count());
-                foreach ($allInterviews as $item) {
-                    Log::info("EntryInterview: ID={$item->interview_id}, entry_id={$item->entry_id}, question_id={$item->question_id}, file_path={$item->file_path}");
+            // ディレクトリの確認と作成
+            $storageDir = storage_path('app/public/interviews');
+            if (!file_exists($storageDir)) {
+                mkdir($storageDir, 0755, true);
+                Log::info("ディレクトリ作成: {$storageDir}");
+            }
+
+            Log::info("保存先ディレクトリ: ", [
+                'storage_dir' => $storageDir,
+                'dir_exists' => file_exists($storageDir),
+                'is_writable' => is_writable($storageDir)
+            ]);
+
+            // 直接ファイルを移動して保存
+            $fullPath = $storageDir . '/' . $fileName;
+
+            try {
+                $moved = $videoFile->move($storageDir, $fileName);
+                Log::info("ファイル移動結果: ", [
+                    'moved' => $moved ? 'success' : 'failed',
+                    'path' => $moved ? $moved->getPathname() : 'null'
+                ]);
+            } catch (\Exception $e) {
+                Log::error("ファイル移動エラー: " . $e->getMessage());
+                throw new \Exception('ファイルの移動に失敗しました: ' . $e->getMessage());
+            }
+
+            $fileExists = file_exists($fullPath);
+            $fileSize = $fileExists ? filesize($fullPath) : 0;
+
+            Log::info("動画ファイル保存: ", [
+                'file_path' => $filePath,
+                'full_path' => $fullPath,
+                'file_exists' => $fileExists,
+                'file_size' => $fileSize
+            ]);
+
+            if (!$fileExists) {
+                throw new \Exception('ファイルは保存されましたが、確認できませんでした。パス: ' . $fullPath);
+            }
+
+            // 字幕ファイルを生成
+            $timestamps = json_decode($request->input('timestamps', '[]'), true);
+            if (!empty($timestamps)) {
+                $vttFileName = str_replace('.webm', '.vtt', $fileName);
+                $vttPath = $storageDir . '/' . $vttFileName;
+
+                $vttContent = "WEBVTT\n\n";
+
+                foreach ($timestamps as $index => $ts) {
+                    $startTime = $this->formatVttTime($ts['startTime']);
+                    // 各質問は5秒間表示
+                    $endTime = $this->formatVttTime($ts['startTime'] + 5000);
+
+                    $vttContent .= ($index + 1) . "\n";
+                    $vttContent .= "{$startTime} --> {$endTime} line:90% position:50% align:center\n";
+                    $vttContent .= "Q" . ($index + 1) . ": " . $ts['question'] . "\n\n";
                 }
 
-                return response()->json([
-                    'success' => false,
-                    'message' => '録画された動画が見つかりません。entry_id: ' . $entry->entry_id
-                ], 400);
-            }
+                file_put_contents($vttPath, $vttContent);
 
-            // Step 1: VideoProcessingService初期化
-            Log::info("VideoProcessingService初期化開始");
-            $videoProcessingService = new VideoProcessingService();
-            Log::info("VideoProcessingService初期化完了");
-
-            $processedVideoPaths = [];
-
-            foreach ($interviews as $index => $interview) {
-                Log::info("動画に字幕追加開始: question_id={$interview->question_id}, file_path={$interview->file_path}");
-
-                // 質問番号は順序通り（1,2,3）
-                $questionNumber = $index + 1;
-
-                // 字幕付き動画を生成
-                $processedVideoPath = $videoProcessingService->addQuestionOverlay(
-                    $interview->file_path,
-                    $interview->question->q,
-                    $questionNumber
-                );
-
-                if ($processedVideoPath) {
-                    $processedVideoPaths[] = $processedVideoPath;
-                    Log::info("字幕追加成功: question_{$questionNumber} -> {$processedVideoPath}");
-                } else {
-                    // 字幕追加に失敗した場合は元の動画を使用
-                    $processedVideoPaths[] = $interview->file_path;
-                    Log::warning("字幕追加失敗、元動画使用: question_{$questionNumber} -> {$interview->file_path}");
-                }
-            }
-
-            Log::info("字幕付き動画結合開始: " . implode(', ', $processedVideoPaths));
-
-            // Step 2: 字幕付き動画を結合
-            $combinedFileName = 'interviews/combined_interview_' . $entry->entry_id . '_' . time() . '.mp4';
-            $combineSuccess = $videoProcessingService->concatVideos($processedVideoPaths, $combinedFileName);
-
-            if ($combineSuccess) {
-                $finalVideoPath = $combinedFileName;
-                Log::info("動画結合成功: {$finalVideoPath}");
-            } else {
-                // 結合に失敗した場合は最初の字幕付き動画を使用
-                $finalVideoPath = $processedVideoPaths[0] ?? $interviews->first()->file_path;
-                Log::warning("動画結合失敗、最初の動画を使用: {$finalVideoPath}");
+                Log::info("字幕ファイル生成: ", [
+                    'vtt_path' => $vttFileName,
+                    'timestamps_count' => count($timestamps)
+                ]);
             }
 
             // Entryレコードを更新
             $entry->update([
-                'status' => 'submitted',
-                'video_path' => $finalVideoPath,
+                'status' => 'completed',
+                'video_path' => $filePath,
                 'completed_at' => now()
             ]);
 
@@ -358,6 +368,8 @@ class RecordController extends Controller
                 // TODO: 面接完了メール送信機能を実装
                 // Mail::to($entry->email)->send(new InterviewCompletedMail($entry));
             }
+
+            Log::info("送信処理完了: entry_id={$entry->entry_id}");
 
             return response()->json([
                 'success' => true,
@@ -403,6 +415,23 @@ class RecordController extends Controller
         try {
             // 既存の動画データを削除
             EntryInterview::where('entry_id', $entry->entry_id)->delete();
+
+            // 字幕入り動画ファイルを削除
+            $videoPath = $request->input('videoPath');
+            if ($videoPath) {
+                $fullPath = storage_path('app/public/' . $videoPath);
+                $vttPath = str_replace('.webm', '.vtt', $fullPath);
+
+                if (file_exists($fullPath)) {
+                    unlink($fullPath);
+                    Log::info("動画ファイル削除: {$fullPath}");
+                }
+
+                if (file_exists($vttPath)) {
+                    unlink($vttPath);
+                    Log::info("字幕ファイル削除: {$vttPath}");
+                }
+            }
 
             // 録り直し回数を増加
             $entry->update([
@@ -496,5 +525,185 @@ class RecordController extends Controller
     public function complete()
     {
         return view('record.complete');
+    }
+
+    /**
+     * ウェルカムページ（新しいUI）
+     */
+    public function welcome(Request $request)
+    {
+        $token = $request->get('token');
+
+        if (!$token) {
+            return view('record.error')->with('errorMessage', '面接URLが指定されていません。');
+        }
+
+        $entry = Entry::where('interview_uuid', $token)->first();
+
+        if (!$entry) {
+            return view('record.error')->with('errorMessage', 'URLが見つかりません。URLが正しいかご確認ください。');
+        }
+
+        if ($entry->status === 'completed') {
+            return view('record.error')->with('errorMessage', 'このURLは既に使用済みです。新しいURLの発行をお店にご依頼ください。');
+        }
+
+        $expirationDays = config('app.interview_url_expiration_days', 14);
+        $expiresAt = $entry->created_at->addDays($expirationDays);
+
+        if (now()->gt($expiresAt)) {
+            return view('record.error')->with('errorMessage', 'このURLの有効期限が切れています。新しいURLの発行をお店にご依頼ください。');
+        }
+
+        return view('record.welcome', compact('token', 'entry'));
+    }
+
+    /**
+     * やり方説明ページ
+     */
+    public function howto(Request $request)
+    {
+        $token = $request->get('token');
+        return view('record.howto', compact('token'));
+    }
+
+    /**
+     * 面接プレビューページ
+     */
+    public function interviewPreview(Request $request)
+    {
+        $token = $request->get('token');
+
+        $entry = Entry::where('interview_uuid', $token)->first();
+        $questions = Question::where('category_id', 2)->inRandomOrder()->take(5)->get();
+
+        return view('record.interview-preview', compact('token', 'entry', 'questions'));
+    }
+
+    /**
+     * 面接開始ページ
+     */
+    public function interview(Request $request)
+    {
+        $token = $request->get('token');
+
+        $entry = Entry::where('interview_uuid', $token)->first();
+        $questions = Question::where('category_id', 2)->inRandomOrder()->take(5)->get();
+
+        return view('record.interview', compact('token', 'entry', 'questions'));
+    }
+
+    /**
+     * 確認画面
+     */
+    public function confirm(Request $request)
+    {
+        $token = $request->get('token');
+        $entry = Entry::where('interview_uuid', $token)->first();
+        $questions = Question::where('category_id', 2)->get();
+
+        return view('record.confirm', compact('token', 'entry', 'questions'));
+    }
+
+    /**
+     * エラーページ
+     */
+    public function error(Request $request)
+    {
+        $token = $request->get('token');
+        $errorMessage = $request->get('message', 'エラーが発生しました。');
+
+        return view('record.error', compact('token', 'errorMessage'));
+    }
+
+    /**
+     * 字幕処理（動画に質問字幕を追加）
+     */
+    public function processSubtitles(Request $request)
+    {
+        $token = $request->input('token');
+        $entry = Entry::where('interview_uuid', $token)->first();
+
+        if (!$entry) {
+            return response()->json([
+                'success' => false,
+                'message' => '有効なトークンが見つかりません。'
+            ], 404);
+        }
+
+        if (!$request->hasFile('video')) {
+            return response()->json([
+                'success' => false,
+                'message' => '動画ファイルがアップロードされていません。'
+            ], 400);
+        }
+
+        try {
+            $videoFile = $request->file('video');
+            $timestamps = json_decode($request->input('timestamps', '[]'), true);
+
+            // 元の動画を保存
+            $fileName = 'interview_' . $entry->entry_id . '_' . time() . '.webm';
+            $storageDir = storage_path('app/public/interviews');
+
+            if (!file_exists($storageDir)) {
+                mkdir($storageDir, 0755, true);
+            }
+
+            $fullPath = $storageDir . '/' . $fileName;
+            $videoFile->move($storageDir, $fileName);
+
+            // 字幕ファイルを生成（WebVTT形式）
+            $vttFileName = 'interview_' . $entry->entry_id . '_' . time() . '.vtt';
+            $vttPath = $storageDir . '/' . $vttFileName;
+
+            $vttContent = "WEBVTT\n\n";
+
+            foreach ($timestamps as $index => $ts) {
+                $startTime = $this->formatVttTime($ts['startTime']);
+                // 各質問は5秒間表示
+                $endTime = $this->formatVttTime($ts['startTime'] + 5000);
+
+                $vttContent .= ($index + 1) . "\n";
+                $vttContent .= "{$startTime} --> {$endTime}\n";
+                $vttContent .= "Q" . ($index + 1) . ": " . $ts['question'] . "\n\n";
+            }
+
+            file_put_contents($vttPath, $vttContent);
+
+            Log::info("字幕処理完了: ", [
+                'video_path' => $fileName,
+                'vtt_path' => $vttFileName,
+                'timestamps_count' => count($timestamps)
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => '字幕処理が完了しました。',
+                'videoPath' => 'interviews/' . $fileName,
+                'vttPath' => 'interviews/' . $vttFileName
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("字幕処理エラー: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => '字幕処理に失敗しました: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * VTT時間フォーマット（ミリ秒 → HH:MM:SS.mmm）
+     */
+    private function formatVttTime($milliseconds)
+    {
+        $seconds = floor($milliseconds / 1000);
+        $ms = $milliseconds % 1000;
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        $secs = $seconds % 60;
+
+        return sprintf('%02d:%02d:%02d.%03d', $hours, $minutes, $secs, $ms);
     }
 }

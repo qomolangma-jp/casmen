@@ -18,10 +18,20 @@ use Illuminate\Support\Facades\Route;
 // 求職者向けページ（サイトマップ ID: 1, 2）
 Route::get('/', [TopController::class, 'index'])->name('top.index'); // ID: 1 - TOP
 Route::get('/index', [TopController::class, 'index'])->name('top.index.alt'); // 別名ルート
-Route::get('/record', [RecordController::class, 'record'])->name('record.index'); // ID: 2 - らくらくセルフ面接
+
+// 新しいUI用のルート
+Route::get('/record', [RecordController::class, 'welcome'])->name('record.welcome'); // ウェルカムページ
+Route::get('/record/howto', [RecordController::class, 'howto'])->name('record.howto'); // やり方説明
+Route::get('/record/interview-preview', [RecordController::class, 'interviewPreview'])->name('record.interview-preview'); // 面接プレビュー
+Route::get('/record/interview', [RecordController::class, 'interview'])->name('record.interview'); // 面接開始
+Route::get('/record/confirm', [RecordController::class, 'confirm'])->name('record.confirm'); // 確認画面
+Route::get('/record/error', [RecordController::class, 'error'])->name('record.error'); // エラーページ
+
+// 既存のAPI用ルート
 Route::post('/record/upload', [RecordController::class, 'upload'])->name('record.upload'); // 面接動画アップロード
 Route::post('/record/preview', [RecordController::class, 'preview'])->name('record.preview'); // 動画プレビュー
 Route::post('/record/submit', [RecordController::class, 'submit'])->name('record.submit'); // 最終送信
+Route::post('/record/process-subtitles', [RecordController::class, 'processSubtitles'])->name('record.process-subtitles'); // 字幕処理
 Route::post('/record/retake', [RecordController::class, 'retake'])->name('record.retake'); // 録り直し
 Route::get('/record/video/{filename}', [RecordController::class, 'serveVideo'])->name('record.video'); // 動画配信
 Route::get('/record/complete', [RecordController::class, 'complete'])->name('record.complete'); // 面接完了ページ

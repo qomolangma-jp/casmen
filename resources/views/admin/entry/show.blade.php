@@ -21,6 +21,33 @@
         video {
             font-family: 'Noto Sans JP', 'Yu Gothic Medium', '游ゴシック Medium', 'Yu Gothic', '游ゴシック', 'Meiryo', 'メイリオ', sans-serif;
         }
+
+        /* 字幕スタイル - 上から90%の位置に固定 */
+        video::cue {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 24px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.85);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+            padding: 10px 20px;
+            line-height: 1.4;
+        }
+
+        /* 動画コンテナの字幕位置を上から90%に固定 */
+        video::-webkit-media-text-track-container {
+            position: absolute;
+            top: 90% !important;
+            bottom: auto !important;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            width: 90%;
+            text-align: center;
+        }
+
+        video::cue-region {
+            position: absolute;
+            top: 90% !important;
+        }
     </style>
 
     <!-- パンくずナビ -->
@@ -110,6 +137,10 @@
             @if($entry->video_path)
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-3 text-gray-900">面接動画</h3>
+                @php
+                    $vttPath = str_replace('.webm', '.vtt', $entry->video_path);
+                    $vttExists = file_exists(storage_path('app/public/' . $vttPath));
+                @endphp
                 <div class="bg-white rounded-lg shadow-sm border p-4 mb-4">
                     <div class="text-sm text-gray-600 mb-2">
                         <strong>動画パス:</strong> {{ $entry->video_path }}<br>
@@ -119,23 +150,146 @@
                         @else
                             <span class="text-red-600">✗ 存在しない</span>
                         @endif<br>
+                        <strong>字幕パス:</strong> {{ $vttPath }}<br>
+                        <strong>字幕存在確認:</strong>
+                        @if($vttExists)
+                            <span class="text-green-600">✓ 存在</span> ({{ number_format(filesize(storage_path('app/public/' . $vttPath)) / 1024, 2) }} KB)
+                        @else
+                            <span class="text-orange-600">✗ 存在しない</span>
+                        @endif<br>
                         <strong>公開URL:</strong> <a href="{{ asset('storage/' . $entry->video_path) }}" target="_blank" class="text-blue-600 hover:underline">{{ asset('storage/' . $entry->video_path) }}</a><br>
                         <strong>カスタムURL:</strong> <a href="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" target="_blank" class="text-blue-600 hover:underline">{{ route('record.video', ['filename' => basename($entry->video_path)]) }}</a>
                     </div>
                 </div>
-                <div class="relative bg-gray-900 rounded-lg overflow-hidden">
-                    <div class="bg-gray-800 flex items-center justify-center" style="min-height: 400px;">
+                <div class="relative bg-gray-900 rounded-lg overflow-hidden" id="video-container">
+                    <div class="bg-gray-800 flex items-center justify-center" style="min-height: 400px; position: relative;">
                         @if(file_exists(storage_path('app/public/' . $entry->video_path)))
                         <video
+                            id="interview-video"
                             class="max-w-full max-h-full"
                             controls
                             preload="auto"
+                            crossorigin="anonymous"
                             style="width: auto; height: auto; max-width: 100%; max-height: 500px;">
-                            <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/mp4">
                             <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                            <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/mp4">
+                            @if($vttExists)
+                            <track id="subtitle-track" kind="subtitles" label="日本語" srclang="ja" src="{{ asset('storage/' . $vttPath) }}">
+                            @endif
                             お使いのブラウザは動画再生をサポートしていません。<br>
                             <a href="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" download class="text-blue-400 underline">動画をダウンロード</a>
                         </video>
+                        <!-- カスタム字幕表示 -->
+                        <div id="custom-subtitle" style="
+                            position: absolute;
+                            top: 90%;
+                            left: 50%;
+                            transform: translate(-50%, -100%);
+                            background-color: rgba(0, 0, 0, 0.85);
+                            color: white;
+                            padding: 5px 20px;
+                            font-size: 20px;
+                            font-weight: bold;
+                            border-radius: 8px;
+                            width: 90%;
+                            text-align: center;
+                            z-index: 1000;
+                            display: none;
+                            font-family: 'Noto Sans JP', sans-serif;
+                            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                            pointer-events: none;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        "></div>
+                        @if($vttExists)
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const video = document.getElementById('interview-video');
+                                const customSubtitle = document.getElementById('custom-subtitle');
+                                const track = document.getElementById('subtitle-track');
+
+                                // ネイティブ字幕を無効化
+                                if (video.textTracks.length > 0) {
+                                    video.textTracks[0].mode = 'hidden';
+                                }
+
+                                // VTTファイルを読み込んで解析
+                                fetch('{{ asset('storage/' . $vttPath) }}')
+                                    .then(response => response.text())
+                                    .then(vttText => {
+                                        const cues = parseVTT(vttText);
+                                        console.log('字幕キュー:', cues);
+
+                                        // 動画再生中に字幕を表示
+                                        video.addEventListener('timeupdate', function() {
+                                            const currentTime = video.currentTime;
+                                            let currentCue = null;
+
+                                            for (const cue of cues) {
+                                                if (currentTime >= cue.start && currentTime < cue.end) {
+                                                    currentCue = cue;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (currentCue) {
+                                                customSubtitle.textContent = currentCue.text;
+                                                customSubtitle.style.display = 'block';
+                                            } else {
+                                                customSubtitle.style.display = 'none';
+                                            }
+                                        });
+                                    })
+                                    .catch(error => {
+                                        console.error('VTT読み込みエラー:', error);
+                                    });
+
+                                // VTTパーサー
+                                function parseVTT(vttText) {
+                                    const lines = vttText.split('\n');
+                                    const cues = [];
+                                    let i = 0;
+
+                                    while (i < lines.length) {
+                                        const line = lines[i].trim();
+
+                                        // タイムスタンプ行を探す
+                                        if (line.includes('-->')) {
+                                            const timeParts = line.split('-->');
+                                            const startTime = parseVTTTime(timeParts[0].trim().split(' ')[0]);
+                                            const endTime = parseVTTTime(timeParts[1].trim().split(' ')[0]);
+
+                                            // 次の行がテキスト
+                                            i++;
+                                            const text = lines[i]?.trim() || '';
+
+                                            cues.push({
+                                                start: startTime,
+                                                end: endTime,
+                                                text: text
+                                            });
+                                        }
+                                        i++;
+                                    }
+
+                                    return cues;
+                                }
+
+                                // VTT時間フォーマットを秒に変換
+                                function parseVTTTime(timeString) {
+                                    const parts = timeString.split(':');
+                                    const hours = parseInt(parts[0]) || 0;
+                                    const minutes = parseInt(parts[1]) || 0;
+                                    const secondsParts = parts[2].split('.');
+                                    const seconds = parseInt(secondsParts[0]) || 0;
+                                    const milliseconds = parseInt(secondsParts[1]) || 0;
+
+                                    return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000;
+                                }
+                            });
+                        </script>
+                        @endif
                         @else
                         <div class="text-center text-gray-400">
                             <svg class="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">

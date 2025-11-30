@@ -1,47 +1,71 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@extends('layouts.admin-auth')
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+@section('title', 'CASMEN｜管理画面ログイン')
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+@push('scripts')
+<script src="{{ asset('assets/admin/js/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ asset('assets/admin/js/main.js') }}"></script>
+@endpush
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+@section('content')
+<header>
+    <div class="header-container">
+        <img src="{{ asset('assets/admin/img/logo_casmen_blue.png') }}" alt="Casmenロゴ">
+    </div>
+</header>
+<main>
+    <div class="login-container">
+        <h1>管理画面ログイン</h1>
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
+            @if ($errors->any())
+            <div class="warning">
+                <span>エラー</span>
+                <ul class="warning-list">
+                    @foreach ($errors->all() as $error)
+                        <li>・{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+            <div class="form-item email">
+                <span>
+                    <img src="{{ asset('assets/admin/img/email-icon.png') }}" alt="メールアイコン">
+                </span>
+                <input id="email" name="email" placeholder="メールアドレス" type="email" value="{{ old('email') }}" required autofocus>
+            </div>
+            <div class="form-item password">
+                <span>
+                    <img src="{{ asset('assets/admin/img/password-icon.png') }}" alt="鍵アイコン">
+                </span>
+                <input id="password" name="password" placeholder="パスワード" type="password" required>
+                <div class="visible-icons">
+                    <img src="{{ asset('assets/admin/img/invisible-icon.png') }}" class="invisible" alt="非表示アイコン">
+                    <img src="{{ asset('assets/admin/img/visible-icon.png') }}" class="visible" alt="表示アイコン">
+                </div>
+            </div>
+            <div class="browser">
+                <div class="recommended-browser">
+                    <span>推奨ブラウザ:</span>
+                    <span>Chrome</span>
+                </div>
+                <img src="{{ asset('assets/admin/img/chrome.png') }}" alt="Chromeロゴ">
+            </div>
+            <button id="login" type="submit" class="login-btn">Login</button>
+        </form>
+        @if (Route::has('password.request'))
+            <a href="{{ route('password.request') }}">パスワードを忘れた方</a>
+        @endif
+    </div>
+    <div class="privacy-policy">
+        <a href="#">個人情報の取り扱いについて</a>
+    </div>
+</main>
+<footer>
+    <div class="footer-container">
+        <small>Copyright&copy;CASMEN All Rights Reserved.</small>
+    </div>
+</footer>
+@endsection
