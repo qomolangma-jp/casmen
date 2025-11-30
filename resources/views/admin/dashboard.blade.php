@@ -33,7 +33,7 @@
                         <div class="btn-content">
                             <div class="btn-content-inner">
                                 <span class="btn-title">応募者一覧</span>
-                                <span class="btn-description">評価を行う@if($waitingCount > 0)<span class="waiting-list">【評価待ち{{ $waitingCount }}人】</span>@endif</span>
+                                <span class="btn-description">評価を行う@if(isset($waitingCount) && $waitingCount > 0)<span class="waiting-list">【評価待ち{{ $waitingCount }}人】</span>@endif</span>
                             </div>
                             <img src="{{ asset('assets/admin/img/right-chevron.png') }}" alt="右アイコン">
                         </div>
@@ -44,7 +44,7 @@
             <div class="notice dashboard-notice">
                 <span class="notice-title">お知らせ</span>
                 <ul class="notice-list">
-                    @forelse ($notices as $notice)
+                    @forelse ($notices ?? [] as $notice)
                         <li>
                             <a href="{{ route('admin.notice.show', $notice->notice_id) }}">
                                 <div class="notice-text">
