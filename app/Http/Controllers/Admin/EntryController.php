@@ -18,7 +18,7 @@ class EntryController extends Controller
      */
     public function index()
     {
-        $entries = Entry::all();
+        $entries = Entry::orderBy('entry_id', 'desc')->get();
         return view('admin.entry.index', compact('entries'));
     }
 

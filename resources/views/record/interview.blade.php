@@ -2,6 +2,28 @@
 
 @section('title', 'CASMEN｜らくらくセルフ面接')
 
+@push('styles')
+<style>
+    /* 開始前カウントダウン用オーバーレイ */
+    #start-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 12rem;
+        font-weight: bold;
+        font-family: 'M PLUS Rounded 1c', sans-serif;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script src="{{ asset('assets/admin/js/jquery-3.7.1.min.js') }}"></script>
 <script src="{{ asset('assets/user/js/main.js') }}"></script>
@@ -48,18 +70,24 @@
     // 3秒カウントダウン（録画前の準備時間）
     function startCountdown() {
         let countdown = 3;
-        const countdownElement = document.getElementById('answer-countdown');
+        const overlay = document.getElementById('start-overlay');
+        const countdownElement = document.getElementById('overlay-countdown');
+
+        // オーバーレイを表示
+        overlay.style.display = 'flex';
         countdownElement.textContent = countdown;
 
         countdownInterval = setInterval(() => {
             countdown--;
-            countdownElement.textContent = countdown;
 
             if (countdown === 0) {
                 clearInterval(countdownInterval);
-                // カウントが0になったら録画開始して最初の質問を表示
+                // カウントが0になったらオーバーレイを非表示にし、録画開始して最初の質問を表示
+                overlay.style.display = 'none';
                 startRecording();
                 showFirstQuestion();
+            } else {
+                countdownElement.textContent = countdown;
             }
         }, 1000);
     }
@@ -142,7 +170,6 @@
 
         questionTimer = setInterval(() => {
             countdown--;
-            countdownElement.textContent = countdown;
 
             if (countdown === 0) {
                 clearInterval(questionTimer);
@@ -165,6 +192,8 @@
                     // 全質問終了
                     stopRecording();
                 }
+            } else {
+                countdownElement.textContent = countdown;
             }
         }, 1000);
     }
@@ -180,8 +209,41 @@
         }
     }
 
+    // IndexedDB Helper
+    const dbName = 'InterviewDB';
+    const storeName = 'videos';
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, 1);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(storeName)) {
+                    db.createObjectStore(storeName);
+                }
+            };
+            request.onsuccess = (event) => {
+                resolve(event.target.result);
+            };
+            request.onerror = (event) => {
+                reject(event.target.error);
+            };
+        });
+    }
+
+    async function saveToIndexedDB(key, value) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(storeName, 'readwrite');
+            const store = transaction.objectStore(storeName);
+            const request = store.put(value, key);
+            request.onsuccess = () => resolve();
+            request.onerror = (event) => reject(event.target.error);
+        });
+    }
+
     // 録画データを保存してconfirmページへ遷移
-    function saveRecordingAndRedirect() {
+    async function saveRecordingAndRedirect() {
         if (recordedChunks.length === 0) {
             console.error('録画データがありません');
             alert('録画データが保存されていません。もう一度お試しください。');
@@ -199,13 +261,12 @@
             return;
         }
 
-        // 録画データをセッションストレージに保存
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            sessionStorage.setItem('recordedVideo', reader.result);
-            sessionStorage.setItem('videoToken', token);
-            sessionStorage.setItem('questionTimestamps', JSON.stringify(questionTimestamps));
-            console.log('セッションストレージに保存完了');
+        try {
+            // IndexedDBに保存
+            await saveToIndexedDB('recordedVideo', blob);
+            await saveToIndexedDB('videoToken', token);
+            await saveToIndexedDB('questionTimestamps', JSON.stringify(questionTimestamps));
+            console.log('IndexedDBに保存完了');
 
             // カメラを停止
             if (stream) {
@@ -214,12 +275,10 @@
 
             // confirmページへ遷移
             window.location.href = "{{ route('record.confirm') }}?token=" + token;
-        };
-        reader.onerror = (error) => {
-            console.error('FileReader エラー:', error);
-            alert('録画データの読み込みに失敗しました。');
-        };
-        reader.readAsDataURL(blob);
+        } catch (error) {
+            console.error('IndexedDB保存エラー:', error);
+            alert('録画データの保存に失敗しました。容量不足の可能性があります。');
+        }
     }
 
     // ページ読み込み時にカメラ起動
@@ -239,14 +298,19 @@
 @endpush
 
 @section('content')
-<body class="page-answer-countdown">
+<body class="page-answer-countdown-custom">
+<!-- 開始前カウントダウン用オーバーレイ -->
+<div id="start-overlay">
+    <span id="overlay-countdown">3</span>
+</div>
+
 <header>
     <div class="header-container preview-header-container">
         <div class="header-container-inner count-logo">
             <span class="logo-lines">
                 <img src="{{ asset('assets/user/img/logo3.png') }}" alt="らくらくセルフ面接">
             </span>
-            <span id="answer-countdown" class="count">3</span>
+            <span id="answer-countdown" class="count"></span>
         </div>
     </div>
 </header>
@@ -255,7 +319,7 @@
         <div class="main-content preview-content">
             <div class="medium-description">
                 <span class="question-card-num">Q.<span id="question-index">1</span></span>
-                <p class="question-text" id="question-text">{{ $questions[0]->q ?? '最近ハマっていることは？' }}</p>
+                <p class="question-text" id="question-text"></p>
             </div>
             <div class="video">
                 <video id="interview-video" autoplay muted></video>

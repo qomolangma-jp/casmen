@@ -29,6 +29,10 @@
         max-width: 800px;
         margin: 0 auto;
     }
+    /* モーダル初期非表示 */
+    .modal {
+        display: none;
+    }
 </style>
 @endpush
 
@@ -251,8 +255,17 @@ function parseVTTTime(timeString) {
 
 // モーダルとAPI呼び出し
 $(document).ready(function() {
+    // iziModal初期化
+    $(".iziModal-rejected").iziModal();
+    $(".iziModal-passed").iziModal();
+    $(".iziModal-submit").iziModal();
+
     // 不採用ボタン
     $('#rejected-btn').click(function() {
+        const $btn = $(this);
+        if ($btn.prop('disabled')) return;
+        $btn.prop('disabled', true);
+
         $.ajax({
             url: '{{ route("admin.entry.reject", $entry->entry_id) }}',
             type: 'POST',
@@ -265,12 +278,17 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 alert('エラーが発生しました: ' + xhr.responseJSON.message);
+                $btn.prop('disabled', false);
             }
         });
     });
 
     // 通過ボタン
     $('#pass-confirm-btn').click(function() {
+        const $btn = $(this);
+        if ($btn.prop('disabled')) return;
+        $btn.prop('disabled', true);
+
         $.ajax({
             url: '{{ route("admin.entry.pass", $entry->entry_id) }}',
             type: 'POST',
@@ -283,8 +301,20 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 alert('エラーが発生しました: ' + xhr.responseJSON.message);
+                $btn.prop('disabled', false);
             }
         });
+    });
+
+    // 面接URL再送ボタン
+    $('#submit').click(function() {
+        const $btn = $(this);
+        if ($btn.prop('disabled')) return;
+        $btn.prop('disabled', true);
+
+        // TODO: 実装
+        alert('面接URL再送機能は現在実装中です。');
+        $btn.prop('disabled', false);
     });
 
     // URLコピー

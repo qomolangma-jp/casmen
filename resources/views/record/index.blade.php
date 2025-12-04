@@ -1703,6 +1703,11 @@ document.getElementById('submitAllBtn').addEventListener('click', async () => {
         return;
     }
 
+    // ボタンを無効化して二重送信防止
+    const submitBtn = document.getElementById('submitAllBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '送信中...';
+
     try {
         const response = await fetch('{{ route("record.submit") }}', {
             method: 'POST',
@@ -1723,10 +1728,14 @@ document.getElementById('submitAllBtn').addEventListener('click', async () => {
         } else {
             console.error('送信失敗:', data);
             alert('送信失敗: ' + data.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = '送信する';
         }
     } catch (error) {
         console.error('送信エラー:', error);
         alert('送信に失敗しました。');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '送信する';
     }
 });
 

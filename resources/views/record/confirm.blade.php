@@ -11,44 +11,73 @@
     const questions = @json($questions ?? []);
     let questionTimestamps = [];
 
+    // IndexedDB Helper
+    const dbName = 'InterviewDB';
+    const storeName = 'videos';
+
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, 1);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(storeName)) {
+                    db.createObjectStore(storeName);
+                }
+            };
+            request.onsuccess = (event) => {
+                resolve(event.target.result);
+            };
+            request.onerror = (event) => {
+                reject(event.target.error);
+            };
+        });
+    }
+
+    async function getFromIndexedDB(key) {
+        const db = await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(storeName, 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.get(key);
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onerror = (event) => reject(event.target.error);
+        });
+    }
+
     // ページ読み込み時に録画データを取得して表示
-    window.addEventListener('DOMContentLoaded', () => {
-        const recordedVideoData = sessionStorage.getItem('recordedVideo');
-        const videoToken = sessionStorage.getItem('videoToken');
-        const timestampsData = sessionStorage.getItem('questionTimestamps');
+    window.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const recordedVideoBlobData = await getFromIndexedDB('recordedVideo');
+            const videoToken = await getFromIndexedDB('videoToken');
+            const timestampsData = await getFromIndexedDB('questionTimestamps');
 
-        if (!recordedVideoData || videoToken !== token) {
-            alert('録画データが見つかりません。最初からやり直してください。');
-            window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
-            return;
+            if (!recordedVideoBlobData || videoToken !== token) {
+                alert('録画データが見つかりません。最初からやり直してください。');
+                window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
+                return;
+            }
+
+            // 質問タイムスタンプを読み込み
+            if (timestampsData) {
+                questionTimestamps = JSON.parse(timestampsData);
+                console.log('質問タイムスタンプ:', questionTimestamps);
+            }
+
+            const videoElement = document.getElementById('preview-recorded-video');
+            recordedVideoBlob = recordedVideoBlobData;
+            console.log('動画Blob取得:', recordedVideoBlob.size, 'bytes');
+
+            videoElement.src = URL.createObjectURL(recordedVideoBlob);
+            videoElement.controls = false;
+            videoElement.muted = true;
+
+            // 字幕表示のセットアップ
+            setupSubtitles();
+
+        } catch (error) {
+            console.error('IndexedDB読み込みエラー:', error);
+            alert('録画データの読み込みに失敗しました。');
         }
-
-        // 質問タイムスタンプを読み込み
-        if (timestampsData) {
-            questionTimestamps = JSON.parse(timestampsData);
-            console.log('質問タイムスタンプ:', questionTimestamps);
-        }
-
-        const videoElement = document.getElementById('preview-recorded-video');
-
-        // 元の動画データをBlobに変換
-        fetch(recordedVideoData)
-            .then(res => res.blob())
-            .then(blob => {
-                recordedVideoBlob = blob;
-                console.log('動画Blob作成:', blob.size, 'bytes');
-
-                videoElement.src = URL.createObjectURL(blob);
-                videoElement.controls = false;
-                videoElement.muted = true;
-
-                // 字幕表示のセットアップ
-                setupSubtitles();
-            })
-            .catch(error => {
-                console.error('動画の読み込みに失敗しました:', error);
-                alert('動画の読み込みに失敗しました。');
-            });
     });    // 字幕表示のセットアップ
     function setupSubtitles() {
         const videoElement = document.getElementById('preview-recorded-video');
@@ -139,8 +168,16 @@
                 token: token
             });
 
-            // 質問タイムスタンプを取得
-            const questionTimestamps = JSON.parse(sessionStorage.getItem('questionTimestamps') || '[]');
+            // 質問タイムスタンプを取得 (IndexedDBから)
+            let questionTimestamps = [];
+            try {
+                const timestampsData = await getFromIndexedDB('questionTimestamps');
+                if (timestampsData) {
+                    questionTimestamps = JSON.parse(timestampsData);
+                }
+            } catch (err) {
+                console.error('タイムスタンプ取得エラー:', err);
+            }
 
             // FormDataを作成して動画データと字幕情報を送信
             const formData = new FormData();
@@ -167,7 +204,17 @@
                 console.log('レスポンスボディ:', result);
 
                 if (response.ok && result.success) {
-                    // セッションストレージをクリア
+                    // IndexedDBをクリア
+                    try {
+                        const db = await openDB();
+                        const transaction = db.transaction(storeName, 'readwrite');
+                        const store = transaction.objectStore(storeName);
+                        store.clear();
+                    } catch (err) {
+                        console.error('IndexedDBクリアエラー:', err);
+                    }
+
+                    // セッションストレージも念のためクリア
                     sessionStorage.removeItem('recordedVideo');
                     sessionStorage.removeItem('videoToken');
                     sessionStorage.removeItem('questionTimestamps');

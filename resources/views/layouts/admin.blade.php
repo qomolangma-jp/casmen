@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=640px, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/admin.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/iziModal.min.css') }}">
@@ -87,6 +87,12 @@
     <script src="{{ asset('assets/admin/js/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('assets/admin/js/iziModal.min.js') }}"></script>
     <script src="{{ asset('assets/admin/js/main.js') }}"></script>
+    <script>
+        // 二重送信防止
+        $(document).on('submit', 'form', function() {
+            $(this).find('button[type="submit"], input[type="submit"]').prop('disabled', true);
+        });
+    </script>
     @stack('scripts')
 </body>
 </html>

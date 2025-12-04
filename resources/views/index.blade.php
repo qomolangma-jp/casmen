@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=640px, user-scalable=no">
         <title>店舗管理システム</title>
         <style>
             body {
@@ -21,8 +21,7 @@
                 box-shadow: 0 20px 40px rgba(0,0,0,0.1);
                 padding: 40px;
                 text-align: center;
-                max-width: 400px;
-                width: 100%;
+                width: 600px;
             }
             .title {
                 color: #333;

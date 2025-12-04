@@ -12,7 +12,7 @@
             <h2>面接URL発行</h2>
             <p>メールや電話番号を登録すると、面接URLが自動で送信されます。</p>
             <img src="{{ asset('assets/admin/img/flow.png') }}" alt="URL発行フロー">
-            
+
             <form method="POST" action="{{ route('admin.link.store') }}" id="url-form">
                 @csrf
                 <div class="form-item">
@@ -27,8 +27,8 @@
                         <input id="name" name="name" type="text" autocomplete="off" value="{{ old('name') }}" required>
                     </div>
                     @error('name')
-                        <div class="name-error" style="display:flex; color: #e02424; font-size: 12px; margin-top: 4px;">
-                            <span><img src="{{ asset('assets/admin/img/warning-icon.png') }}" alt="警告アイコン" style="width: 14px; margin-right: 4px;"></span>
+                        <div class="name-error">
+                            <span><img src="{{ asset('assets/admin/img/warning-icon.png') }}" alt="警告アイコン" style="width: 2rem; margin-right: 4px;"></span>
                             <span>{{ $message }}</span>
                         </div>
                     @enderror
@@ -42,8 +42,8 @@
                         <input id="email" name="email" type="email" autocomplete="off" value="{{ old('email') }}" required>
                     </div>
                     @error('email')
-                        <div class="name-error" style="display:flex; color: #e02424; font-size: 12px; margin-top: 4px;">
-                            <span><img src="{{ asset('assets/admin/img/warning-icon.png') }}" alt="警告アイコン" style="width: 14px; margin-right: 4px;"></span>
+                        <div class="name-error">
+                            <span><img src="{{ asset('assets/admin/img/warning-icon.png') }}" alt="警告アイコン" style="width: 2rem; margin-right: 4px;"></span>
                             <span>{{ $message }}</span>
                         </div>
                     @enderror
@@ -58,8 +58,8 @@
                         <input id="tel" name="phone" type="tel" maxlength="13" autocomplete="off" value="{{ old('phone') }}" required>
                     </div>
                     @error('phone')
-                        <div class="name-error" style="display:flex; color: #e02424; font-size: 12px; margin-top: 4px;">
-                            <span><img src="{{ asset('assets/admin/img/warning-icon.png') }}" alt="警告アイコン" style="width: 14px; margin-right: 4px;"></span>
+                        <div class="name-error">
+                            <span><img src="{{ asset('assets/admin/img/warning-icon.png') }}" alt="警告アイコン" style="width: 2rem; margin-right: 4px;"></span>
                             <span>{{ $message }}</span>
                         </div>
                     @enderror
@@ -100,6 +100,10 @@
 <script>
     // Handle modal submit button click
     $(document).on('click', '#submit-confirm-btn', function() {
+        // ボタンを無効化して二重送信防止
+        $(this).prop('disabled', true);
+        $('#create-url-btn').prop('disabled', true);
+
         $('#url-form').submit();
     });
 
@@ -107,7 +111,7 @@
     function copyToClipboard() {
         var copyText = document.getElementById("url-display");
         if (!copyText.value) return;
-        
+
         copyText.select();
         copyText.setSelectionRange(0, 99999); // For mobile devices
         navigator.clipboard.writeText(copyText.value).then(function() {

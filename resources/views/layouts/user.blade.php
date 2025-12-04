@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=640px, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +14,18 @@
 </head>
 <body>
     @yield('content')
+
+    <script>
+        // 二重送信防止（フォーム送信時）
+        document.addEventListener('submit', function(e) {
+            if (e.target.tagName === 'FORM') {
+                const submitButtons = e.target.querySelectorAll('button[type="submit"], input[type="submit"]');
+                submitButtons.forEach(button => {
+                    button.disabled = true;
+                });
+            }
+        });
+    </script>
 
     @stack('scripts')
 </body>
