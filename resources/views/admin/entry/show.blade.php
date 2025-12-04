@@ -85,6 +85,7 @@
                         <div class="video-container">
                             <video id="interview-video" controls style="width: 100%; max-width: 800px;">
                                 <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
+                                <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
                                 お使いのブラウザは動画の再生をサポートしていません。
                             </video>
                             <div id="custom-subtitle" class="custom-subtitle"></div>
@@ -101,6 +102,7 @@
                         <span class="video-label rejected">不採用</span>
                         <video controls style="width: 100%; max-width: 800px;">
                             <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
+                            <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
                         </video>
                     </div>
                     <small>応募者動画ファイルは回答後30日で削除されます</small>
@@ -110,6 +112,7 @@
                         <span class="video-label passed">通過</span>
                         <video controls style="width: 100%; max-width: 800px;">
                             <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
+                            <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
                         </video>
                     </div>
                     <small>応募者動画ファイルは回答後30日で削除されます</small>
