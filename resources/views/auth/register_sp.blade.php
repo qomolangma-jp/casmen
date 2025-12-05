@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=640px, user-scalable=no">
 	<link rel="shortcut icon" href="{{ asset('assets/registration/img/favicon.ico') }}" type="image/x-icon">
 	<link rel="stylesheet" href="{{ asset('assets/registration/css/registration.css') }}">
 	<title>CASMEN｜利用登録(無料)</title>
@@ -39,11 +39,12 @@
 					<h2>ご連絡先</h2>
 					<p>
 						<strong class="contact-notice">
-							ご入力頂いたメールアドレスに、ログイン用のパスワードをお送りする為、<span class="contact-important">入力ミスがあると掲載を開始できません。</span><br>
-							お間違えがないかお確かめください。
+							ご入力頂いたメールアドレスに、ログイン用のパスワードをお送りする為、<br>
+							<span class="contact-important">入力ミスがあると掲載を開始できません。</span>お間違えがないかお確かめください。
 						</strong>
 						<small>
-							※Gmail等のフリーメールの場合、迷惑メールフォルダに振り分けられる場合が御座いますので、万一メールが届かない場合、迷惑メールフォルダをご確認ください。
+							※Gmail等のフリーメールの場合、迷惑メールフォルダに振り分けられる場合が御座いますので、<br>
+							万一メールが届かない場合、迷惑メールフォルダをご確認ください。
 						</small>
 					</p>
 					<dl class="info-list">
@@ -62,7 +63,8 @@
 
 						</dd>
 						<dt>
-							携帯電話番号<span class="required">※</span><span class="notes">(事業所、または店舗受付番号)</span>
+							携帯電話番号<span class="required">※</span>
+							<span class="notes">(事業所、または店舗受付番号)</span>
 						</dt>
 						<dd>
 							<div class="phone-number-input">
@@ -101,7 +103,7 @@
 						</dd>
 						<dt>
 							<label for="job-url">
-								求人情報が掲載されているURL<span class="notes">(公式、求人サイト等)</span>
+								求人情報が掲載<br>されているURL<br><span class="notes">（公式サイト、求人サイト等）</span>
 							</label>
 						</dt>
 						<dd>
@@ -198,11 +200,11 @@
 			<nav class="footer-menu">
 				<ul class="footer-menu-list">
 					<!-- 登録ページの入力画面に遷移 -->
-					<li><a href="{{ route('register') }}">掲載のお申込み</a></li>
-					<li><a href="mailto:support@casmen.jp">お問い合わせ</a></li>
-					<li><a href="{{ asset('assets/company/pc/terms.html') }}">利用規約</a></li>
-					<li><a href="{{ asset('assets/company/pc/policy.html') }}">プライバシーポリシー</a></li>
-					<li><a href="{{ asset('assets/company/pc/company.html') }}">運営会社</a></li>
+					<li><a href="{{ route('register') }}">掲載の<br>お申込み</a></li>
+					<li><a href="mailto:support@casmen.jp">お問い<br>合わせ</a></li>
+					<li><a href="{{ asset('assets/company/sm/terms.html') }}">利用規約</a></li>
+					<li><a href="{{ asset('assets/company/sm/policy.html') }}">プライバシー<br>ポリシー</a></li>
+					<li><a href="{{ asset('assets/company/sm/company.html') }}">運営会社</a></li>
 				</ul>
 			</nav>
 			<div class="copyright">

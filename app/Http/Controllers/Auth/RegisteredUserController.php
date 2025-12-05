@@ -17,9 +17,25 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        $userAgent = $request->header('User-Agent');
+
+        if ($this->isMobile($userAgent)) {
+            return view('auth.register_sp');
+        }
+
         return view('auth.register');
+    }
+
+    /**
+     * モバイルデバイス判定
+     */
+    private function isMobile($userAgent)
+    {
+        // iPhone, iPod, Android Mobile をモバイルと判定
+        // iPad や Android Tablet はPCビューを表示
+        return preg_match('/(iPhone|iPod|Android.*Mobile)/i', $userAgent);
     }
 
     /**
