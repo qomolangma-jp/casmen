@@ -112,131 +112,167 @@
         const videoElement = document.getElementById('preview-recorded-video');
         const subtitleDiv = document.getElementById('subtitle-text');
 
-        previewBtn.addEventListener('click', () => {
-            if (videoElement.paused) {
-                videoElement.muted = false;
-                videoElement.play();
-                previewBtn.textContent = '停止 ■';
-                if (subtitleDiv) subtitleDiv.style.display = 'block';
-            } else {
-                videoElement.pause();
-                videoElement.currentTime = 0;
-                videoElement.muted = true;
-                previewBtn.textContent = 'プレビュー ▶︎';
-                if (subtitleDiv) {
-                    subtitleDiv.textContent = '';
-                    subtitleDiv.style.display = 'none';
+        // 画面切り替え用の要素
+        const videoContainer = document.querySelector('.instruction__confirm-video');
+        const characterMessage = document.querySelector('.instruction__character-message');
+        const confirmMessage = document.querySelector('.instruction__confirm-message');
+
+        if (previewBtn) {
+            previewBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // リンク遷移を防止
+                if (videoElement.paused) {
+                    // 再生開始（プレビューモードへ切り替え）
+                    videoElement.muted = false;
+                    videoElement.play();
+
+                    // ボタンの表示変更
+                    previewBtn.textContent = 'プレビュー中';
+                    previewBtn.classList.add('disabled-btn'); // 見た目をdisabled風に
+
+                    // 画面レイアウト変更 (confirm_preview.htmlの状態へ)
+                    if (videoContainer) {
+                        videoContainer.classList.remove('instruction__confirm-video');
+                        videoContainer.classList.add('instruction__preview-video');
+                    }
+                    if (characterMessage) characterMessage.style.display = 'none';
+                    if (confirmMessage) confirmMessage.style.display = 'none';
+
+                    if (subtitleDiv) subtitleDiv.style.display = 'block';
+                } else {
+                    // 停止（元の画面へ戻す）
+                    stopPreview();
                 }
-            }
-        });
+            });
+        }
 
         // 動画が終了したら停止状態に戻す
         videoElement.addEventListener('ended', () => {
+            stopPreview();
+        });
+
+        // プレビュー停止処理
+        function stopPreview() {
+            videoElement.pause();
             videoElement.currentTime = 0;
             videoElement.muted = true;
-            previewBtn.textContent = 'プレビュー ▶︎';
+
+            // ボタンの表示変更
+            if (previewBtn) {
+                previewBtn.textContent = 'プレビュー ▶︎';
+                previewBtn.classList.remove('disabled-btn');
+            }
+
+            // 画面レイアウト復帰
+            if (videoContainer) {
+                videoContainer.classList.add('instruction__confirm-video');
+                videoContainer.classList.remove('instruction__preview-video');
+            }
+            if (characterMessage) characterMessage.style.display = ''; // CSSの初期値に戻す
+            if (confirmMessage) confirmMessage.style.display = '';
+
             if (subtitleDiv) {
                 subtitleDiv.textContent = '';
                 subtitleDiv.style.display = 'none';
             }
-        });
+        }
     });
 
     // 送信ボタンのクリックイベント
     document.addEventListener('DOMContentLoaded', () => {
-        const submitForm = document.querySelector('form');
         const submitBtn = document.getElementById('submit-btn');
         const questions = @json($questions ?? []);
 
-        submitForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        if (submitBtn) {
+            submitBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
 
-            if (!recordedVideoBlob) {
-                alert('録画データが見つかりません。');
-                return;
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = '送信中...';
-
-            // ローディング画面を表示
-            showLoadingScreen(questions);
-
-            console.log('送信開始:', {
-                blobSize: recordedVideoBlob.size,
-                blobType: recordedVideoBlob.type,
-                token: token
-            });
-
-            // 質問タイムスタンプを取得 (IndexedDBから)
-            let questionTimestamps = [];
-            try {
-                const timestampsData = await getFromIndexedDB('questionTimestamps');
-                if (timestampsData) {
-                    questionTimestamps = JSON.parse(timestampsData);
+                if (!recordedVideoBlob) {
+                    alert('録画データが見つかりません。');
+                    return;
                 }
-            } catch (err) {
-                console.error('タイムスタンプ取得エラー:', err);
-            }
 
-            // FormDataを作成して動画データと字幕情報を送信
-            const formData = new FormData();
-            formData.append('token', token);
-            formData.append('video', recordedVideoBlob, 'interview.webm');
-            formData.append('timestamps', JSON.stringify(questionTimestamps));
-            formData.append('_token', '{{ csrf_token() }}');
+                submitBtn.disabled = true;
+                submitBtn.textContent = '送信中...';
 
-            console.log('FormData作成完了');
+                // ローディング画面を表示
+                showLoadingScreen(questions);
 
-            try {
-                const response = await fetch('{{ route("record.submit") }}', {
-                    method: 'POST',
-                    body: formData
+                console.log('送信開始:', {
+                    blobSize: recordedVideoBlob.size,
+                    blobType: recordedVideoBlob.type,
+                    token: token
                 });
 
-                console.log('レスポンス:', {
-                    ok: response.ok,
-                    status: response.status,
-                    statusText: response.statusText
-                });
-
-                const result = await response.json();
-                console.log('レスポンスボディ:', result);
-
-                if (response.ok && result.success) {
-                    // IndexedDBをクリア
-                    try {
-                        const db = await openDB();
-                        const transaction = db.transaction(storeName, 'readwrite');
-                        const store = transaction.objectStore(storeName);
-                        store.clear();
-                    } catch (err) {
-                        console.error('IndexedDBクリアエラー:', err);
+                // 質問タイムスタンプを取得 (IndexedDBから)
+                let questionTimestamps = [];
+                try {
+                    const timestampsData = await getFromIndexedDB('questionTimestamps');
+                    if (timestampsData) {
+                        questionTimestamps = JSON.parse(timestampsData);
                     }
-
-                    // セッションストレージも念のためクリア
-                    sessionStorage.removeItem('recordedVideo');
-                    sessionStorage.removeItem('videoToken');
-                    sessionStorage.removeItem('questionTimestamps');
-
-                    console.log('送信成功、完了ページへ遷移');
-                    // 完了ページへ遷移
-                    window.location.href = "{{ route('record.complete') }}";
-                } else {
-                    throw new Error(result.message || '送信に失敗しました');
+                } catch (err) {
+                    console.error('タイムスタンプ取得エラー:', err);
                 }
-            } catch (error) {
-                console.error('送信エラー:', error);
 
-                // ローディング画面を削除
-                const loadingOverlay = document.getElementById('loading-overlay');
-                if (loadingOverlay) loadingOverlay.remove();
+                // FormDataを作成して動画データと字幕情報を送信
+                const formData = new FormData();
+                formData.append('token', token);
+                formData.append('video', recordedVideoBlob, 'interview.webm');
+                formData.append('timestamps', JSON.stringify(questionTimestamps));
+                formData.append('_token', '{{ csrf_token() }}');
 
-                alert('動画の送信に失敗しました。\nエラー: ' + error.message);
-                submitBtn.disabled = false;
-                submitBtn.textContent = '送信する';
-            }
-        });
+                console.log('FormData作成完了');
+
+                try {
+                    const response = await fetch('{{ route("record.submit") }}', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    console.log('レスポンス:', {
+                        ok: response.ok,
+                        status: response.status,
+                        statusText: response.statusText
+                    });
+
+                    const result = await response.json();
+                    console.log('レスポンスボディ:', result);
+
+                    if (response.ok && result.success) {
+                        // IndexedDBをクリア
+                        try {
+                            const db = await openDB();
+                            const transaction = db.transaction(storeName, 'readwrite');
+                            const store = transaction.objectStore(storeName);
+                            store.clear();
+                        } catch (err) {
+                            console.error('IndexedDBクリアエラー:', err);
+                        }
+
+                        // セッションストレージも念のためクリア
+                        sessionStorage.removeItem('recordedVideo');
+                        sessionStorage.removeItem('videoToken');
+                        sessionStorage.removeItem('questionTimestamps');
+
+                        console.log('送信成功、完了ページへ遷移');
+                        // 完了ページへ遷移
+                        window.location.href = "{{ route('record.complete') }}";
+                    } else {
+                        throw new Error(result.message || '送信に失敗しました');
+                    }
+                } catch (error) {
+                    console.error('送信エラー:', error);
+
+                    // ローディング画面を削除
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    if (loadingOverlay) loadingOverlay.remove();
+
+                    alert('動画の送信に失敗しました。\nエラー: ' + error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '送信する';
+                }
+            });
+        }
     });
 
     // ローディング画面を表示
@@ -276,111 +312,67 @@
 
     // 録り直しボタンのクリックイベント
     document.addEventListener('DOMContentLoaded', () => {
-        const retakeLinks = document.querySelectorAll('.inline-purple-btn:not(.disabled)');
-        retakeLinks.forEach(link => {
-            link.addEventListener('click', async (e) => {
-                // 字幕入り動画を削除
-                const subtitledVideoPath = sessionStorage.getItem('subtitledVideoPath');
-                if (subtitledVideoPath) {
-                    try {
-                        await fetch('{{ route("record.retake") }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                token: token,
-                                videoPath: subtitledVideoPath
-                            })
-                        });
-                    } catch (error) {
-                        console.error('動画削除エラー:', error);
-                    }
-                }
-
-                // セッションストレージをクリア
-                sessionStorage.removeItem('recordedVideo');
-                sessionStorage.removeItem('videoToken');
-                sessionStorage.removeItem('subtitledVideoPath');
-                sessionStorage.removeItem('questionTimestamps');
-
-                // 録り直し回数をインクリメント
-                const retakeCount = parseInt(sessionStorage.getItem('retakeCount') || '0');
-                sessionStorage.setItem('retakeCount', (retakeCount + 1).toString());
+        const retakeLink = document.getElementById('retake-btn');
+        if (retakeLink && !retakeLink.classList.contains('disabled-btn')) {
+            retakeLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                // 録り直し処理（必要ならサーバーに通知など）
+                // ここでは単純にプレビュー画面に戻る
+                window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
             });
-        });
+        }
     });
 </script>
 @endpush
 
 @section('content')
-<header>
-    <div class="header-container">
-        <div class="header-container-inner line-logo">
-            <img src="{{ asset('assets/user/img/logo2.png') }}" alt="らくらくセルフ面接">
-        </div>
+<header class="header">
+    <div class="header__container">
+        <img src="{{ asset('assets/user/img/logo2.png') }}" alt="らくらくセルフ面接">
     </div>
 </header>
-<main>
-    <div class="main-container">
-        <div class="main-content complete-content">
-            <div class="complete-description">
-                <p class="complete-message">
-                    <span>これで質問はすべて完了です。</span>
+
+<main class="main">
+    <div class="main__container">
+        <div class="instruction instruction__interview bg-frame">
+            <div class="instruction__confirm-inner">
+                <div class="instruction__confirm-video">
+                    <video id="preview-recorded-video"></video>
+                    <div class="instruction__character-message">
+                        <div class="instruction__bubble">
+                            <img src="{{ asset('assets/user/img/bubble.png') }}" class="instruction__bubble-img" alt="吹き出し">
+                            <img src="{{ asset('assets/user/img/well-done.png') }}" class="instruction__bubble-text" alt="セルフ面談おつかれさまでした。">
+                        </div>
+                        <div class="instruction__character">
+                            <img src="{{ asset('assets/user/img/bear.png') }}" class="instruction__bear-img" alt="クマのキャラクター">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="instruction__preview-btns">
+                    <!-- 録り直しボタン -->
+                    @if($entry->retake_count < 1)
+                        <a href="#" id="retake-btn" class="instruction__retake-btn">録り直し<span class="remaining-chance">（残り{{ 1 - $entry->retake_count }}回）</span></a>
+                    @else
+                        <a href="#" class="instruction__retake-btn disabled-btn">録り直し<span class="remaining-chance">（残り0回）</span></a>
+                    @endif
+
+                    <!-- プレビューボタン -->
+                    <a href="#" id="preview-btn" class="instruction__preview-btn">プレビュー ▶︎</a>
+                </div>
+                <p class="instruction__confirm-message">
+                    <span class="instruction__complete-notice">これで質問はすべて完了です。</span><br>
                     問題がなければ「送信する」を<br>タップしてください。
                 </p>
             </div>
-            <div class="video lg-video" style="position: relative;">
-                <video id="preview-recorded-video"></video>
-                <div id="subtitle-text" style="
-                    display: none;
-                    position: absolute;
-                    bottom: 20px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background-color: rgba(0, 0, 0, 0.85);
-                    color: white;
-                    padding: 12px 24px;
-                    font-size: 18px;
-                    font-weight: bold;
-                    border-radius: 8px;
-                    max-width: 90%;
-                    text-align: center;
-                    z-index: 10;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    font-family: 'Noto Sans JP', sans-serif;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-                "></div>
-                <div class="character-short">
-                    <div class="bubble-lg">
-                        <img src="{{ asset('assets/user/img/well-done.png') }}" alt="セルフ面談おつかれさまでした。">
-                    </div>
-                    <img src="{{ asset('assets/user/img/bear.png') }}" alt="クマのキャラクター">
-                </div>
-            </div>
-            <div class="preview-btns">
-                @if(session('retake_count', 0) < 1)
-                    <a href="{{ route('record.interview-preview', ['token' => $token]) }}" class="inline-purple-btn">
-                        録り直し<span class="rest">（残り１回）</span>
-                    </a>
-                @else
-                    <a href="#" class="inline-purple-btn disabled">録り直し<span class="rest">（残り0回）</span></a>
-                @endif
-                <button id="preview-btn" class="inline-pink-btn">プレビュー ▶︎</button>
-            </div>
         </div>
-        <form action="{{ route('record.submit') }}" method="POST">
-            @csrf
-            <input type="hidden" name="token" value="{{ $token }}">
-            <button id="submit-btn" type="submit" class="purple-btn">送信する</button>
-        </form>
+
+        <button id="submit-btn" type="button" class="main__btn">送信する</button>
     </div>
 </main>
-<footer>
-    <div class="footer-container">
+
+<footer class="footer">
+    <div class="footer__container">
         <p>ご不明点やトラブルがあれば、下記のサポートまでお気軽にご連絡ください。</p>
         <a href="mailto:support@casmen.jp">support@casmen.jp</a>
     </div>

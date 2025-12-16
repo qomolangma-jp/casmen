@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Entry;
 use App\Mail\PassNotification;
 use App\Mail\RejectionNotification;
+use App\Mail\InterviewLinkMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -107,6 +108,55 @@ class EntryController extends Controller
 
         } catch (\Exception $e) {
             Log::error("合格処理エラー: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => '処理中にエラーが発生しました: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * 面接URLを再送する
+     */
+    public function resend(Request $request, $id)
+    {
+        try {
+            $entry = Entry::findOrFail($id);
+
+            // 再送回数チェック (最大3回)
+            if (($entry->retake_count ?? 0) >= 3) {
+                return response()->json([
+                    'success' => false,
+                    'message' => '再送回数の上限（3回）に達しています。'
+                ], 400);
+            }
+
+            // メールアドレスチェック
+            if (!$entry->email) {
+                return response()->json([
+                    'success' => false,
+                    'message' => '応募者のメールアドレスが登録されていません。'
+                ], 400);
+            }
+
+            // 面接URLの生成 (welcomeページへのリンク)
+            $interviewUrl = route('record.welcome', ['token' => $entry->interview_uuid]);
+
+            // メール送信
+            Mail::to($entry->email)->send(new InterviewLinkMail($entry, $interviewUrl));
+
+            // 再送回数をインクリメント
+            $entry->increment('retake_count');
+
+            Log::info("面接URL再送: entry_id={$id}, email={$entry->email}, count=" . ($entry->retake_count));
+
+            return response()->json([
+                'success' => true,
+                'message' => '面接URLを再送しました。'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("面接URL再送エラー: " . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => '処理中にエラーが発生しました: ' . $e->getMessage()

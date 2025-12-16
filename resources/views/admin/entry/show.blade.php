@@ -315,9 +315,25 @@ $(document).ready(function() {
         if ($btn.prop('disabled')) return;
         $btn.prop('disabled', true);
 
-        // TODO: 実装
-        alert('面接URL再送機能は現在実装中です。');
-        $btn.prop('disabled', false);
+        $.ajax({
+            url: '{{ route("admin.entry.resend", $entry->entry_id) }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                alert(response.message);
+                location.reload();
+            },
+            error: function(xhr) {
+                let message = 'エラーが発生しました';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message += ': ' + xhr.responseJSON.message;
+                }
+                alert(message);
+                $btn.prop('disabled', false);
+            }
+        });
     });
 
     // URLコピー

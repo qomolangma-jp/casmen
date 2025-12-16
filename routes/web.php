@@ -63,6 +63,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('/entry/{id}/interview', [EntryController::class, 'interview'])->name('entry.interview');
     Route::post('/entry/{id}/reject', [EntryController::class, 'reject'])->name('entry.reject');
     Route::post('/entry/{id}/pass', [EntryController::class, 'pass'])->name('entry.pass');
+    Route::post('/entry/{id}/resend', [EntryController::class, 'resend'])->name('entry.resend');
 
     // ID: 11 - 各種設定（プロフィール）
     Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');

@@ -3,33 +3,35 @@
 @section('title', 'CASMEN｜らくらくセルフ面接')
 
 @section('content')
-<header>
-    <div class="header-container">
-        <div class="header-container-inner line-logo">
-            <img src="{{ asset('assets/user/img/logo2.png') }}" alt="らくらくセルフ面接">
-        </div>
+<header class="header">
+    <div class="header__container">
+        <img src="{{ asset('assets/user/img/logo2.png') }}" alt="らくらくセルフ面接">
     </div>
 </header>
-<main>
-    <div class="main-container">
-        <div class="main-content complete-content">
-            <div class="complete-description">
-                <p class="done-message">セルフ面接お疲れさまでした。<br>店舗からのご連絡をお待ち<br>ください。</p>
-            </div>
-            <div class="lg-video complete-character">
-                <div class="character-short">
-                    <div class="bubble-lg">
-                        <img src="{{ asset('assets/user/img/great-job.png') }}" class="well-done" alt="バッチリ決まってたよ！">
+
+<main class="main">
+    <div class="main__container">
+        <div class="instruction instruction__interview bg-frame">
+            <div class="instruction__confirm-inner">
+                <p class="instruction__complete-message">セルフ面接お疲れさまでした。<br>店舗からのご連絡をお待ち<br>ください。</p>
+                <div class="instruction__complete-character-message">
+                    <div class="instruction__complete-bubble">
+                        <img src="{{ asset('assets/user/img/bubble.png') }}" class="instruction__bubble-img" alt="吹き出し">
+                        <img src="{{ asset('assets/user/img/great-job.png') }}" class="instruction__bubble-text" alt="バッチリ決まってたよ！">
                     </div>
-                    <img src="{{ asset('assets/user/img/bear.png') }}" alt="クマのキャラクター">
+                    <div class="instruction__complete-character">
+                        <img src="{{ asset('assets/user/img/bear-lg.png') }}" class="instruction__bear-img" alt="クマのキャラクター">
+                    </div>
                 </div>
             </div>
         </div>
-        <button id="close-btn" type="button" class="purple-btn" onclick="window.close()">閉じる</button>
+
+        <button id="close-btn" type="button" class="main__btn" onclick="window.close()">閉じる</button>
     </div>
 </main>
-<footer>
-    <div class="footer-container">
+
+<footer class="footer">
+    <div class="footer__container">
         <p>ご不明点やトラブルがあれば、下記のサポートまでお気軽にご連絡ください。</p>
         <a href="mailto:support@casmen.jp">support@casmen.jp</a>
     </div>

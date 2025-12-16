@@ -26,7 +26,7 @@
 
 @push('scripts')
 <script src="{{ asset('assets/admin/js/jquery-3.7.1.min.js') }}"></script>
-<script src="{{ asset('assets/user/js/main.js') }}"></script>
+<!-- <script src="{{ asset('assets/user/js/main.js') }}"></script> -->
 <script>
     const questions = @json($questions);
     const token = "{{ $token }}";
@@ -57,6 +57,9 @@
             videoElement.srcObject = stream;
             videoElement.muted = true;
             await videoElement.play();
+
+            // 最初の質問を表示（タイマーは開始しない）
+            displayQuestion(0);
 
             // カメラ起動成功後、3秒カウントダウンしてから録画開始
             startCountdown();
@@ -150,18 +153,26 @@
         currentQuestionIndex = index;
         const question = questions[index];
 
-        document.getElementById('question-index').textContent = index + 1;
-        document.getElementById('question-text').textContent = question.q;
-        document.getElementById('current-index').textContent = index + 1;
+        // 質問番号 (1始まり)
+        document.getElementById('question-increment').textContent = index + 1;
 
-        // カウントダウンを5秒に設定
-        document.getElementById('answer-countdown').textContent = '5';
+        // 質問文
+        document.getElementById('question-text').textContent = question.q;
+
+        // 残り質問数
+        // index=0のとき、残り11問 (total=12) -> total - (index + 1)
+        document.getElementById('question-decrement').textContent = totalQuestions - (index + 1);
+
+        // カウントダウンを10秒に設定 (how_to.htmlの記述に合わせて10秒に変更)
+        // how_to.html: "1問につき約10秒"
+        // interview.html: "9秒" (初期値)
+        document.getElementById('current-time').textContent = '10';
     }
 
-    // 質問タイマー（5秒後に次の質問へ）
+    // 質問タイマー（10秒後に次の質問へ）
     function startQuestionTimer() {
-        let countdown = 5;
-        const countdownElement = document.getElementById('answer-countdown');
+        let countdown = 10;
+        const countdownElement = document.getElementById('current-time');
         countdownElement.textContent = countdown;
 
         if (questionTimer) {
@@ -304,43 +315,32 @@
     <span id="overlay-countdown">3</span>
 </div>
 
-<header>
-    <div class="header-container preview-header-container">
-        <div class="header-container-inner count-logo">
-            <span class="logo-lines">
-                <img src="{{ asset('assets/user/img/logo3.png') }}" alt="らくらくセルフ面接">
-            </span>
-            <span id="answer-countdown" class="count"></span>
-        </div>
+<header class="header">
+    <div class="header__container">
+        <img src="{{ asset('assets/user/img/logo2.png') }}" alt="らくらくセルフ面接">
     </div>
 </header>
-<main>
-    <div class="main-container preview-container">
-        <div class="main-content preview-content">
-            <div class="medium-description">
-                <span class="question-card-num">Q.<span id="question-index">1</span></span>
-                <p class="question-text" id="question-text"></p>
-            </div>
-            <div class="video">
-                <video id="interview-video" autoplay muted></video>
-                <div class="character">
-                    <div class="bubble">
-                        <img src="{{ asset('assets/user/img/feel-free.png') }}" alt="気楽に答えてね">
-                    </div>
-                    <img src="{{ asset('assets/user/img/bear.png') }}" class="little-bear" alt="クマのキャラクター">
-                </div>
-            </div>
-        </div>
 
-        <div class="question-counter">
-            <span id="current-index" class="current-question">1</span>
-            <span class="question-num">{{ $questions->count() }}</span>
+<main class="main">
+    <div class="main__container">
+        <div class="instruction instruction__interview bg-frame">
+            <div class="instruction__inner">
+                <div class="instruction__video">
+                    <video id="interview-video" autoplay muted></video>
+                </div>
+
+                <span class="instruction__notice">Q.<span id="question-increment">1</span></span>
+                <p class="instruction__countdown">次の質問まで残り：<span class="instruction__current-status"><span id="current-time">10</span>秒</span>｜残り質問数：<span class="instruction__current-status"><span id="question-decrement">{{ count($questions) - 1 }}</span>問</span></p>
+                <p class="instruction__question" id="question-text"></p>
+
+            </div>
         </div>
-        <a href="{{ route('record.howto', ['token' => $token]) }}" class="purple-btn start-btn">最初からやり直す</a>
+        <a href="{{ route('record.interview-preview', ['token' => $token]) }}" class="main__btn">最初からやり直す</a>
     </div>
 </main>
-<footer>
-    <div class="footer-container">
+
+<footer class="footer">
+    <div class="footer__container">
         <p>ご不明点やトラブルがあれば、下記のサポートまでお気軽にご連絡ください。</p>
         <a href="mailto:support@casmen.jp">support@casmen.jp</a>
     </div>

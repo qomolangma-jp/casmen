@@ -7,28 +7,33 @@
 @endpush
 
 @section('content')
-<header>
-    <div class="header-container">
-        <div class="header-container-inner line-logo">
-            <img src="{{ asset('assets/user/img/logo2.png') }}" alt="らくらくセルフ面接">
-        </div>
+<header class="header">
+    <div class="header__container">
+        <img src="{{ asset('assets/user/img/logo2.png') }}" alt="らくらくセルフ面接">
     </div>
 </header>
-<main>
-    <div class="main-container">
-        <div class="main-content error-content">
-            <div class="error-lg-description">
-                <span><i class="bi bi-exclamation-triangle-fill"></i>エラーが発生しました</span>
-                <p>{{ $errorMessage ?? '予期しないエラーが発生しました。' }}</p>
+
+<main class="main">
+    <div class="main__container">
+        <div class="instruction bg-frame">
+            <div class="instruction__error-inner">
+                <span class="instruction__error-message"><i class="bi bi-exclamation-triangle-fill"></i>エラーが発生しました</span>
+
+                @if(isset($errorMessage))
+                    <p class="error-detail" style="color: red; font-weight: bold; margin-bottom: 10px;">{{ $errorMessage }}</p>
+                @endif
+
                 <p>解決しない場合は、サポートまでご連絡<br>ください。</p>
                 <a href="mailto:support@casmen.jp">support@casmen.jp</a>
             </div>
         </div>
-        <a href="{{ route('top.index') }}" class="purple-btn">TOPへ戻る</a>
+
+        <a href="{{ route('top.index') }}" class="main__btn">TOPへ戻る</a>
     </div>
 </main>
-<footer>
-    <div class="footer-container">
+
+<footer class="footer">
+    <div class="footer__container">
         <p>ご不明点やトラブルがあれば、下記のサポートまでお気軽にご連絡ください。</p>
         <a href="mailto:support@casmen.jp">support@casmen.jp</a>
     </div>

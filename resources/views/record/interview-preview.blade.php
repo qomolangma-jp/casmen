@@ -43,42 +43,40 @@
 @endpush
 
 @section('content')
-<header>
-    <div class="header-container preview-header-container">
-        <div class="header-container-inner count-logo">
-            <span class="logo-lines">
-                <img src="{{ asset('assets/user/img/logo3.png') }}" alt="らくらくセルフ面接">
-            </span>
-            <span class="count">{{ $questions->count() }}</span>
-        </div>
+<header class="header">
+    <div class="header__container">
+        <img src="{{ asset('assets/user/img/logo2.png') }}" alt="らくらくセルフ面接">
     </div>
 </header>
-<main>
-    <div class="main-container preview-container">
-        <div class="main-content preview-content">
-            <div class="medium-description">
-                <p class="preview-text">準備ができましたら<br>【セルフ面接スタート】ボタン<br>をタップしてください。<br>3秒後に質問がスタートします。</p>
-            </div>
-            <div class="video">
-                <video id="preview-video" autoplay muted></video>
-                <div class="character">
-                    <div class="bubble">
-                        <img src="{{ asset('assets/user/img/display.png') }}" class="bubble-line" alt="映ってるかな？">
-                    </div>
-                    <img src="{{ asset('assets/user/img/bear.png') }}" class="little-bear" alt="クマのキャラクター">
-                </div>
-            </div>
-        </div>
 
-        <div class="question-counter">
-            <span class="current-question">1</span>
-            <span class="question-num">{{ $questions->count() }}</span>
+<main class="main">
+    <div class="main__container">
+        <div class="instruction instruction__interview bg-frame">
+            <div class="instruction__inner">
+                <div class="instruction__video-imgs">
+                    <video id="preview-video" autoplay muted></video>
+                    <div class="instruction__imgs">
+                        <div class="instruction__bubble-imgs">
+                            <img src="{{ asset('assets/user/img/bubble.png') }}" class="instruction__bubble-img" alt="吹き出し">
+                            <img src="{{ asset('assets/user/img/display.png') }}" class="instruction__bubble-text" alt="映ってるかな？">
+                        </div>
+                        <div class="instruction__character-img">
+                            <img src="{{ asset('assets/user/img/bear.png') }}" class="instruction__bear-img" alt="クマのキャラクター">
+                        </div>
+                    </div>
+                </div>
+
+                <small class="instruction__notice">※プレビュー画面のサイズ変更はできません</small>
+                <p class="instruction__text">準備ができましたら<br>【セルフ面接スタート】ボタン<br>をタップしてください。<br>3秒後に質問がスタートします。</p>
+
+            </div>
         </div>
-        <a href="{{ route('record.interview', ['token' => $token]) }}" class="purple-btn start-btn">セルフ面接スタート</a>
+        <a href="{{ route('record.interview', ['token' => $token]) }}" class="main__btn start-btn">セルフ面接スタート</a>
     </div>
 </main>
-<footer>
-    <div class="footer-container">
+
+<footer class="footer">
+    <div class="footer__container">
         <p>ご不明点やトラブルがあれば、下記のサポートまでお気軽にご連絡ください。</p>
         <a href="mailto:support@casmen.jp">support@casmen.jp</a>
     </div>
