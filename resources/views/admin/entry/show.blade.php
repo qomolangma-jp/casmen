@@ -55,18 +55,14 @@
                     <span>{{ $entry->name }}@if($entry->name_kana)（{{ $entry->name_kana }}）@endif</span>
                 </div>
                 <ul class="applicant-contact">
-                    @if($entry->email)
                     <li>
                         <span><img src="{{ asset('assets/admin/img/email-icon-gray.png') }}" alt="メールアイコン"></span>
-                        <span>{{ $entry->email }}</span>
+                        <span>{{ $entry->email ?? '登録なし' }}</span>
                     </li>
-                    @endif
-                    @if($entry->tel)
                     <li>
                         <span><img src="{{ asset('assets/admin/img/tel-icon.png') }}" alt="TELアイコン"></span>
-                        <span>{{ $entry->tel }}</span>
+                        <span>{{ $entry->tel ?? '登録なし' }}</span>
                     </li>
-                    @endif
                     @if($entry->completed_at)
                     <li>
                         <span><img src="{{ asset('assets/admin/img/movie-icon.png') }}" alt="動画アイコン"></span>

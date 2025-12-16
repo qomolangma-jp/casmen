@@ -28,13 +28,11 @@ class LinkController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|regex:/^[0-9\-\+\(\)\s]+$/|max:20',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|regex:/^[0-9\-\+\(\)\s]+$/|max:20',
         ], [
             'name.required' => 'お名前は必須です。',
-            'email.required' => 'メールアドレスは必須です。',
             'email.email' => '正しいメールアドレス形式で入力してください。',
-            'phone.required' => '電話番号は必須です。',
             'phone.regex' => '正しい電話番号形式で入力してください。',
         ]);
 
@@ -98,19 +96,22 @@ class LinkController extends Controller
 
 
         // メール送信
-        try {
-            Mail::to($request->email)->send(new InterviewLinkMail($entry, $interviewUrl));
-            Log::info('面接URLメール送信成功', [
-                'entry_id' => $entry->entry_id,
-                'email' => $request->email
-            ]);
-            $mailStatus = 'メールを送信しました。';
-        } catch (\Exception $e) {
-            Log::error('面接URLメール送信失敗: ' . $e->getMessage(), [
-                'entry_id' => $entry->entry_id,
-                'email' => $request->email
-            ]);
-            $mailStatus = 'メール送信に失敗しました: ' . $e->getMessage();
+        $mailStatus = 'メールアドレス未入力のため送信していません。';
+        if ($request->email) {
+            try {
+                Mail::to($request->email)->send(new InterviewLinkMail($entry, $interviewUrl));
+                Log::info('面接URLメール送信成功', [
+                    'entry_id' => $entry->entry_id,
+                    'email' => $request->email
+                ]);
+                $mailStatus = 'メールを送信しました。';
+            } catch (\Exception $e) {
+                Log::error('面接URLメール送信失敗: ' . $e->getMessage(), [
+                    'entry_id' => $entry->entry_id,
+                    'email' => $request->email
+                ]);
+                $mailStatus = 'メール送信に失敗しました: ' . $e->getMessage();
+            }
         }
 
         // 成功メッセージを設定

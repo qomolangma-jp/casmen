@@ -13,6 +13,12 @@
             <p>メールや電話番号を登録すると、面接URLが自動で送信されます。</p>
             <img src="{{ asset('assets/admin/img/flow.png') }}" alt="URL発行フロー">
 
+            @if ($errors->has('error'))
+                <div class="error-message" style="color: #e02424; background-color: #fde8e8; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    {{ $errors->first('error') }}
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('admin.link.store') }}" id="url-form">
                 @csrf
                 <div class="form-item">
@@ -39,7 +45,7 @@
                         <span>
                             <img src="{{ asset('assets/admin/img/email-icon.png') }}" alt="メールアイコン">
                         </span>
-                        <input id="email" name="email" type="email" autocomplete="off" value="{{ old('email') }}" required>
+                        <input id="email" name="email" type="email" autocomplete="off" value="{{ old('email') }}">
                     </div>
                     @error('email')
                         <div class="name-error">
@@ -55,7 +61,7 @@
                             <img src="{{ asset('assets/admin/img/phone-icon.png') }}" alt="電話アイコン">
                         </span>
                         {{-- Controller expects 'phone', so we use name='phone' --}}
-                        <input id="tel" name="phone" type="tel" maxlength="13" autocomplete="off" value="{{ old('phone') }}" required>
+                        <input id="tel" name="phone" type="tel" maxlength="13" autocomplete="off" value="{{ old('phone') }}">
                     </div>
                     @error('phone')
                         <div class="name-error">
