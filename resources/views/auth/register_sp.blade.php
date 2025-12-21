@@ -33,7 +33,7 @@
             @endif
 
 			<p class="instruction"><span class="required">※</span>印の項目は必ず入力してください</p>
-			<form method="POST" action="{{ route('register') }}">
+			<form method="POST" action="{{ route('register.confirm') }}">
                 @csrf
 				<div class="contact-field">
 					<h2>ご連絡先</h2>
@@ -195,23 +195,7 @@
 			</form>
 		</div>
 	</main>
-	<footer>
-		<div class="footer-container">
-			<nav class="footer-menu">
-				<ul class="footer-menu-list">
-					<!-- 登録ページの入力画面に遷移 -->
-					<li><a href="{{ route('register') }}">掲載の<br>お申込み</a></li>
-					<li><a href="mailto:support@casmen.jp">お問い<br>合わせ</a></li>
-					<li><a href="{{ asset('assets/company/sm/terms.html') }}">利用規約</a></li>
-					<li><a href="{{ asset('assets/company/sm/policy.html') }}">プライバシー<br>ポリシー</a></li>
-					<li><a href="{{ asset('assets/company/sm/company.html') }}">運営会社</a></li>
-				</ul>
-			</nav>
-			<div class="copyright">
-				<small>&copy; 2025 casmen.jp</small>
-			</div>
-		</div>
-	</footer>
+    @include('parts.footer_sp')
 </body>
 
 </html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=640px, user-scalable=no">
+	<link rel="stylesheet" href="{{ asset('assets/company/css/company.css') }}">
+	<link rel="shortcut icon" href="{{ asset('assets/company/img/favicon.ico') }}" type="image/x-icon">
+	<title>CASMEN｜運営会社</title>
+</head>
+
+<body>
+	<header>
+		<div class="header-container">
+			<img src="{{ asset('assets/company/img/logo-white.png') }}" alt="Casmenロゴ">
+		</div>
+	</header>
+	<main>
+		<div class="main-container">
+			<h1>運営会社</h1>
+			<dl class="company-info-list">
+				<dt>販売業者</dt>
+				<dd>株式会社WEBLA</dd>
+				<dt>所 在 地</dt>
+				<dd>
+					〒101-0062<br>
+					東京都千代田区神田駿河台2-11-16<br>
+					さいかち坂ビル2階202<br>
+					<small class="no-support">※対応サポートにつきましては別事業所にて行っております。<br>ご来社頂いても一切の対応を行う事が出来ませんのでご了承下さい。</small>
+				</dd>
+				<dt>連 絡 先</dt>
+				<dd>
+					support@casmen.jp
+					<small class="no-phone-call">※電話によるお問い合わせは行っておりません。</small>
+					<a href="mailto:support@casmen.jp" class="contact">各種お問い合わせはこちら</a>
+				</dd>
+			</dl>
+		</div>
+	</main>
+    @include('parts.footer_sp')
+</body>
+
+</html>

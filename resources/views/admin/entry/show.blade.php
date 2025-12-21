@@ -33,6 +33,46 @@
     .modal {
         display: none;
     }
+    /* コピー完了メッセージ */
+    .copy-message {
+        position: absolute;
+        top: -35px;
+        right: 0;
+        background: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        display: none;
+        white-space: nowrap;
+    }
+    .copy-message::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        right: 15px;
+        border-width: 5px 5px 0;
+        border-style: solid;
+        border-color: #333 transparent transparent transparent;
+    }
+    .copy-url {
+        position: relative;
+    }
+    /* コピーボタンのスタイル復元 */
+    #copy-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #333;
+        width: 6rem;
+        border: .2rem solid #ddd;
+        border-top-right-radius: .5rem;
+        border-bottom-right-radius: .5rem;
+        cursor: pointer;
+    }
+    #copy-btn:hover {
+        background-color: #999;
+    }
 </style>
 @endpush
 
@@ -80,8 +120,12 @@
                         <span class="video-label waiting-list">評価待ち</span>
                         <div class="video-container">
                             <video id="interview-video" controls style="width: 100%; max-width: 800px;">
-                                <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
-                                <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                @if(config('filesystems.default') === 's3')
+                                    <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                @else
+                                    <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
+                                    <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                @endif
                                 お使いのブラウザは動画の再生をサポートしていません。
                             </video>
                             <div id="custom-subtitle" class="custom-subtitle"></div>
@@ -97,8 +141,12 @@
                     <div class="video">
                         <span class="video-label rejected">不採用</span>
                         <video controls style="width: 100%; max-width: 800px;">
-                            <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
-                            <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                            @if(config('filesystems.default') === 's3')
+                                <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                            @else
+                                <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
+                                <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                            @endif
                         </video>
                     </div>
                     <small>応募者動画ファイルは回答後30日で削除されます</small>
@@ -107,8 +155,12 @@
                     <div class="video">
                         <span class="video-label passed">通過</span>
                         <video controls style="width: 100%; max-width: 800px;">
-                            <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
-                            <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                            @if(config('filesystems.default') === 's3')
+                                <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                            @else
+                                <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
+                                <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                            @endif
                         </video>
                     </div>
                     <small>応募者動画ファイルは回答後30日で削除されます</small>
@@ -120,7 +172,7 @@
                     <p class="copy-url-description">LINEやSNSで送る場合は、下記の面接URLをコピーしてご利用ください。</p>
                     <div class="copy-url">
                         <input id="url-display" class="display" type="url" value="{{ route('record.welcome', ['token' => $entry->interview_uuid]) }}" readonly>
-                        <span id="copy">
+                        <span id="copy-btn">
                             <img src="{{ asset('assets/admin/img/copy-icon.png') }}" alt="コピーアイコン">
                         </span>
                     </div>
@@ -184,7 +236,12 @@ const video = document.getElementById('interview-video');
 const subtitleDiv = document.getElementById('custom-subtitle');
 
 if (video && subtitleDiv) {
-    const vttPath = '{{ asset("storage/" . str_replace(".webm", ".vtt", $entry->video_path ?? "")) }}';
+    // S3の場合は署名付きURLを取得する必要があるため、record.videoルートを経由する
+    @if(config('filesystems.default') === 's3')
+        const vttPath = '{{ route("record.video", ["filename" => str_replace(".webm", ".vtt", basename($entry->video_path ?? ""))]) }}';
+    @else
+        const vttPath = '{{ asset("storage/" . str_replace(".webm", ".vtt", $entry->video_path ?? "")) }}';
+    @endif
 
     // VTTファイルを取得
     fetch(vttPath)
@@ -333,11 +390,21 @@ $(document).ready(function() {
     });
 
     // URLコピー
-    $('#copy').click(function() {
+    $('#copy-btn').click(function() {
         const urlInput = document.getElementById('url-display');
         urlInput.select();
         document.execCommand('copy');
-        alert('URLをコピーしました');
+
+        // メッセージを表示
+        let $container = $(this).closest('.copy-url');
+        let $msg = $container.find('.copy-message');
+
+        if ($msg.length === 0) {
+            $container.append('<span class="copy-message">コピーしました</span>');
+            $msg = $container.find('.copy-message');
+        }
+
+        $msg.fadeIn(200).delay(1500).fadeOut(300);
     });
 });
 </script>

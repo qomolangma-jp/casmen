@@ -9,6 +9,7 @@ use App\Services\VideoProcessingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class RecordController extends Controller
 {
@@ -118,11 +119,14 @@ class RecordController extends Controller
             }
 
             // ファイルを保存
-            $path = $videoFile->storeAs('interviews', $fileName, 'public');
+            $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+            $path = $videoFile->storeAs('interviews', $fileName, $disk);
 
-            Log::info("ファイル保存完了: fileName={$fileName}, path={$path}");
-            Log::info("ファイル保存場所確認: " . storage_path('app/public/' . $path));
-            Log::info("公開URL確認: " . asset('storage/' . $path));
+            Log::info("ファイル保存完了: fileName={$fileName}, path={$path}, disk={$disk}");
+            if ($disk === 'public') {
+                Log::info("ファイル保存場所確認: " . storage_path('app/public/' . $path));
+                Log::info("公開URL確認: " . asset('storage/' . $path));
+            }
 
             // 質問番号がある場合はentry_interviewsテーブルに保存（字幕なし）
             if ($questionNumber) {
@@ -289,52 +293,19 @@ class RecordController extends Controller
             $fileName = 'interview_' . $entry->entry_id . '_' . time() . '.webm';
             $filePath = 'interviews/' . $fileName;
 
-            // ディレクトリの確認と作成
-            $storageDir = storage_path('app/public/interviews');
-            if (!file_exists($storageDir)) {
-                mkdir($storageDir, 0755, true);
-                Log::info("ディレクトリ作成: {$storageDir}");
-            }
-
-            Log::info("保存先ディレクトリ: ", [
-                'storage_dir' => $storageDir,
-                'dir_exists' => file_exists($storageDir),
-                'is_writable' => is_writable($storageDir)
-            ]);
-
-            // 直接ファイルを移動して保存
-            $fullPath = $storageDir . '/' . $fileName;
-
+            // S3に保存
             try {
-                $moved = $videoFile->move($storageDir, $fileName);
-                Log::info("ファイル移動結果: ", [
-                    'moved' => $moved ? 'success' : 'failed',
-                    'path' => $moved ? $moved->getPathname() : 'null'
-                ]);
+                $path = $videoFile->storeAs('interviews', $fileName, 's3');
+                Log::info("S3保存完了: " . $path);
             } catch (\Exception $e) {
-                Log::error("ファイル移動エラー: " . $e->getMessage());
-                throw new \Exception('ファイルの移動に失敗しました: ' . $e->getMessage());
-            }
-
-            $fileExists = file_exists($fullPath);
-            $fileSize = $fileExists ? filesize($fullPath) : 0;
-
-            Log::info("動画ファイル保存: ", [
-                'file_path' => $filePath,
-                'full_path' => $fullPath,
-                'file_exists' => $fileExists,
-                'file_size' => $fileSize
-            ]);
-
-            if (!$fileExists) {
-                throw new \Exception('ファイルは保存されましたが、確認できませんでした。パス: ' . $fullPath);
+                Log::error("S3保存エラー: " . $e->getMessage());
+                throw new \Exception('S3への保存に失敗しました: ' . $e->getMessage());
             }
 
             // 字幕ファイルを生成
             $timestamps = json_decode($request->input('timestamps', '[]'), true);
             if (!empty($timestamps)) {
                 $vttFileName = str_replace('.webm', '.vtt', $fileName);
-                $vttPath = $storageDir . '/' . $vttFileName;
 
                 $vttContent = "WEBVTT\n\n";
 
@@ -348,10 +319,11 @@ class RecordController extends Controller
                     $vttContent .= "Q" . ($index + 1) . ": " . $ts['question'] . "\n\n";
                 }
 
-                file_put_contents($vttPath, $vttContent);
+                // S3に字幕ファイルを保存
+                Storage::disk('s3')->put('interviews/' . $vttFileName, $vttContent);
 
-                Log::info("字幕ファイル生成: ", [
-                    'vtt_path' => $vttFileName,
+                Log::info("字幕ファイルS3保存: ", [
+                    'vtt_path' => 'interviews/' . $vttFileName,
                     'timestamps_count' => count($timestamps)
                 ]);
             }
@@ -458,6 +430,16 @@ class RecordController extends Controller
      */
     public function serveVideo($filename)
     {
+        // S3の場合
+        if (config('filesystems.default') === 's3') {
+            $path = 'interviews/' . $filename;
+            if (!Storage::disk('s3')->exists($path)) {
+                abort(404, 'Video file not found');
+            }
+            // 5分間有効な署名付きURLを発行してリダイレクト
+            return redirect(Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(5)));
+        }
+
         $path = storage_path('app/public/interviews/' . $filename);
 
         if (!file_exists($path)) {
@@ -644,18 +626,12 @@ class RecordController extends Controller
 
             // 元の動画を保存
             $fileName = 'interview_' . $entry->entry_id . '_' . time() . '.webm';
-            $storageDir = storage_path('app/public/interviews');
 
-            if (!file_exists($storageDir)) {
-                mkdir($storageDir, 0755, true);
-            }
-
-            $fullPath = $storageDir . '/' . $fileName;
-            $videoFile->move($storageDir, $fileName);
+            $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+            $path = $videoFile->storeAs('interviews', $fileName, $disk);
 
             // 字幕ファイルを生成（WebVTT形式）
             $vttFileName = 'interview_' . $entry->entry_id . '_' . time() . '.vtt';
-            $vttPath = $storageDir . '/' . $vttFileName;
 
             $vttContent = "WEBVTT\n\n";
 
@@ -669,7 +645,15 @@ class RecordController extends Controller
                 $vttContent .= "Q" . ($index + 1) . ": " . $ts['question'] . "\n\n";
             }
 
-            file_put_contents($vttPath, $vttContent);
+            if ($disk === 's3') {
+                Storage::disk('s3')->put('interviews/' . $vttFileName, $vttContent);
+            } else {
+                $storageDir = storage_path('app/public/interviews');
+                if (!file_exists($storageDir)) {
+                    mkdir($storageDir, 0755, true);
+                }
+                file_put_contents($storageDir . '/' . $vttFileName, $vttContent);
+            }
 
             Log::info("字幕処理完了: ", [
                 'video_path' => $fileName,

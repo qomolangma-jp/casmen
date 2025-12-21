@@ -19,8 +19,18 @@
                 <dd>{{ $user->tel ?? '未登録' }}</dd>
                 <dt>住所</dt>
                 <dd>
-                    未登録<br>
-                    {{-- 住所カラムがないため、現在は未登録としています --}}
+                    @if($user->zip1 && $user->zip2)
+                        〒{{ $user->zip1 }}-{{ $user->zip2 }}<br>
+                    @endif
+                    {{ $user->address ?? '未登録' }}
+                </dd>
+                <dt>求人情報URL</dt>
+                <dd>
+                    @if($user->job_url)
+                        <a href="{{ $user->job_url }}" target="_blank" rel="noopener noreferrer">{{ $user->job_url }}</a>
+                    @else
+                        未登録
+                    @endif
                 </dd>
             </dl>
             <p class="contact">変更をご希望される場合には下記までご連絡下さい。</p>

@@ -10,6 +10,8 @@ use App\Mail\InterviewLinkMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Twilio\Rest\Client;
 
 class EntryController extends Controller
 {
@@ -19,7 +21,7 @@ class EntryController extends Controller
      */
     public function index()
     {
-        $entries = Entry::orderBy('entry_id', 'desc')->get();
+        $entries = Entry::where('user_id', Auth::id())->orderBy('entry_id', 'desc')->get();
         return view('admin.entry.index', compact('entries'));
     }
 
@@ -29,7 +31,7 @@ class EntryController extends Controller
      */
     public function show($id)
     {
-        $entry = Entry::findOrFail($id);
+        $entry = Entry::where('user_id', Auth::id())->findOrFail($id);
         return view('admin.entry.show', compact('entry'));
     }
 
@@ -39,7 +41,7 @@ class EntryController extends Controller
      */
     public function interview($id)
     {
-        $entry = Entry::findOrFail($id);
+        $entry = Entry::where('user_id', Auth::id())->findOrFail($id);
         return view('admin.entry.interview', compact('entry'));
     }
 
@@ -49,7 +51,7 @@ class EntryController extends Controller
     public function reject(Request $request, $id)
     {
         try {
-            $entry = Entry::findOrFail($id);
+            $entry = Entry::where('user_id', Auth::id())->findOrFail($id);
 
             // ステータスを不採用に更新
             $entry->update([
@@ -85,7 +87,7 @@ class EntryController extends Controller
     public function pass(Request $request, $id)
     {
         try {
-            $entry = Entry::findOrFail($id);
+            $entry = Entry::where('user_id', Auth::id())->findOrFail($id);
 
             // ステータスを通過に更新
             $entry->update([
@@ -121,7 +123,7 @@ class EntryController extends Controller
     public function resend(Request $request, $id)
     {
         try {
-            $entry = Entry::findOrFail($id);
+            $entry = Entry::where('user_id', Auth::id())->findOrFail($id);
 
             // 再送回数チェック (最大3回)
             if (($entry->retake_count ?? 0) >= 3) {
@@ -131,28 +133,33 @@ class EntryController extends Controller
                 ], 400);
             }
 
-            // メールアドレスチェック
-            if (!$entry->email) {
-                return response()->json([
-                    'success' => false,
-                    'message' => '応募者のメールアドレスが登録されていません。'
-                ], 400);
-            }
-
             // 面接URLの生成 (welcomeページへのリンク)
             $interviewUrl = route('record.welcome', ['token' => $entry->interview_uuid]);
+            $sentMethod = '';
 
-            // メール送信
-            Mail::to($entry->email)->send(new InterviewLinkMail($entry, $interviewUrl));
+            if ($entry->email) {
+                // メール送信
+                Mail::to($entry->email)->send(new InterviewLinkMail($entry, $interviewUrl));
+                $sentMethod = 'メール';
+            } elseif ($entry->tel) {
+                // SMS送信
+                $this->sendSms($entry->tel, $interviewUrl, $entry->user->shop_name ?? 'CASMEN');
+                $sentMethod = 'SMS';
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => '応募者のメールアドレスまたは電話番号が登録されていません。'
+                ], 400);
+            }
 
             // 再送回数をインクリメント
             $entry->increment('retake_count');
 
-            Log::info("面接URL再送: entry_id={$id}, email={$entry->email}, count=" . ($entry->retake_count));
+            Log::info("面接URL再送({$sentMethod}): entry_id={$id}, email={$entry->email}, tel={$entry->tel}, count=" . ($entry->retake_count));
 
             return response()->json([
                 'success' => true,
-                'message' => '面接URLを再送しました。'
+                'message' => "面接URLを{$sentMethod}で再送しました。"
             ]);
 
         } catch (\Exception $e) {
@@ -162,5 +169,32 @@ class EntryController extends Controller
                 'message' => '処理中にエラーが発生しました: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function sendSms($to, $url, $shopName)
+    {
+        $sid = config('services.twilio.sid');
+        $token = config('services.twilio.token');
+        $from = config('services.twilio.from');
+
+        if (!$sid || !$token || !$from) {
+            throw new \Exception('Twilio credentials not configured.');
+        }
+
+        // E.164 formatting for Japan if needed (simple check)
+        if (strpos($to, '0') === 0) {
+            $to = '+81' . substr($to, 1);
+        }
+
+        $client = new Client($sid, $token);
+        $message = "【{$shopName}】より\nらくらくセルフ面接のご案内です。\n24問の質問に答え、あなたの雰囲気を伝えることができます。\n下記URLより24時間いつでもスタートできます。\n{$url}";
+
+        $client->messages->create(
+            $to,
+            [
+                'from' => $from,
+                'body' => $message
+            ]
+        );
     }
 }

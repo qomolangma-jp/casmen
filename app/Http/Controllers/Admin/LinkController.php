@@ -10,6 +10,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Twilio\Rest\Client;
+use Illuminate\Support\Facades\Validator;
 
 class LinkController extends Controller
 {
@@ -26,42 +28,39 @@ class LinkController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $action = $request->input('action');
+
+        $rules = [
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|regex:/^[0-9\-\+\(\)\s]+$/|max:20',
-        ], [
+        ];
+
+        if ($action === 'send') {
+            $rules['email'] = 'nullable|email|max:255';
+            $rules['phone'] = 'nullable|string|regex:/^[0-9\-\+\(\)\s]+$/|max:20';
+        }
+
+        $validator = Validator::make($request->all(), $rules, [
             'name.required' => 'お名前は必須です。',
             'email.email' => '正しいメールアドレス形式で入力してください。',
             'phone.regex' => '正しい電話番号形式で入力してください。',
         ]);
 
+        $validator->after(function ($validator) use ($request, $action) {
+            if ($action === 'send' && empty($request->email) && empty($request->phone)) {
+                $validator->errors()->add('contact_error', 'メールアドレスまたは電話番号のいずれかを入力してください。');
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
         // 一意なURLトークンを生成
         $token = Str::random(32);
-
-        // 面接URLを生成
         $interviewUrl = url("/record?token={$token}");
-
-        // マスター設定による有効期限（デフォルト2週間）
-        $expirationDays = config('app.interview_url_expiration_days', 14);
-        $expiresAt = now()->addDays($expirationDays);
-
-
-        // デバッグ: 保存前の状態確認
-        Log::info('保存前の状態確認', [
-            'user_id' => Auth::id(),
-            'is_authenticated' => Auth::check(),
-            'name' => $request->name,
-            'email' => $request->email,
-            'tel' => $request->phone,
-            'interview_url' => $interviewUrl,
-            'interview_uuid' => $token,
-            'token_length' => strlen($token),
-        ]);
 
         // Entryテーブルに保存
         try {
-            // 個別設定方式で保存を試行
             $entry = new Entry();
             $entry->user_id = Auth::id();
             $entry->name = $request->name;
@@ -70,63 +69,78 @@ class LinkController extends Controller
             $entry->interview_url = $interviewUrl;
             $entry->interview_uuid = $token;
             $entry->status = 'url_issued';
-            $saved = $entry->save();
-
-            Log::info('Entry save result', [
-                'saved' => $saved,
-                'entry_id' => $entry->entry_id
-            ]);
+            $entry->save();
         } catch (\Exception $e) {
-            // エラー詳細をログに記録
             Log::error('Entry creation failed: ' . $e->getMessage());
-            Log::error('Data: ' . json_encode([
-                'user_id' => Auth::id(),
-                'name' => $request->name,
-                'email' => $request->email,
-                'tel' => $request->phone,
-                'interview_url' => $interviewUrl,
-                'interview_uuid' => $token,
-                'status' => 'url_issued',
-            ]));
-
-            return redirect()->route('admin.link.create')
-                ->withErrors(['error' => 'データ保存に失敗しました: ' . $e->getMessage()])
-                ->withInput();
+            return redirect()->back()->withErrors(['error' => 'データ保存に失敗しました: ' . $e->getMessage()])->withInput();
         }
 
+        if ($action === 'send') {
+            $sentMethod = '';
+            $errorMsg = null;
 
-        // メール送信
-        $mailStatus = 'メールアドレス未入力のため送信していません。';
-        if ($request->email) {
-            try {
-                Mail::to($request->email)->send(new InterviewLinkMail($entry, $interviewUrl));
-                Log::info('面接URLメール送信成功', [
-                    'entry_id' => $entry->entry_id,
-                    'email' => $request->email
-                ]);
-                $mailStatus = 'メールを送信しました。';
-            } catch (\Exception $e) {
-                Log::error('面接URLメール送信失敗: ' . $e->getMessage(), [
-                    'entry_id' => $entry->entry_id,
-                    'email' => $request->email
-                ]);
-                $mailStatus = 'メール送信に失敗しました: ' . $e->getMessage();
+            if ($request->email) {
+                // Send Email
+                try {
+                    Mail::to($request->email)->send(new InterviewLinkMail($entry, $interviewUrl));
+                    $sentMethod = 'email';
+                } catch (\Exception $e) {
+                    Log::error('Email send failed: ' . $e->getMessage());
+                    $errorMsg = 'メール送信に失敗しました。';
+                }
+            } elseif ($request->phone) {
+                // Send SMS
+                try {
+                    $this->sendSms($request->phone, $interviewUrl, $entry->user->shop_name ?? 'CASMEN');
+                    $sentMethod = 'sms';
+                } catch (\Exception $e) {
+                    Log::error('SMS send failed: ' . $e->getMessage());
+                    $errorMsg = 'SMS送信に失敗しました。';
+                }
             }
+
+            if ($errorMsg) {
+                 return redirect()->back()->withErrors(['error' => $errorMsg])->withInput();
+            }
+
+            return redirect()->route('admin.link.create')->with([
+                'success_action' => 'send',
+                'interview_url' => $interviewUrl
+            ]);
+
+        } else {
+            // Issue only
+            return redirect()->route('admin.link.create')->with([
+                'success_action' => 'issue',
+                'interview_url' => $interviewUrl
+            ]);
+        }
+    }
+
+    private function sendSms($to, $url, $shopName)
+    {
+        $sid = config('services.twilio.sid');
+        $token = config('services.twilio.token');
+        $from = config('services.twilio.from');
+
+        if (!$sid || !$token || !$from) {
+            throw new \Exception('Twilio credentials not configured.');
         }
 
-        // 成功メッセージを設定
-        $successMessage = "面接URLが正常に発行されました。応募者: {$request->name} - {$mailStatus}";
+        // E.164 formatting for Japan if needed (simple check)
+        if (strpos($to, '0') === 0) {
+            $to = '+81' . substr($to, 1);
+        }
 
-        return redirect()->route('admin.link.create')
-            ->with('success', $successMessage)
-            ->with('interview_url', $interviewUrl)
-            ->with('applicant_info', [
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'expires_at' => $expiresAt->format('Y年m月d日 H:i'),
-                'entry_id' => $entry->entry_id,
-                'mail_status' => $mailStatus,
-            ]);
+        $client = new Client($sid, $token);
+        $message = "【{$shopName}】より\nらくらくセルフ面接のご案内です。\n24問の質問に答え、あなたの雰囲気を伝えることができます。\n下記URLより24時間いつでもスタートできます。\n{$url}";
+
+        $client->messages->create(
+            $to,
+            [
+                'from' => $from,
+                'body' => $message
+            ]
+        );
     }
 }

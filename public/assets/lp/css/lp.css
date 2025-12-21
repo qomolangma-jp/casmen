@@ -28,9 +28,35 @@ a {
 }
 
 /* === メイン === */
+header {
+	background-color: #1b002c;
+	padding: 2rem 0;
+}
+
+.header-container {
+	width: 1160px;
+	margin: 0 auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.header-container > a{
+	color: #6e14a9;
+	font-weight: bold;
+	background-color: #fff;
+	display: block;
+	padding: .2rem 5rem;
+	border-radius: 20px;
+	font-size: 2.4rem;
+}
+
+.header-container > a:hover {
+	background-color: #e4bbff;
+}
 
 .hero {
-	background-color: #420a64;
+	background-color: #220069;
 }
 
 .container {
@@ -208,6 +234,14 @@ video {
 }
 
 @media (max-width: 640px) {
+	.header-container {
+		width: 600px;
+	}
+
+	.header-container > a {
+		padding: .2rem 3rem;
+	}
+
 	.hero img {
 		width: 100%;
 	}

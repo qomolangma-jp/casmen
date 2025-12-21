@@ -32,6 +32,10 @@ class User extends Authenticatable
         'shop_name',
         'shop_description',
         'tel',
+        'zip1',
+        'zip2',
+        'address',
+        'job_url',
     ];
 
     /**

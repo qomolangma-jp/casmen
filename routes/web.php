@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TopController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LinkController;
@@ -18,6 +19,13 @@ use Illuminate\Support\Facades\Route;
 // 求職者向けページ（サイトマップ ID: 1, 2）
 Route::get('/', [TopController::class, 'index'])->name('top.index'); // ID: 1 - TOP
 Route::get('/index', [TopController::class, 'index'])->name('top.index.alt'); // 別名ルート
+
+// 会社情報・規約関連
+Route::prefix('company')->name('company.')->group(function () {
+    Route::get('/', [CompanyController::class, 'index'])->name('index');
+    Route::get('/terms', [CompanyController::class, 'terms'])->name('terms');
+    Route::get('/policy', [CompanyController::class, 'policy'])->name('policy');
+});
 
 // 新しいUI用のルート
 Route::get('/record', [RecordController::class, 'welcome'])->name('record.welcome'); // ウェルカムページ

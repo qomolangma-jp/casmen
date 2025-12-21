@@ -30,7 +30,7 @@ class RejectionNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '【面接結果】ご応募いただきありがとうございました',
+            subject: '【もえなび！】アルバイトに関するお知らせ',
         );
     }
 
@@ -39,12 +39,14 @@ class RejectionNotification extends Mailable
      */
     public function content(): Content
     {
+        $shopName = $this->entry->user ? $this->entry->user->shop_name : 'もえなび！';
         return new Content(
             view: 'emails.rejection-notification',
             with: [
                 'entry' => $this->entry,
                 'candidateName' => $this->entry->name,
                 'email' => $this->entry->email,
+                'shopName' => $shopName,
             ]
         );
     }

@@ -14,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'master.role' => \App\Http\Middleware\CheckMasterRole::class,
         ]);
+
+        $middleware->redirectUsersTo(function () {
+            return route('admin.dashboard');
+        });
+
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

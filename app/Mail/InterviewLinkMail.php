@@ -29,12 +29,14 @@ class InterviewLinkMail extends Mailable
      */
     public function build()
     {
+        $companyName = $this->entry->user ? $this->entry->user->shop_name : 'CASMEN';
         return $this->from(config('mail.from.address'), config('mail.from.name'))
-                    ->subject('面接URLのお知らせ - CASMEN')
+                    ->subject("【{$companyName}】録画面接のご案内")
                     ->view('emails.interview-link')
                     ->with([
                         'entry' => $this->entry,
                         'interviewUrl' => $this->interviewUrl,
+                        'companyName' => $companyName,
                     ]);
     }
 }

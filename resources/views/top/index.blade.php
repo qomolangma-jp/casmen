@@ -10,8 +10,16 @@
 </head>
 
 <body>
+	<!-- ここから追加 -->
+	<header>
+		<div class="header-container">
+			<img src="{{ asset('assets/lp/img/logo.png') }}" alt="CASMENロゴ">
+			<a href="{{ route('login') }}" target="_blank" rel="noopener noreferrer">ログイン</a>
+		</div>
+	</header>
+	<!-- ここまで追加 -->
 	<main>
-		<div class="hero bg-purple">
+		<div class="hero">
 			<div class="container">
 				<img src="{{ asset('assets/lp/img/main-visual.png') }}" alt="もう履歴書にはダマされない!">
 			</div>
