@@ -13,7 +13,7 @@
         background-color: rgba(0, 0, 0, 0.85);
         color: white;
         padding: 10px 20px;
-        font-size: 16px;
+        font-size: 15px;
         text-align: center;
         width: 90%;
         display: none;
@@ -236,6 +236,7 @@ const video = document.getElementById('interview-video');
 const subtitleDiv = document.getElementById('custom-subtitle');
 
 if (video && subtitleDiv) {
+<<<<<<< HEAD
     // S3/Local問わず、record.videoルートを経由してVTTを取得する（MIMEタイプ設定とCORS回避のため）
     @if($entry->video_path)
         const vttPath = '{{ route("record.video", ["filename" => str_replace(".webm", ".vtt", basename($entry->video_path))]) }}';
@@ -252,6 +253,26 @@ if (video && subtitleDiv) {
                     const currentTime = video.currentTime;
                     let currentCue = null;
 
+=======
+    // S3の場合は署名付きURLを取得する必要があるため、record.videoルートを経由する
+    @if($entry->video_path)
+        @if(config('filesystems.default') === 's3')
+            const vttPath = '{{ route("record.video", ["filename" => str_replace(".webm", ".vtt", basename($entry->video_path))]) }}';
+        @else
+            const vttPath = '{{ asset("storage/" . str_replace(".webm", ".vtt", $entry->video_path)) }}';
+        @endif
+
+        // VTTファイルを取得
+        fetch(vttPath)
+            .then(response => response.text())
+            .then(vttText => {
+                const cues = parseVTT(vttText);
+
+                video.addEventListener('timeupdate', () => {
+                    const currentTime = video.currentTime;
+                    let currentCue = null;
+
+>>>>>>> 11f799da5b35404e9f8601b54559dffb4d96cc28
                     for (const cue of cues) {
                         if (currentTime >= cue.start && currentTime <= cue.end) {
                             currentCue = cue;
