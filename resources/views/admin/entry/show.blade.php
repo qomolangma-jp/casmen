@@ -237,38 +237,40 @@ const subtitleDiv = document.getElementById('custom-subtitle');
 
 if (video && subtitleDiv) {
     // S3の場合は署名付きURLを取得する必要があるため、record.videoルートを経由する
-    @if(config('filesystems.default') === 's3')
-        const vttPath = '{{ route("record.video", ["filename" => str_replace(".webm", ".vtt", basename($entry->video_path ?? ""))]) }}';
-    @else
-        const vttPath = '{{ asset("storage/" . str_replace(".webm", ".vtt", $entry->video_path ?? "")) }}';
-    @endif
+    @if($entry->video_path)
+        @if(config('filesystems.default') === 's3')
+            const vttPath = '{{ route("record.video", ["filename" => str_replace(".webm", ".vtt", basename($entry->video_path))]) }}';
+        @else
+            const vttPath = '{{ asset("storage/" . str_replace(".webm", ".vtt", $entry->video_path)) }}';
+        @endif
 
-    // VTTファイルを取得
-    fetch(vttPath)
-        .then(response => response.text())
-        .then(vttText => {
-            const cues = parseVTT(vttText);
+        // VTTファイルを取得
+        fetch(vttPath)
+            .then(response => response.text())
+            .then(vttText => {
+                const cues = parseVTT(vttText);
 
-            video.addEventListener('timeupdate', () => {
-                const currentTime = video.currentTime;
-                let currentCue = null;
+                video.addEventListener('timeupdate', () => {
+                    const currentTime = video.currentTime;
+                    let currentCue = null;
 
-                for (const cue of cues) {
-                    if (currentTime >= cue.start && currentTime <= cue.end) {
-                        currentCue = cue;
-                        break;
+                    for (const cue of cues) {
+                        if (currentTime >= cue.start && currentTime <= cue.end) {
+                            currentCue = cue;
+                            break;
+                        }
                     }
-                }
 
-                if (currentCue) {
-                    subtitleDiv.textContent = currentCue.text;
-                    subtitleDiv.style.display = 'block';
-                } else {
-                    subtitleDiv.style.display = 'none';
-                }
-            });
-        })
-        .catch(error => console.log('VTTファイルの読み込みに失敗:', error));
+                    if (currentCue) {
+                        subtitleDiv.textContent = currentCue.text;
+                        subtitleDiv.style.display = 'block';
+                    } else {
+                        subtitleDiv.style.display = 'none';
+                    }
+                });
+            })
+            .catch(error => console.log('VTTファイルの読み込みに失敗:', error));
+    @endif
 }
 
 function parseVTT(vttText) {

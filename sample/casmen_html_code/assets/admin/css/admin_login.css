@@ -1,0 +1,231 @@
+/* === 管理者ページ（ログイン画面）のCSS === */
+
+@charset "UTF-8";
+
+/* === 共通指定 === */
+*,
+::before,
+::after {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html {
+	font-size: 10px;
+}
+
+body {
+	font-size: 2.4rem;
+	background-color: #deecfa;
+	font-family: メイリオ;
+	color: #5c5c5c;
+}
+
+a {
+	text-decoration: none;
+}
+
+ul {
+	list-style: none;
+}
+
+img {
+	display: block;
+}
+
+header {
+	padding: 5rem 0 3.5rem 0;
+}
+
+/* === CASMEN 青色ロゴ === */
+.header-container > img {
+	width: 54rem;
+}
+
+.header-container {
+	width: 640px;
+	margin: 0 auto;
+	display: flex;
+	justify-content: center;
+}
+
+.login-container {
+	width: 640px;
+	margin: 0 auto;
+	background-color: #fff;
+	border-radius: .8rem;
+	padding: 3rem 0;
+}
+
+.login-container h1 {
+	width: 600px;
+	color: #343434;
+	font-size: 2.8rem;
+	margin: 0 auto 3rem auto;
+}
+
+form {
+	width: 600px;
+	margin: 0 auto;
+}
+
+.form-item {
+	display: flex;
+	position: relative;
+}
+
+.form-item input {
+	width: 100%;
+	border-top: .2rem solid #ddd;
+	border-bottom: .2rem solid #ddd;
+	border-right: .2rem solid #ddd;
+	border-left: none;
+	border-top-right-radius: .5rem;
+	border-bottom-right-radius: .5rem;
+	padding: .4rem 0 0 2.1rem;
+	font-size: 2.4rem;
+	color: #666;
+}
+
+.invisible {
+	display: block;
+	position: absolute;
+	right: 1.2rem;
+	top: 1.5rem;
+	cursor: pointer;
+}
+
+.visible {
+	display: none;
+	position: absolute;
+	right: 1.2rem;
+	top: 2rem;
+	cursor: pointer;
+}
+
+.form-item input::placeholder {
+	color: #666;
+	font-size: 2.4rem;
+}
+
+.email {
+	margin: 0 0 4rem 0;
+}
+
+.email span {
+	padding: 1.4rem;
+}
+
+.password span {
+	padding: .9rem 1.4rem;
+}
+
+.form-item-wrap {
+	margin: 4rem 0 0 0;
+}
+
+.form-item-wrap > p {
+	margin: 0 0 1rem 0;
+}
+
+.login-container > a {
+	color: #54a4ff;
+	font-size: 2.4rem;
+	display: block;
+	width: 600px;
+	margin: 0 auto;
+}
+
+.form-item > span:nth-child(1) {
+	width: 6rem;
+	background-color: #e7e7e7;
+	border: .2rem solid #ddd;
+	border-top-left-radius: .5rem;
+	border-bottom-left-radius: .5rem;
+}
+
+.browser {
+	color: #5c5c5c;
+	display: flex;
+	align-items: center;
+	padding: 3.5rem 0 0 0;
+}
+
+.browser > img {
+	height: 5rem;
+}
+
+.recommended-browser {
+	margin: 0 1.1rem 0 0;
+}
+
+.recommended-browser span:nth-child(1) {
+	font-size: 1.6rem;
+	display: block;
+}
+
+.login-btn {
+	background-color: #4d9aff;
+	border: none;
+	color: #fff;
+	display: block;
+	width: 100%;
+	font-size: 3.2rem;
+	padding: 1.5rem 0;
+	border-radius: .5rem;
+	margin: 3.5rem 0 4rem 0;
+	font-family: メイリオ;
+}
+
+.warning {
+	background-color: #ffd0d0;
+	color: #ff4848;
+	padding: 3rem 2rem;
+	margin: 2.5rem 0 4rem 0;
+}
+
+.warning > span {
+	font-weight: bold;
+	font-size: 2.8rem;
+	display: block;
+	margin: 0 0 1.5rem 0;
+}
+
+.login-btn:hover {
+	background-color: #7ab3fd;
+}
+
+/* === 個人情報の取り扱いについて === */
+.privacy-policy {
+	width: 640px;
+	margin: 0 auto;
+	padding: 2.2rem 0;
+}
+
+.privacy-policy>a {
+	display: block;
+	text-align: right;
+	color: #4d9aff;
+	font-size: 2rem;
+}
+
+/* === フッター共通 === */
+footer {
+	background-color: #deecfa;
+	border-top: 2px solid #5c5c5c;
+	padding: 1.5rem 0;
+}
+
+.footer-container {
+	width: 640px;
+	margin: 0 auto;
+}
+
+.footer-container>small {
+	color: #5c5c5c;
+	display: block;
+	text-align: center;
+	font-weight: bold;
+}
+
