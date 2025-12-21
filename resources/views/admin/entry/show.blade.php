@@ -252,27 +252,6 @@ if (video && subtitleDiv) {
                 video.addEventListener('timeupdate', () => {
                     const currentTime = video.currentTime;
                     let currentCue = null;
-
-=======
-    // S3の場合は署名付きURLを取得する必要があるため、record.videoルートを経由する
-    @if($entry->video_path)
-        @if(config('filesystems.default') === 's3')
-            const vttPath = '{{ route("record.video", ["filename" => str_replace(".webm", ".vtt", basename($entry->video_path))]) }}';
-        @else
-            const vttPath = '{{ asset("storage/" . str_replace(".webm", ".vtt", $entry->video_path)) }}';
-        @endif
-
-        // VTTファイルを取得
-        fetch(vttPath)
-            .then(response => response.text())
-            .then(vttText => {
-                const cues = parseVTT(vttText);
-
-                video.addEventListener('timeupdate', () => {
-                    const currentTime = video.currentTime;
-                    let currentCue = null;
-
->>>>>>> 11f799da5b35404e9f8601b54559dffb4d96cc28
                     for (const cue of cues) {
                         if (currentTime >= cue.start && currentTime <= cue.end) {
                             currentCue = cue;
