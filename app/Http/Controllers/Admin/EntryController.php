@@ -7,6 +7,7 @@ use App\Models\Entry;
 use App\Mail\PassNotification;
 use App\Mail\RejectionNotification;
 use App\Mail\InterviewLinkMail;
+use App\Mail\AdminApplicantNotificationMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -65,6 +66,16 @@ class EntryController extends Controller
             if ($entry->email) {
                 Mail::to($entry->email)->send(new RejectionNotification($entry));
                 Log::info("不採用通知メール送信: email={$entry->email}");
+            }
+
+            // 管理者へ不採用通知送信のお知らせ
+            if ($entry->user && $entry->user->email) {
+                try {
+                    Mail::to($entry->user->email)->send(new AdminApplicantNotificationMail($entry, 'rejection_sent'));
+                    Log::info("管理者へ不採用通知送信のお知らせメール送信: admin_email={$entry->user->email}");
+                } catch (\Exception $e) {
+                    Log::error("管理者へ不採用通知送信のお知らせメール送信失敗: " . $e->getMessage());
+                }
             }
 
             return response()->json([
@@ -156,6 +167,16 @@ class EntryController extends Controller
             $entry->increment('retake_count');
 
             Log::info("面接URL再送({$sentMethod}): entry_id={$id}, email={$entry->email}, tel={$entry->tel}, count=" . ($entry->retake_count));
+
+            // 管理者へURL送信完了のお知らせ
+            if ($entry->user && $entry->user->email) {
+                try {
+                    Mail::to($entry->user->email)->send(new AdminApplicantNotificationMail($entry, 'url_sent'));
+                    Log::info("管理者へURL送信完了通知メール送信: admin_email={$entry->user->email}");
+                } catch (\Exception $e) {
+                    Log::error("管理者へURL送信完了通知メール送信失敗: " . $e->getMessage());
+                }
+            }
 
             return response()->json([
                 'success' => true,

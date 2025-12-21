@@ -159,9 +159,17 @@
         // 質問文
         document.getElementById('question-text').textContent = question.q;
 
-        // 残り質問数
-        // index=0のとき、残り11問 (total=12) -> total - (index + 1)
-        document.getElementById('question-decrement').textContent = totalQuestions - (index + 1);
+        // 残り質問数または「最後の質問」表示
+        const countdownElement = document.querySelector('.instruction__countdown');
+
+        if (index === totalQuestions - 1) {
+            // 最後の質問の場合
+            countdownElement.innerHTML = `質問完了まで残り：<span class="instruction__current-status"><span id="current-time">10</span>秒</span>｜最後の質問`;
+        } else {
+            // 通常の場合
+            const remainingQuestions = totalQuestions - (index + 1);
+            countdownElement.innerHTML = `次の質問まで残り：<span class="instruction__current-status"><span id="current-time">10</span>秒</span>｜残り質問数：<span class="instruction__current-status"><span id="question-decrement">${remainingQuestions}</span>問</span>`;
+        }
 
         // カウントダウンを10秒に設定 (how_to.htmlの記述に合わせて10秒に変更)
         // how_to.html: "1問につき約10秒"
@@ -173,7 +181,11 @@
     function startQuestionTimer() {
         let countdown = 10;
         const countdownElement = document.getElementById('current-time');
-        countdownElement.textContent = countdown;
+
+        // 最後の質問の場合はカウントダウン表示がないので更新しない
+        if (countdownElement) {
+            countdownElement.textContent = countdown;
+        }
 
         if (questionTimer) {
             clearInterval(questionTimer);
@@ -204,7 +216,9 @@
                     stopRecording();
                 }
             } else {
-                countdownElement.textContent = countdown;
+                if (countdownElement) {
+                    countdownElement.textContent = countdown;
+                }
             }
         }, 1000);
     }

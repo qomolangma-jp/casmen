@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../assets/admin/css/admin.css">
+	<link rel="stylesheet" href="../assets/admin/css/iziModal.min.css">
+	<link rel="shortcut icon" href="../assets/admin/img/favicon.ico" type="image/x-icon">
+	<title>CASMEN｜面接URL発行</title>
+</head>
+
+<body>
+	<header>
+		<div class="header-container">
+			<div class="header-container-inner">
+				<input id="hamburger" type="checkbox">
+				<label for="hamburger" id="open">
+					<img src="../assets/admin/img/menu.png" alt="メニューバー">
+				</label>
+				<nav class="header-menu">
+					<ul class="header-menu-list">
+						<li>
+							<a href="dashboard.html">
+								<img src="../assets/admin/img/house-icon.png" alt="グレーの家アイコン" class="default-icon">
+								<img src="../assets/admin/img/hover-house-icon.png" alt="青の家アイコン" class="hover-icon">
+								<span>ダッシュボード</span>
+							</a>
+						</li>
+						<li>
+							<a href="news_list.html">
+								<img src="../assets/admin/img/bell-icon.png" alt="グレーのベルアイコン" class="default-icon">
+								<img src="../assets/admin/img/hover-bell-icon.png" alt="青のベルアイコン" class="hover-icon">
+								<span>お知らせ</span>
+							</a>
+						</li>
+						<li>
+							<a href="user_registration.html">
+								<img src="../assets/admin/img/people-icon.png" alt="グレーの人アイコン" class="default-icon">
+								<img src="../assets/admin/img/hover-people-icon.png" alt="青の人アイコン" class="hover-icon">
+								<span>面接URL発行</span>
+							</a>
+						</li>
+						<li>
+							<a href="user_list.html">
+								<img src="../assets/admin/img/trans-icon.png" alt="グレーの遷移アイコン" class="default-icon">
+								<img src="../assets/admin/img/hover-trans-icon.png" alt="青の遷移アイコン" class="hover-icon">
+								<span>応募者一覧</span>
+							</a>
+						</li>
+						<li>
+
+							<!-- 変更箇所 開始 -->
+							<a href="setting.html">
+							<!-- 変更箇所　終了 -->
+
+								<img src="../assets/admin/img/setting-icon.png" alt="グレーの歯車アイコン" class="default-icon">
+								<img src="../assets/admin/img/hover-setting-icon.png" alt="青の歯車アイコン" class="hover-icon">
+								<span>各種設定</span>
+							</a>
+						</li>
+						<li>
+							<a href="#">
+								<img src="../assets/admin/img/exit-icon.png" alt="グレーの出口アイコン" class="default-icon">
+								<img src="../assets/admin/img/hover-exit-icon.png" alt="青の出口アイコン" class="hover-icon">
+								<span>ログアウト</span>
+							</a>
+						</li>
+					</ul>
+				</nav>
+				<img src="../assets/admin/img/logo_casmen_gray.png" alt="Casmenロゴ">
+				<span>山田太郎様</span>
+			</div>
+		</div>
+	</header>
+	<main>
+		<div class="main-container">
+			<div class="breadcrumbs">
+				<span><a href="dashboard.html">TOP</a> > <a href="user_list.html">応募者一覧</a> > 面接URL発行</span>
+			</div>
+			<div class="ray-content registration-content">
+				<h2>面接URL発行</h2>
+				<p>メールや電話番号を登録すると、面接URLが自動で送信されます。</p>
+				<img src="../assets/admin/img/flow.png" alt="URL発行フロー">
+				<form>
+					<div class="form-item">
+						<div class="name-required">
+							<label for="name">名前</label>
+							<span>必須</span>
+						</div>
+						<div class="input-area">
+							<span>
+								<img src="../assets/admin/img/letter-icon.png" alt="Aのアイコン">
+							</span>
+
+							<!-- 変更箇所　開始 -->
+							<input id="name" name="name" type="text" autocomplete="off">
+							<!-- 変更箇所　終了 -->
+
+						</div>
+
+						<!-- エラー時のみ表示 -->
+						<!-- <div class="name-error">
+							<span><img src="../assets/admin/img/warning-icon.png" alt="警告アイコン"></span>
+							<span>このフィールドを入力してください。</span>
+						</div> -->
+
+					</div>
+					<div class="form-item">
+						<label for="email">メールアドレス</label>
+						<div class="input-area">
+							<span>
+								<img src="../assets/admin/img/email-icon.png" alt="メールアイコン">
+							</span>
+
+							<!-- 変更箇所　開始 -->
+							<input id="email" name="email" type="email" autocomplete="off">
+							<!-- 変更箇所　終了 -->
+
+						</div>
+					</div>
+					<div class="form-item">
+						<label for="tel">電話番号</label>
+						<div class="input-area">
+							<span>
+								<img src="../assets/admin/img/phone-icon.png" alt="電話アイコン">
+							</span>
+
+							<!-- 変更箇所　開始 -->
+							<input id="tel" name="tel" type="tel" maxlength="13" autocomplete="off" pattern="^(070|080|090)-\\d{4}-\\d{4}$">
+							<!-- 変更箇所　終了 -->
+
+						</div>
+					</div>
+					<!-- 送信前 -->
+					<!-- CSRFトークン -->
+					<input type="hidden" name="csrf_token" value="">
+					<button id="create-url-btn" type="submit" class="create-url" data-iziModal-open=".iziModal-submit">面接URL発行</button>
+
+					<!-- 「名前」「メールアドレス」「電話番号」すべて入力して送信した後 -->
+					<!-- <button id="create-url-btn" type="submit">面接URLを発行・送信いたしました。</button> -->
+
+					<!-- 「名前」のみ入力して送信した後 -->
+					<!-- <button id="create-url-btn" type="submit">面接URLを発行いたしました。</button> -->
+				</form>
+				<p class="copy-url-description">LINEやSNSで送る場合は、下記の面接URLをコピーしてご利用ください。</p>
+				<div class="copy-url">
+					<input id="url-display" class="display" type="url" placeholder="発行された面接URLがここに表示されます。" readonly>
+					<span id="copy">
+						<img src="../assets/admin/img/copy-icon.png" alt="コピーアイコン">
+					</span>
+				</div>
+			</div>
+			<div class="privacy-policy">
+				<a href="#">個人情報の取り扱いについて</a>
+			</div>
+		</div>
+	</main>
+	<footer>
+		<div class="footer-container">
+			<small>Copyright&copy;CASMEN All Rights Reserved.</small>
+		</div>
+	</footer>
+
+	<!-- 変更箇所（コメントのみ追加）　開始 -->
+
+	<!-- 面接URL発行モーダル -->
+
+	<!-- 変更箇所　終了 -->
+
+	<div id="modal-submit" class="modal iziModal-submit">
+		<p class="submit-confirm">面接URLを応募者へ送信しますか？</p>
+		<div class="modal-btns submit-modal-btns">
+			<button id="cancelled" class="cancelled" data-iziModal-close="">キャンセル</button>
+			<button id="submit" type="submit" class="inline-submit-btn">送信</button>
+		</div>
+	</div>
+	<!-- jQuery -->
+	<script src="../assets/admin/js/jquery-3.7.1.min.js"></script>
+	<!-- iziModal -->
+	<script src="../assets/admin/js/iziModal.min.js"></script>
+
+	<!-- 変更箇所 開始 -->
+
+	<!-- 共通JS -->
+	<script src="../assets/admin/js/main.js"></script>
+	<!-- モーダル表示用JS -->
+	<script src="../assets/admin/js/modal.js"></script>
+
+	<!-- 変更箇所　終了 -->
+
+</body>
+
+</html>

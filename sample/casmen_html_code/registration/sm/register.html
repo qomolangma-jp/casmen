@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="shortcut icon" href="../../assets/registration/img/favicon.ico" type="image/x-icon">
+	<link rel="stylesheet" href="../../assets/registration/css/registration.css">
+	<title>CASMEN｜利用登録(無料)</title>
+</head>
+
+<body>
+	<header>
+		<div class="header-container">
+			<img src="../../assets/registration/img/logo-white.png" alt="Casmenロゴ">
+		</div>
+	</header>
+	<main>
+		<div class="main-container">
+			<h1>利用登録(無料)</h1>
+			<ul class="registration-flow-list">
+				<li class="current-step"><span>1</span> 項目の入力</li>
+				<li class="step"><span>2</span> 内容の確認</li>
+				<li class="step"><span>3</span> 送信完了</li>
+			</ul>
+
+			<!-- エラーの場合、表示 -->
+			<p class="error">
+				<span class="input-error">入力エラー：</span>
+				<span class="error-text">表示された内容を確認して、<br>入力内容を修正してください</span>
+			</p>
+
+			<p class="instruction"><span class="required">※</span>印の項目は必ず入力してください</p>
+			<form>
+				<div class="contact-field">
+					<h2>ご連絡先</h2>
+					<p>
+						<strong class="contact-notice">
+							ご入力頂いたメールアドレスに、ログイン用のパスワードをお送りする為、<span class="contact-important">入力ミスがあると掲載を開始できません。</span><br>
+							お間違えがないかお確かめください。
+						</strong>
+						<small>
+							※Gmail等のフリーメールの場合、迷惑メールフォルダに振り分けられる場合が御座いますので、万一メールが届かない場合、迷惑メールフォルダをご確認ください。
+						</small>
+					</p>
+					<dl class="info-list">
+						<dt>
+							<label for="email">
+								メールアドレス<span class="required">※</span>
+							</label>
+						</dt>
+						<dd>
+							<input id="email" class="lg-input" name="email" type="text" placeholder="例：sample@casmen.jp" autocomplete="off" required>
+
+							<!-- エラーの場合、表示 -->
+							<p class="error-message required">メールアドレスは入力必須です</p>
+
+						</dd>
+						<dt>
+							携帯電話番号<span class="required">※</span><span class="notes">(事業所、または店舗受付番号)</span>
+						</dt>
+						<dd>
+							<div class="phone-number-input">
+								<input id="tel-1" class="sm-input" name="tel-1" type="text" maxlength="3" pattern="^[0-9]+$" inputmode="numeric" autocomplete="off" placeholder="090">
+								<span class="separator"></span>
+								<input id="tel-2" class="sm-input" name="tel-2" type="text" maxlength="4" pattern="^[0-9]+$" inputmode="numeric" autocomplete="off" placeholder="1234">
+								<span class="separator"></span>
+								<input id="tel-3" class="sm-input" name="tel-3" type="text" maxlength="4" pattern="^[0-9]+$" inputmode="numeric" autocomplete="off" placeholder="5678">
+							</div>
+
+							<!-- エラーの場合、表示 -->
+							<p class="error-message required">携帯電話番号は入力必須です</p>
+
+						</dd>
+					</dl>
+				</div>
+				<div class="shop-info-field">
+					<h2>店舗情報</h2>
+					<dl class="info-list">
+						<dt>
+							<label for="shop-name">
+								店舗名<span class="required">※</span>
+								<span class="notes">(30文字以内)</span>
+							</label>
+						</dt>
+						<dd>
+							<input id="shop-name" class="lg-input" name="shop-name" type="text" autocomplete="off" placeholder="例：キャスメン">
+
+							<!-- エラーの場合、表示 -->
+							<p class="error-message required">店舗名は入力必須です</p>
+
+						</dd>
+						<dt>
+							<label for="job-url">
+								求人情報が掲載されているURL<span class="notes">(公式、求人サイト等)</span>
+							</label>
+						</dt>
+						<dd>
+							<input id="job-url" class="lg-input" type="url" name="job-url" autocomplete="off" placeholder="例：https://casmen.jp/">
+							<small class="job-url-notes">※複数ある場合にはどれか一つ</small>
+						</dd>
+					</dl>
+				</div>
+				<div class="mailing-address">
+					<h2>ご案内書類の郵送先</h2>
+					<strong class="regular-mail">※普通郵便を受け取り可能なご住所を入力してください。</strong>
+					<dl class="info-list">
+						<dt>
+							郵便番号<span class="required">※</span>
+						</dt>
+						<dd>
+							<div class="zip-code-input">
+								<input id="zip-code-1" class="sm-input" name="zip-code-1" type="text" maxlength="3" pattern="^[0-9]+$" inputmode="numeric" autocomplete="off" placeholder="123">
+								<span class="separator"></span>
+								<input id="zip-code-2" class="sm-input" name="zip-code-2" type="text" maxlength="4" pattern="^[0-9]+$" inputmode="numeric" autocomplete="off" placeholder="4567">
+							</div>
+
+							<!-- エラーの場合、表示 -->
+							<p class="error-message required">郵便番号は入力必須です</p>
+
+						</dd>
+						<dt>
+							住所<span class="required">※</span>
+						</dt>
+						<dd class="address">
+							<div class="city-field">
+								<label for="city">都道府県区市町村番地<span class="required">※</span></label>
+								<input id="city" class="lg-input" type="text" name="city" autocomplete="off" placeholder="例：東京都新宿区新宿1-1-1">
+
+								<!-- エラーの場合、表示 -->
+								<p class="error-message required">住所は入力必須です</p>
+
+							</div>
+							<div class="building-field">
+								<label for="building">建物名</label>
+								<input id="building" class="lg-input" type="text" name="building"  autocomplete="off" placeholder="例：キャスメンビル５F">
+							</div>
+						</dd>
+						<dt>
+							<label for="recipient">
+								宛名<span class="required">※</span>
+								<span class="notes">(30文字以内)</span>
+							</label>
+						</dt>
+						<dd>
+							<input id="recipient" class="lg-input" type="text" name="recipient"  autocomplete="off" placeholder="例：鈴木 面接">
+
+							<!-- エラーの場合、表示 -->
+							<p class="error-message required">宛名は入力必須です</p>
+						</dd>
+					</dl>
+				</div>
+				<div class="agreement">
+					<div class="terms-of-service">
+						<h2>利用規約をご確認ください。</h2>
+						<dl class="terms-list">
+							<dt>第1条（定義と規約の適応範囲）</dt>
+							<dd>【カフェるん】ご利用規約（以下、本規約という）は、（以下、甲という）が運営する広告サービス【カフェるん】(以下、「本サービス」という)をご利用いただくにあたり、掲載店舗(以下、「乙」という)、及びサイトを閲覧利用するユーザー(以下、「丙」という)に適応されます。</dd>
+							<dt>第2条（規約の変更）</dt>
+							<dd>甲は乙、丙に事前に承諾を得る事なく本規約を変更する事が出来るものとします。</dd>
+							<dt>第3条（掲載情報と免責事項）</dt>
+							<dd>【カフェるん】ご利用規約（以下、本規約という）は、（以下、甲という）が運営する広告サービス【カフェるん】(以下、「本サービス」という)をご利用いただくにあたり、掲載店舗(以下、「乙」という)、及びサイトを閲覧利用するユーザー(以下、「丙」という)に適応されます。</dd>
+						</dl>
+					</div>
+					<div class="agreement-check">
+						<div class="agreement-input">
+							<input id="agreement" type="checkbox" name="agreement" autocomplete="off">
+							<label for="agreement">利用規約に同意しました。<span class="required">※</span></label>
+						</div>
+
+						<!-- エラーの場合、表示 -->
+						<p class="error-message required">利用規約に同意が必要です</p>
+					</div>
+					<a href="confirm.html" class="confirm-btn btn-purple">入力内容を確認する</a>
+				</div>
+			</form>
+		</div>
+	</main>
+	<footer>
+		<div class="footer-container">
+			<nav class="footer-menu">
+				<ul class="footer-menu-list">
+					<!-- 登録ページの入力画面に遷移 -->
+					<li><a href="../../registration/sm/register.html">掲載の<br>お申込み</a></li>
+					<li><a href="mailto:support@casmen.jp">お問い<br>合わせ</a></li>
+					<li><a href="../../company/sm/terms.html">利用規約</a></li>
+					<li><a href="../../company/sm/policy.html">プライバシー<br>ポリシー</a></li>
+					<li><a href="../../company/sm/company.html">運営会社</a></li>
+				</ul>
+			</nav>
+			<div class="copyright">
+				<small>&copy; 2025 casmen.jp</small>
+			</div>
+		</div>
+	</footer>
+</body>
+
+</html>

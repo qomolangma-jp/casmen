@@ -24,7 +24,7 @@
 </head>
 <body>
     <div class="container">
-        <p>{{ $entry->user->name }} 様</p>
+        <p>{{ $entry->user->shop_name ?? $entry->user->name }} 様</p>
 
         <p>応募者の登録が完了し、面接URLを応募者へ送信いたしました。</p>
 

@@ -24,7 +24,7 @@
 </head>
 <body>
     <div class="container">
-        <p>{{ $entry->user->name }} 様</p>
+        <p>{{ $entry->user->shop_name ?? $entry->user->name }} 様</p>
 
         <p>応募者より録画面接の動画が届きました。<br>
         管理画面より動画を確認し、評価を行ってください。</p>

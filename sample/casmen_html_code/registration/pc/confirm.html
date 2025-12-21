@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="../../assets/registration/css/registration.css">
+	<link rel="shortcut icon" href="../../assets/registration/img/favicon.ico" type="image/x-icon">
+	<title>CASMEN｜利用登録(無料)</title>
+</head>
+
+<body>
+	<header>
+		<div class="header-container">
+			<img src="../../assets/registration/img/logo-white.png" alt="Casmenロゴ">
+		</div>
+	</header>
+	<main>
+		<div class="main-container">
+			<h1>利用登録(無料)</h1>
+			<ul class="registration-flow-list">
+				<li class="step"><span>1</span> 項目の入力</li>
+				<li class="current-step"><span>2</span> 内容の確認</li>
+				<li class="step"><span>3</span> 送信完了</li>
+			</ul>
+			<p class="required-confirm">まだ、お問い合わせの送信は完了していません。<br>入力内容を確認して送信ボタンを押して下さい。</p>
+			<form>
+				<div class="contact-field confirm-contact-field">
+					<h2>ご連絡先</h2>
+					<dl class="info-list">
+						<dt>メールアドレス</dt>
+						<dd>sample@casmen.jp</dd>
+						<dt>携帯電話番号</dt>
+						<dd>03-1234-5678</dd>
+					</dl>
+				</div>
+				<div class="shop-info-field">
+					<h2>店舗情報</h2>
+					<dl class="info-list">
+						<dt>店舗名</dt>
+						<dd>キャスメン</dd>
+						<dt>掲載URL</dt>
+						<dd>https://casmen.jp/</dd>
+					</dl>
+				</div>
+				<div class="mailing-address confirm-mailing-address">
+					<h2>ご案内書類の郵送先</h2>
+					<dl class="info-list">
+						<dt>郵便番号</dt>
+						<dd>123-4567</dd>
+						<dt>店舗住所</dt>
+						<dd class="address">
+							<span>東京都新宿区新宿1-1-1</span>
+							<span>キャスメンビル5F</span>
+						</dd>
+						<dt>宛名</dt>
+						<dd>鈴木&emsp;面接</dd>
+					</dl>
+				</div>
+				<div class="agreement-check">
+					<div class="agreement-input">
+						<input id="agreement" type="checkbox" name="agreement" autocomplete="off" disabled='disabled' checked='checked'>
+						<label for="agreement">利用規約に同意しました。<span class="required">※</span></label>
+					</div>
+				</div>
+				<div class="send-btns">
+					<a href="register.html" class="back-btn">入力にもどる</a>
+					<!-- 送信完了後、thanks.htmlに遷移 -->
+					<button id="send" class="submit-btn" type="submit">送信する</button>
+				</div>
+				<!-- CSRFトークン -->
+				<input type="hidden" name="csrf" value="">
+			</form>
+		</div>
+	</main>
+	<footer>
+		<div class="footer-container">
+			<nav class="footer-menu">
+				<ul class="footer-menu-list">
+					<!-- 登録ページの入力画面に遷移 -->
+					<li><a href="register.html">掲載のお申込み</a></li>
+					<li><a href="mailto:support@casmen.jp">お問い合わせ</a></li>
+					<li><a href="../../company/pc/terms.html">利用規約</a></li>
+					<li><a href="../../company/pc/policy.html">プライバシーポリシー</a></li>
+					<li><a href="../../company/pc/company.html">運営会社</a></li>
+				</ul>
+			</nav>
+			<div class="copyright">
+				<small>&copy; 2025 casmen.jp</small>
+			</div>
+		</div>
+	</footer>
+</body>
+
+</html>

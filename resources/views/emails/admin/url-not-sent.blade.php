@@ -24,7 +24,7 @@
 </head>
 <body>
     <div class="container">
-        <p>{{ $entry->user->name }} 様</p>
+        <p>{{ $entry->user->shop_name ?? $entry->user->name }} 様</p>
 
         <p>応募者の登録は完了しましたが、メールアドレスまたは電話番号が<br>
         登録されていないため、面接URLを自動送信できませんでした。</p>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Entry;
 use App\Models\Question;
+use App\Mail\AdminApplicantNotificationMail;
 use App\Models\EntryInterview;
 use App\Services\VideoProcessingService;
 use Illuminate\Http\Request;
@@ -336,9 +337,19 @@ class RecordController extends Controller
             ]);
 
             // 面接完了メールを送信
-            if ($entry->email) {
-                // TODO: 面接完了メール送信機能を実装
-                // Mail::to($entry->email)->send(new InterviewCompletedMail($entry));
+            // 1. 応募者へ（必要であれば実装）
+            // if ($entry->email) {
+            //     Mail::to($entry->email)->send(new InterviewCompletedMail($entry));
+            // }
+
+            // 2. 管理者へ通知（動画提出のお知らせ）
+            if ($entry->user && $entry->user->email) {
+                try {
+                    Mail::to($entry->user->email)->send(new AdminApplicantNotificationMail($entry, 'review_request'));
+                    Log::info("管理者へ動画提出通知メール送信: admin_email={$entry->user->email}");
+                } catch (\Exception $e) {
+                    Log::error("管理者へ動画提出通知メール送信失敗: " . $e->getMessage());
+                }
             }
 
             Log::info("送信処理完了: entry_id={$entry->entry_id}");
@@ -430,12 +441,27 @@ class RecordController extends Controller
      */
     public function serveVideo($filename)
     {
+        // 拡張子を取得
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
+        $isVtt = strtolower($extension) === 'vtt';
+
         // S3の場合
         if (config('filesystems.default') === 's3') {
             $path = 'interviews/' . $filename;
             if (!Storage::disk('s3')->exists($path)) {
                 abort(404, 'Video file not found');
             }
+
+            // VTTファイルの場合は内容を直接返す（CORS回避のため）
+            if ($isVtt) {
+                $content = Storage::disk('s3')->get($path);
+                return response($content, 200, [
+                    'Content-Type' => 'text/vtt',
+                    'Cache-Control' => 'no-cache',
+                    'Access-Control-Allow-Origin' => '*',
+                ]);
+            }
+
             // 5分間有効な署名付きURLを発行してリダイレクト
             return redirect(Storage::disk('s3')->temporaryUrl($path, now()->addMinutes(5)));
         }
@@ -447,6 +473,11 @@ class RecordController extends Controller
         }
 
         $mimeType = mime_content_type($path);
+        // VTTファイルの場合はMIMEタイプを強制
+        if ($isVtt) {
+            $mimeType = 'text/vtt';
+        }
+
         $fileSize = filesize($path);
 
         $headers = [

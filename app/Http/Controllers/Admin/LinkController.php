@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Entry;
 use App\Mail\InterviewLinkMail;
+use App\Mail\AdminApplicantNotificationMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -103,6 +104,15 @@ class LinkController extends Controller
                  return redirect()->back()->withErrors(['error' => $errorMsg])->withInput();
             }
 
+            // 管理者へURL送信完了のお知らせ
+            if ($entry->user && $entry->user->email) {
+                try {
+                    Mail::to($entry->user->email)->send(new AdminApplicantNotificationMail($entry, 'url_sent'));
+                } catch (\Exception $e) {
+                    Log::error("管理者へURL送信完了通知メール送信失敗: " . $e->getMessage());
+                }
+            }
+
             return redirect()->route('admin.link.create')->with([
                 'success_action' => 'send',
                 'interview_url' => $interviewUrl
@@ -110,6 +120,16 @@ class LinkController extends Controller
 
         } else {
             // Issue only
+
+            // 管理者へURL未送信（手動送信依頼）のお知らせ
+            if ($entry->user && $entry->user->email) {
+                try {
+                    Mail::to($entry->user->email)->send(new AdminApplicantNotificationMail($entry, 'url_not_sent'));
+                } catch (\Exception $e) {
+                    Log::error("管理者へURL未送信通知メール送信失敗: " . $e->getMessage());
+                }
+            }
+
             return redirect()->route('admin.link.create')->with([
                 'success_action' => 'issue',
                 'interview_url' => $interviewUrl

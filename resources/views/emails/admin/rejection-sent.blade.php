@@ -24,7 +24,7 @@
 </head>
 <body>
     <div class="container">
-        <p>{{ $entry->user->name }} 様</p>
+        <p>{{ $entry->user->shop_name ?? $entry->user->name }} 様</p>
 
         <p>応募者の方へ不採用通知を送信しました。</p>
 
