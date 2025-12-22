@@ -72,6 +72,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::post('/entry/{id}/reject', [EntryController::class, 'reject'])->name('entry.reject');
     Route::post('/entry/{id}/pass', [EntryController::class, 'pass'])->name('entry.pass');
     Route::post('/entry/{id}/resend', [EntryController::class, 'resend'])->name('entry.resend');
+    Route::post('/entry/{id}/burn-subtitles', [EntryController::class, 'burnSubtitles'])->name('entry.burn_subtitles');
 
     // ID: 11 - 各種設定（プロフィール）
     Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');

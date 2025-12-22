@@ -218,4 +218,48 @@ class EntryController extends Controller
             ]
         );
     }
+
+    /**
+     * 動画に字幕を埋め込む（ローカルテスト用）
+     */
+    public function burnSubtitles(Request $request, $id)
+    {
+        try {
+            $entry = Entry::where('user_id', Auth::id())->findOrFail($id);
+
+            if (!$entry->video_path) {
+                return back()->with('error', '動画ファイルがありません。');
+            }
+
+            $vttPath = str_replace('.webm', '.vtt', $entry->video_path);
+
+            // VTTファイルの存在確認
+            $disk = config('filesystems.default');
+            $exists = $disk === 's3' ? \Illuminate\Support\Facades\Storage::disk('s3')->exists($vttPath) : file_exists(storage_path('app/public/' . $vttPath));
+
+            if (!$exists) {
+                 return back()->with('error', '字幕ファイルが見つかりません。');
+            }
+
+            // サービス呼び出し
+            $service = new \App\Services\VideoProcessingService();
+
+            // ローカル環境の場合は上書きせず、別ファイルとして保存
+            $overwrite = !app()->isLocal();
+            $resultPath = $service->burnSubtitles($entry->video_path, $vttPath, $overwrite);
+
+            if ($resultPath) {
+                if (!$overwrite) {
+                    return back()->with('success', '字幕埋め込み完了。デバッグ用ファイル: ' . basename($resultPath));
+                }
+                return back()->with('success', '字幕の埋め込みが完了しました。');
+            } else {
+                return back()->with('error', '字幕の埋め込みに失敗しました。ログを確認してください。');
+            }
+        } catch (\Exception $e) {
+            Log::error("字幕埋め込みエラー: " . $e->getMessage());
+            return back()->with('error', 'エラーが発生しました: ' . $e->getMessage());
+        }
+    }
 }
+

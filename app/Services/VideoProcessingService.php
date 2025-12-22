@@ -121,6 +121,153 @@ class VideoProcessingService
     }
 
     /**
+     * 動画に字幕（VTT）を焼き付ける
+     *
+     * @param string $videoPath 動画ファイルのパス（S3またはローカルの相対パス）
+     * @param string $vttPath 字幕ファイルのパス（S3またはローカルの相対パス）
+     * @param bool $overwrite 元のファイルを上書きするかどうか
+     * @return string|bool 成功した場合は保存先パス、失敗した場合はfalse
+     */
+    public function burnSubtitles($videoPath, $vttPath, $overwrite = true)
+    {
+        try {
+            $ffmpegPath = $this->getFFmpegPath();
+            if (!$ffmpegPath) {
+                Log::error('FFmpegが見つかりません');
+                return false;
+            }
+
+            $disk = config('filesystems.default');
+            $isS3 = $disk === 's3';
+
+            // 一時ディレクトリの作成
+            $tempDir = storage_path('app/temp_subtitles_' . uniqid());
+            if (!file_exists($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+
+            // ファイル名の取得
+            $videoFileName = basename($videoPath);
+            $vttFileName = basename($vttPath);
+            $outputFileName = 'burned_' . $videoFileName;
+
+            // ローカルパス
+            $localVideoPath = $tempDir . '/' . $videoFileName;
+            $localVttPath = $tempDir . '/' . $vttFileName;
+            $localOutputPath = $tempDir . '/' . $outputFileName;
+
+            // ファイルの取得（ダウンロード）
+            if ($isS3) {
+                if (!Storage::disk('s3')->exists($videoPath) || !Storage::disk('s3')->exists($vttPath)) {
+                    Log::error("S3上のファイルが見つかりません: {$videoPath}, {$vttPath}");
+                    $this->cleanupTempDir($tempDir);
+                    return false;
+                }
+                file_put_contents($localVideoPath, Storage::disk('s3')->get($videoPath));
+                file_put_contents($localVttPath, Storage::disk('s3')->get($vttPath));
+            } else {
+                $sourceVideoPath = storage_path('app/public/' . $videoPath);
+                $sourceVttPath = storage_path('app/public/' . $vttPath);
+
+                if (!file_exists($sourceVideoPath) || !file_exists($sourceVttPath)) {
+                    Log::error("ローカルファイルが見つかりません: {$sourceVideoPath}, {$sourceVttPath}");
+                    $this->cleanupTempDir($tempDir);
+                    return false;
+                }
+                copy($sourceVideoPath, $localVideoPath);
+                copy($sourceVttPath, $localVttPath);
+            }
+
+            // FFmpegでの字幕焼き付け
+            // Windowsパス対策: パス区切りをスラッシュにし、コロンをエスケープ
+            $ffmpegVttPath = str_replace('\\', '/', $localVttPath);
+            $ffmpegVttPath = str_replace(':', '\\:', $ffmpegVttPath);
+
+            // フォント設定（日本語対応のため）
+            $fontPath = $this->getFontPath();
+
+            // OS判定
+            $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
+            if ($isWindows) {
+                // Windowsの場合は標準フォント（MS Gothic）を指定
+                // パスではなくフォントファミリー名を指定する方が確実
+                $subtitlesFilter = "subtitles='{$ffmpegVttPath}':force_style='FontName=MS Gothic,FontSize=20'";
+            } else {
+                // Linux等の場合
+                // Windowsパスの場合、FFmpegのfilter内ではエスケープが必要
+                $fontPathEscaped = str_replace('\\', '/', $fontPath);
+                $fontPathEscaped = str_replace(':', '\\:', $fontPathEscaped);
+
+                // force_styleを使ってフォントを指定
+                $subtitlesFilter = "subtitles='{$ffmpegVttPath}':force_style='FontName={$fontPathEscaped},FontSize=20'";
+            }
+
+            $command = sprintf(
+                '"%s" -i "%s" -vf "%s" -c:a copy "%s"',
+                $ffmpegPath,
+                $localVideoPath,
+                $subtitlesFilter,
+                $localOutputPath
+            );
+
+            Log::info("字幕焼き付けコマンド: {$command}");
+
+            $output = [];
+            $returnCode = 0;
+            exec($command . ' 2>&1', $output, $returnCode);
+
+            if ($returnCode !== 0 || !file_exists($localOutputPath)) {
+                Log::error("FFmpeg字幕焼き付けエラー: " . implode("\n", $output));
+                $this->cleanupTempDir($tempDir);
+                return false;
+            }
+
+            // 保存先の決定
+            if ($overwrite) {
+                $targetPath = $videoPath;
+            } else {
+                $pathInfo = pathinfo($videoPath);
+                // 拡張子を維持しつつ _burned を付与
+                $targetPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '_burned.' . $pathInfo['extension'];
+            }
+
+            // ファイルをアップロード／コピー
+            if ($isS3) {
+                Storage::disk('s3')->put($targetPath, file_get_contents($localOutputPath));
+            } else {
+                copy($localOutputPath, storage_path('app/public/' . $targetPath));
+            }
+
+            Log::info("字幕焼き付け完了: {$targetPath}");
+
+            // クリーンアップ
+            $this->cleanupTempDir($tempDir);
+
+            return $targetPath;
+
+        } catch (\Exception $e) {
+            Log::error("字幕焼き付け例外: " . $e->getMessage());
+            if (isset($tempDir)) {
+                $this->cleanupTempDir($tempDir);
+            }
+            return false;
+        }
+    }
+
+    /**
+     * 一時ディレクトリを削除
+     */
+    private function cleanupTempDir($dir) {
+        if (!is_dir($dir)) return;
+        $files = array_diff(scandir($dir), array('.', '..'));
+        foreach ($files as $file) {
+            unlink("$dir/$file");
+        }
+        rmdir($dir);
+    }
+
+    /**
      * 複数の動画を結合
      *
      * @param array $videoPaths 動画ファイルパスの配列
@@ -232,6 +379,11 @@ class VideoProcessingService
     {
         // 日本語に対応したフォントパスを優先順で指定
         $fontPaths = [
+            // Windows Fonts
+            'C:\Windows\Fonts\msgothic.ttc',
+            'C:\Windows\Fonts\meiryo.ttc',
+            'C:\Windows\Fonts\arial.ttf',
+            // Linux Fonts
             '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
             '/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc',
             '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc',

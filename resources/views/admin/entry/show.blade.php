@@ -135,6 +135,42 @@
                         <button id="reject-btn" type="button" data-izimodal-open=".iziModal-rejected">不採用通知を送る</button>
                         <button id="pass-btn" class="passed" type="button" data-izimodal-open=".iziModal-passed">通過</button>
                     </div>
+
+                    {{-- ローカル環境またはデバッグ用：字幕埋め込みボタン --}}
+                    @if(app()->isLocal() || config('app.debug'))
+                    <div style="margin-top: 10px; text-align: center; border: 1px dashed #ccc; padding: 10px;">
+                        <p style="font-weight: bold; margin-bottom: 5px;">[DEV] 字幕焼き付けテスト</p>
+                        <form action="{{ route('admin.entry.burn_subtitles', $entry->entry_id) }}" method="POST" onsubmit="return confirm('動画に字幕を埋め込みますか？（処理に時間がかかる場合があります）');">
+                            @csrf
+                            <button type="submit" style="background: #666; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer;">
+                                字幕を動画に埋め込む（別ファイル生成）
+                            </button>
+                        </form>
+
+                        {{-- 焼き付け済みファイルが存在する場合に表示 --}}
+                        @php
+                            $pathInfo = pathinfo($entry->video_path);
+                            $burnedPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '_burned.' . $pathInfo['extension'];
+                            $isS3 = config('filesystems.default') === 's3';
+                            $burnedExists = $isS3 ? \Illuminate\Support\Facades\Storage::disk('s3')->exists($burnedPath) : file_exists(storage_path('app/public/' . $burnedPath));
+                        @endphp
+
+                        @if($burnedExists)
+                            <div style="margin-top: 15px;">
+                                <p>▼ 字幕焼き付け済み動画（{{ basename($burnedPath) }}）</p>
+                                <video controls style="width: 100%; max-width: 400px; border: 2px solid red;">
+                                    @if($isS3)
+                                        <source src="{{ route('record.video', ['filename' => basename($burnedPath)]) }}" type="video/webm">
+                                    @else
+                                        <source src="{{ route('record.video', ['filename' => basename($burnedPath)]) }}" type="video/webm">
+                                    @endif
+                                    お使いのブラウザは動画の再生をサポートしていません。
+                                </video>
+                            </div>
+                        @endif
+                    </div>
+                    @endif
+
                     <small>応募者動画ファイルは回答後30日で削除されます</small>
                     @elseif($entry->status === 'rejected')
                     <!-- 不採用画面 -->
@@ -236,7 +272,6 @@ const video = document.getElementById('interview-video');
 const subtitleDiv = document.getElementById('custom-subtitle');
 
 if (video && subtitleDiv) {
-<<<<<<< HEAD
     // S3/Local問わず、record.videoルートを経由してVTTを取得する（MIMEタイプ設定とCORS回避のため）
     @if($entry->video_path)
         const vttPath = '{{ route("record.video", ["filename" => str_replace(".webm", ".vtt", basename($entry->video_path))]) }}';
