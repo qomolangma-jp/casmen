@@ -23,6 +23,7 @@
             previewStream = stream;
             const videoElement = document.getElementById('preview-video');
             videoElement.srcObject = stream;
+            videoElement.setAttribute('playsinline', ''); // iOS対応
             videoElement.play();
         } catch (error) {
             console.error('カメラの起動に失敗しました:', error);
@@ -54,7 +55,7 @@
         <div class="instruction instruction__interview bg-frame">
             <div class="instruction__inner">
                 <div class="instruction__video-imgs">
-                    <video id="preview-video" autoplay muted></video>
+                    <video id="preview-video" autoplay playsinline></video>
                     <div class="instruction__imgs">
                         <div class="instruction__bubble-imgs">
                             <img src="{{ asset('assets/user/img/bubble.png') }}" class="instruction__bubble-img" alt="吹き出し">

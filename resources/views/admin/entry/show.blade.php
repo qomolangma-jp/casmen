@@ -136,8 +136,8 @@
                         <button id="pass-btn" class="passed" type="button" data-izimodal-open=".iziModal-passed">通過</button>
                     </div>
 
-                    {{-- ローカル環境またはデバッグ用：字幕埋め込みボタン --}}
-                    @if(app()->isLocal() || config('app.debug'))
+                    {{-- ローカル環境用：字幕埋め込みボタン --}}
+                    @if(app()->isLocal())
                     <div style="margin-top: 10px; text-align: center; border: 1px dashed #ccc; padding: 10px;">
                         <p style="font-weight: bold; margin-bottom: 5px;">[DEV] 字幕焼き付けテスト</p>
                         <form action="{{ route('admin.entry.burn_subtitles', $entry->entry_id) }}" method="POST" onsubmit="return confirm('動画に字幕を埋め込みますか？（処理に時間がかかる場合があります）');">

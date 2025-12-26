@@ -69,7 +69,8 @@
 
             videoElement.src = URL.createObjectURL(recordedVideoBlob);
             videoElement.controls = false;
-            videoElement.muted = true;
+            // videoElement.muted = true; // 音声を有効にするためコメントアウト
+            videoElement.setAttribute('playsinline', ''); // iOS対応
 
             // 字幕表示のセットアップ
             setupSubtitles();
@@ -154,7 +155,7 @@
         function stopPreview() {
             videoElement.pause();
             videoElement.currentTime = 0;
-            videoElement.muted = true;
+            // videoElement.muted = true; // 音声を有効にするためコメントアウト
 
             // ボタンの表示変更
             if (previewBtn) {
@@ -337,7 +338,7 @@
         <div class="instruction instruction__interview bg-frame">
             <div class="instruction__confirm-inner">
                 <div class="instruction__confirm-video">
-                    <video id="preview-recorded-video"></video>
+                    <video id="preview-recorded-video" playsinline></video>
                     <div class="instruction__character-message">
                         <div class="instruction__bubble">
                             <img src="{{ asset('assets/user/img/bubble.png') }}" class="instruction__bubble-img" alt="吹き出し">

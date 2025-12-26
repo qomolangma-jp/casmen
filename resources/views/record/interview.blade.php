@@ -55,7 +55,8 @@
 
             const videoElement = document.getElementById('interview-video');
             videoElement.srcObject = stream;
-            videoElement.muted = true;
+            // videoElement.muted = true; // 音声を有効にするためコメントアウト
+            videoElement.setAttribute('playsinline', ''); // iOS対応
             await videoElement.play();
 
             // 最初の質問を表示（タイマーは開始しない）
@@ -340,7 +341,7 @@
         <div class="instruction instruction__interview bg-frame">
             <div class="instruction__inner">
                 <div class="instruction__video">
-                    <video id="interview-video" autoplay muted></video>
+                    <video id="interview-video" autoplay playsinline></video>
                 </div>
 
                 <span class="instruction__notice">Q.<span id="question-increment">1</span></span>
