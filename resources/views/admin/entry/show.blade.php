@@ -122,7 +122,7 @@
     .video-container, .video-wrapper {
         position: relative;
         width: 100%;
-        max-width: 800px;
+        max-width: 400px;
         margin: 0 auto;
     }
     video {
@@ -358,6 +358,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const playBtn = container.querySelector('.play-pause-btn');
         const volumeSlider = container.querySelector('.volume-slider');
         const volumeIcon = container.querySelector('.volume-icon');
+
+        // 動画のメタデータ読み込み後、向きをチェック
+        video.addEventListener('loadedmetadata', () => {
+            const width = video.videoWidth;
+            const height = video.videoHeight;
+            console.log('動画解像度:', width, 'x', height);
+
+            // 横長の動画（width > height）の場合、CSS transformで90度回転
+            if (width > height) {
+                console.log('横長動画を検出、90度回転して縦向き表示にします');
+
+                // ビデオコンテナの設定
+                const videoContainer = container.parentElement;
+                videoContainer.style.display = 'flex';
+                videoContainer.style.justifyContent = 'center';
+                videoContainer.style.alignItems = 'center';
+                videoContainer.style.minHeight = '600px';
+
+                // 動画を回転
+                video.style.transform = 'rotate(90deg)';
+                video.style.maxWidth = '600px';
+                video.style.width = 'auto';
+                video.style.height = 'auto';
+            }
+        });
 
         // 再生・一時停止
         playBtn.addEventListener('click', () => {

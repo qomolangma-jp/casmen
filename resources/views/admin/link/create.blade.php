@@ -205,7 +205,7 @@
         copyText.select();
         copyText.setSelectionRange(0, 99999); // For mobile devices
         navigator.clipboard.writeText(copyText.value).then(function() {
-            alert("URLをコピーしました: " + copyText.value);
+            console.log('URLをコピーしました:', copyText.value);
         }, function(err) {
             console.error('Could not copy text: ', err);
         });

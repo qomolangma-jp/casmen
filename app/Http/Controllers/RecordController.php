@@ -636,6 +636,12 @@ class RecordController extends Controller
         $token = $request->get('token');
 
         $entry = Entry::where('interview_uuid', $token)->first();
+
+        // 既に送信済みの場合はエラーページへ
+        if ($entry && $entry->status === 'completed') {
+            return redirect()->route('record.error', ['token' => $token, 'message' => 'このインタビューは既に送信済みです。']);
+        }
+
         $questions = Question::where('category_id', 2)->orderBy('order')->get();
 
         return view('record.interview-preview', compact('token', 'entry', 'questions'));
@@ -649,8 +655,14 @@ class RecordController extends Controller
         $token = $request->get('token');
 
         $entry = Entry::where('interview_uuid', $token)->first();
+
+        // 既に送信済みの場合はエラーページへ
+        if ($entry && $entry->status === 'completed') {
+            return redirect()->route('record.error', ['token' => $token, 'message' => 'このインタビューは既に送信済みです。']);
+        }
+
         //$questions = Question::where('category_id', 2)->orderBy('order')->get();
-        $questions = Question::where('category_id', 2)->orderBy('order')->take(3)->get();
+        $questions = Question::where('category_id', 2)->orderBy('order')->take(2)->get();
 
         return view('record.interview', compact('token', 'entry', 'questions'));
     }
@@ -662,6 +674,12 @@ class RecordController extends Controller
     {
         $token = $request->get('token');
         $entry = Entry::where('interview_uuid', $token)->first();
+
+        // 既に送信済みの場合はエラーページへ
+        if ($entry && $entry->status === 'completed') {
+            return redirect()->route('record.error', ['token' => $token, 'message' => 'このインタビューは既に送信済みです。']);
+        }
+
         $questions = Question::where('category_id', 2)->orderBy('order')->get();
 
         return view('record.confirm', compact('token', 'entry', 'questions'));

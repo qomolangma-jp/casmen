@@ -28,7 +28,6 @@
         width: 17.3rem !important;
         height: 29.2rem !important;
         object-fit: contain !important; /* 枠内に全体を収める */
-        transform: scaleX(-1); /* 鏡のように反転 */
         background-color: #000; /* 余白を黒くする */
     }
 </style>
@@ -50,21 +49,16 @@
     let questionTimer = null;
     let recordingStartTime = null;
     let questionTimestamps = [];
+    let recordedMimeType = ''; // 実際に使用されたmimeTypeを保存
 
     // カメラとマイクの起動
     async function startCamera() {
         try {
-            // 縦型（ポートレート）に固定
-            const videoConstraints = {
-                facingMode: 'user',
-                width: { ideal: 480 }, // 解像度を下げて負荷を軽減
-                height: { ideal: 854 },
-                frameRate: { ideal: 30 }, // フレームレートを指定して滑らかにする
-                aspectRatio: 0.5625 // 9:16
-            };
-
+            // カメラストリームを取得（制約を最小限にしてデバイスのネイティブ設定を使用）
             stream = await navigator.mediaDevices.getUserMedia({
-                video: videoConstraints,
+                video: {
+                    facingMode: 'user'
+                },
                 audio: true
             });
 
@@ -114,13 +108,54 @@
     // 録画開始（継続録画）
     function startRecording() {
         try {
-            const options = { mimeType: 'video/webm;codecs=vp9,opus' };
+            // iPhone/Safari判定
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                options.mimeType = 'video/webm';
+            let options = {};
+
+            // iPhone/Safariの場合はmp4を最優先
+            if (isIOS || isSafari) {
+                const mp4Types = [
+                    'video/mp4',
+                    'video/mp4;codecs=h264',
+                    'video/mp4;codecs=avc1'
+                ];
+
+                for (const type of mp4Types) {
+                    if (MediaRecorder.isTypeSupported(type)) {
+                        options.mimeType = type;
+                        console.log('iPhone/Safari検出、mp4を使用:', type);
+                        break;
+                    }
+                }
+            }
+
+            // mp4が使えない場合、WebMを試す
+            if (!options.mimeType) {
+                const webmTypes = [
+                    'video/webm;codecs=vp9,opus',
+                    'video/webm;codecs=vp8,opus',
+                    'video/webm'
+                ];
+
+                for (const type of webmTypes) {
+                    if (MediaRecorder.isTypeSupported(type)) {
+                        options.mimeType = type;
+                        console.log('WebMを使用:', type);
+                        break;
+                    }
+                }
+            }
+
+            // どれも使えない場合はデフォルト
+            if (!options.mimeType) {
+                console.warn('サポートされているmimeTypeが見つかりません。デフォルトを使用します。');
             }
 
             mediaRecorder = new MediaRecorder(stream, options);
+            recordedMimeType = mediaRecorder.mimeType; // 実際に使用されたmimeTypeを記録
+            console.log('最終的に使用されたmimeType:', recordedMimeType);
 
             mediaRecorder.ondataavailable = (event) => {
                 if (event.data && event.data.size > 0) {
@@ -138,7 +173,29 @@
             // 定期的にデータを取得（1秒ごと）
             mediaRecorder.start(1000);
             recordingStartTime = Date.now();
+
+            // デバイス情報を記録
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+            const videoTrack = stream.getVideoTracks()[0];
+            const settings = videoTrack.getSettings();
+
             console.log('録画開始 - mimeType:', options.mimeType, 'startTime:', recordingStartTime);
+            console.log('デバイス情報:', {
+                isMobile,
+                isPortrait,
+                videoWidth: settings.width,
+                videoHeight: settings.height
+            });
+
+            // IndexedDBにデバイス情報を保存
+            saveToIndexedDB('deviceInfo', JSON.stringify({
+                isMobile,
+                isPortrait,
+                videoWidth: settings.width,
+                videoHeight: settings.height,
+                userAgent: navigator.userAgent
+            }));
         } catch (error) {
             console.error('録画の開始に失敗しました:', error);
             alert('録画を開始できませんでした。\nエラー: ' + error.message);
@@ -291,8 +348,10 @@
             return;
         }
 
-        const blob = new Blob(recordedChunks, { type: 'video/webm' });
-        console.log('Blob作成:', blob.size, 'bytes');
+        // 実際に録画されたmimeTypeを使用
+        const blobType = recordedMimeType || 'video/webm';
+        const blob = new Blob(recordedChunks, { type: blobType });
+        console.log('Blob作成:', blob.size, 'bytes, type:', blob.type);
 
         if (blob.size === 0) {
             console.error('録画データのサイズが0です');
@@ -306,6 +365,7 @@
             await saveToIndexedDB('recordedVideo', blob);
             await saveToIndexedDB('videoToken', token);
             await saveToIndexedDB('questionTimestamps', JSON.stringify(questionTimestamps));
+            await saveToIndexedDB('videoMimeType', blobType); // mimeTypeも保存
             console.log('IndexedDBに保存完了');
 
             // カメラを停止
