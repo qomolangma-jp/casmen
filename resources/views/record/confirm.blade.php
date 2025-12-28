@@ -516,7 +516,19 @@
                     const loadingOverlay = document.getElementById('loading-overlay');
                     if (loadingOverlay) loadingOverlay.remove();
 
-                    alert('動画の送信に失敗しました。\nエラー: ' + error.message);
+                    // エラー詳細を表示
+                    let errorMessage = '動画の送信に失敗しました。\n\nエラー: ' + error.message;
+
+                    // レスポンスがある場合は詳細情報を追加
+                    if (error.response) {
+                        errorMessage += '\n\nステータス: ' + error.response.status;
+                        if (error.response.data) {
+                            errorMessage += '\n詳細: ' + JSON.stringify(error.response.data);
+                        }
+                    }
+
+                    alert(errorMessage);
+                    console.log('完全なエラー情報:', error);
                     submitBtn.disabled = false;
                     submitBtn.textContent = '送信する';
                 }

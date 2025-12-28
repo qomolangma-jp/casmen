@@ -255,6 +255,9 @@ class RecordController extends Controller
      */
     public function submit(Request $request)
     {
+        // メモリ制限を一時的に増やす
+        ini_set('memory_limit', '512M');
+
         $token = $request->input('token');
         $entry = Entry::where('interview_uuid', $token)->first();
 
@@ -290,14 +293,33 @@ class RecordController extends Controller
                 throw new \Exception('アップロードされた動画ファイルが無効です。');
             }
 
-            // ファイル名を生成
-            $fileName = 'interview_' . $entry->entry_id . '_' . time() . '.webm';
+            // ファイル名を生成（実際の拡張子を使用）
+            $extension = $videoFile->getClientOriginalExtension();
+            // 拡張子が取得できない場合はmimeTypeから推測
+            if (!$extension) {
+                $mimeType = $videoFile->getMimeType();
+                if (strpos($mimeType, 'mp4') !== false) {
+                    $extension = 'mp4';
+                } elseif (strpos($mimeType, 'webm') !== false) {
+                    $extension = 'webm';
+                } else {
+                    $extension = 'webm'; // デフォルト
+                }
+            }
+
+            $fileName = 'interview_' . $entry->entry_id . '_' . time() . '.' . $extension;
             $filePath = 'interviews/' . $fileName;
+
+            Log::info("ファイル名生成: " . $fileName);
 
             // S3に保存
             try {
                 $path = $videoFile->storeAs('interviews', $fileName, 's3');
                 Log::info("S3保存完了: " . $path);
+
+                // メモリ解放
+                unset($videoFile);
+                gc_collect_cycles();
             } catch (\Exception $e) {
                 Log::error("S3保存エラー: " . $e->getMessage());
                 throw new \Exception('S3への保存に失敗しました: ' . $e->getMessage());
@@ -306,7 +328,7 @@ class RecordController extends Controller
             // 字幕ファイルを生成
             $timestamps = json_decode($request->input('timestamps', '[]'), true);
             if (!empty($timestamps)) {
-                $vttFileName = str_replace('.webm', '.vtt', $fileName);
+                $vttFileName = pathinfo($fileName, PATHINFO_FILENAME) . '.vtt'; // 拡張子に依存しない方法
 
                 $vttContent = "WEBVTT\n\n";
 
@@ -364,9 +386,18 @@ class RecordController extends Controller
             Log::error("エラー発生場所: " . $e->getFile() . ":" . $e->getLine());
             Log::error("スタックトレース: " . $e->getTraceAsString());
 
+            // エラーの種類を判定
+            $errorType = get_class($e);
+            $errorDetails = [
+                'error_type' => $errorType,
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode()
+            ];
+
             return response()->json([
                 'success' => false,
-                'message' => '送信に失敗しました: ' . $e->getMessage()
+                'message' => '送信に失敗しました: ' . $e->getMessage(),
+                'error_details' => $errorDetails
             ], 500);
         }
     }
@@ -662,7 +693,7 @@ class RecordController extends Controller
         }
 
         //$questions = Question::where('category_id', 2)->orderBy('order')->get();
-        $questions = Question::where('category_id', 2)->orderBy('order')->take(2)->get();
+        $questions = Question::where('category_id', 2)->orderBy('order')->take(15)->get();
 
         return view('record.interview', compact('token', 'entry', 'questions'));
     }
@@ -680,7 +711,8 @@ class RecordController extends Controller
             return redirect()->route('record.error', ['token' => $token, 'message' => 'このインタビューは既に送信済みです。']);
         }
 
-        $questions = Question::where('category_id', 2)->orderBy('order')->get();
+        // メモリ制限のため、質問数を5問に制限
+        $questions = Question::where('category_id', 2)->orderBy('order')->take(5)->get();
 
         return view('record.confirm', compact('token', 'entry', 'questions'));
     }

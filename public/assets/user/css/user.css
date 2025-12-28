@@ -369,7 +369,9 @@ span.instruction__notice {
 
 .instruction__question {
 	font-size: 3.75rem;
+    width: 100%;
 	padding: 1.5rem 2rem 0 4rem;
+    text-align: center;
 }
 
 .instruction__confirm-inner {
