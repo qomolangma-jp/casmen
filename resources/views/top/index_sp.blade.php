@@ -2,8 +2,9 @@
 <html lang="ja">
 
 <head>
+    <x-google-tag />
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=640px, user-scalable=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="{{ asset('assets/lp/css/lp.css') }}">
 	<link rel="shortcut icon" href="{{ asset('assets/lp/img/favicon.ico') }}" type="image/x-icon">
 	<title>“素顔を引き出す”セルフ録画面接サービス｜CASMEN</title>
@@ -14,7 +15,7 @@
 	<header>
 		<div class="header-container">
 			<img src="{{ asset('assets/lp/img/logo.png') }}" alt="CASMENロゴ">
-			<a href="{{ route('login') }}" target="_blank" rel="noopener noreferrer">ログイン</a>
+			<a href="{{ route('login') }}" target="_blank" rel="noopener noreferrer">利用登録がお済みの方<br>（ログインはこちら）</a>
 		</div>
 	</header>
 	<!-- ここまで追加 -->
@@ -28,9 +29,8 @@
 			</div>
 			<div class="video">
 				<img src="{{ asset('assets/lp/img/sm-hand-sm.png') }}" alt="スマホ">
-				<video>
-					<!-- ここに動画を入れてください -->
-				</video>
+				<!-- ここに動画を入れてください -->
+				<video src="{{ asset('assets/lp/video/casmen.mp4') }}" loop autoplay muted></video>
 			</div>
 			<div class="appeal-text">
 				<img src="{{ asset('assets/lp/img/appeal-text-sm.png') }}" alt="累計78万人の応募データから導かれた”素顔を引き出す“セルフ録画面接サービス">

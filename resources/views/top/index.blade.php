@@ -2,6 +2,7 @@
 <html lang="ja">
 
 <head>
+    <x-google-tag />
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="{{ asset('assets/lp/css/lp.css') }}">
@@ -14,7 +15,7 @@
 	<header>
 		<div class="header-container">
 			<img src="{{ asset('assets/lp/img/logo.png') }}" alt="CASMENロゴ">
-			<a href="{{ route('login') }}" target="_blank" rel="noopener noreferrer">ログイン</a>
+			<a href="{{ route('login') }}" target="_blank" rel="noopener noreferrer">利用登録がお済みの方（ログイン）</a>
 		</div>
 	</header>
 	<!-- ここまで追加 -->
@@ -37,9 +38,8 @@
 					</div>
 					<div class="video">
 						<img src="{{ asset('assets/lp/img/sm-hand.png') }}" alt="スマホ">
-						<video>
-							<!-- ここに動画を入れてください -->
-						</video>
+						<!-- ここに動画を入れてください -->
+						<video src="{{ asset('assets/lp/video/casmen.mp4') }}" loop autoplay muted></video>
 					</div>
 				</div>
 				<div class="appeal-bottom">

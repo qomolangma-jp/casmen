@@ -19,6 +19,12 @@
         <form method="POST" action="{{ route('login') }}">
             @csrf
 
+            @if (session('status'))
+            <div class="warning" style="background-color: #d4edda; color: #155724; border-color: #c3e6cb;">
+                <span>{{ session('status') }}</span>
+            </div>
+            @endif
+
             @if ($errors->any())
             <div class="warning">
                 <span>エラー</span>

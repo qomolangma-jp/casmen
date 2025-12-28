@@ -16,7 +16,8 @@ class DashboardController extends Controller
     public function index()
     {
         // 評価待ちの応募者数を取得
-        $waitingCount = Entry::where('status', 'completed')
+        $waitingCount = Entry::where('user_id', auth()->id())
+            ->where('status', 'completed')
             ->whereNull('decision_at')
             ->count();
 
