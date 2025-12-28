@@ -1,60 +1,47 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理画面にログインを行ってください</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .footer {
-            margin-top: 30px;
-            border-top: 1px solid #ccc;
-            padding-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <p>{{ $user->name }} 様</p>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【CASMEN】店舗登録の申し込み
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-        <p>CASMENの管理画面アカウントを発行いたしました。<br>
-        以下の情報でログインを行ってください。</p>
+{{ $user->name }} (店舗番号:{{ sprintf('%04d', $user->id) }}) 様
 
-        <hr>
-        <p>■ ログイン情報</p>
-        <hr>
-        <p>・ログインURL<br>
-        <a href="https://casmen.jp/admin/login">https://casmen.jp/admin/login</a></p>
+【CASMEN】へ、店舗登録のお申し込みをいただき誠に有難うございます。
 
-        <p>・メールアドレス<br>
-        {{ $user->email }}</p>
+管理画面のログイン情報をご案内いたします。
 
-        <p>・パスワード<br>
-        {{ $password }}</p>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■ログイン情報のお知らせ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+▼管理画面URL
+{{ route('admin.login') }}
 
-        <p>※ セキュリティのため、初回ログイン後にパスワードの変更をお勧めします。</p>
+▼以下のメールアドレスとパスワードでログインしてください。
 
-        <hr>
+・メールアドレス
+{{ $user->email }}
 
-        <p>操作方法やご不明点がございましたら、お気軽にお問い合わせください。</p>
+・パスワード
+{{ $password }}
 
-        <p>◆お問い合わせはこちら◆<br>
-        <a href="mailto:support@casmen.jp">support@casmen.jp</a></p>
+※ログインの際に必要になりますので、大切に保管してください。
 
-        <div class="footer">
-            <p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
-            【CASMEN】<br>
-            <a href="https://casmen.jp/">https://casmen.jp/</a></p>
-        </div>
-    </div>
-</body>
-</html>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+■応募者登録と面接URL発行をお願いします
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+応募者のメールアドレス、または電話番号を登録すると、
+自動で応募者へ「録画面接URL」が送信されます。
+
+▼面接URLの発行（応募者登録）
+{{ route('admin.link.create') }}
+
+※管理画面にログイン後にアクセスしてください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ご不明・ご質問などございましたら、お気軽にお問い合わせください。
+
+お問い合わせはこちら↓
+support@casmen.jp
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【CASMEN】
+https://casmen.jp/

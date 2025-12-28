@@ -5,7 +5,7 @@
 @section('content')
 <header class="header header-welcome">
     <div class="header__container header__container-welcome">
-        <p>{{ $entry->user->shop_name }}店からの<br>セルフ面接のご案内です。</p>
+        <p>{{ $entry->user->shop_name }}からの<br>セルフ面接のご案内です。</p>
     </div>
 </header>
 <main class="main">
@@ -32,7 +32,7 @@
                 <h2 class="point__title">POINT</h2>
                 <ul class="point__list">
                     <li>面接官と会わないから安心</li>
-                    <li>24時間365日いつでも参加可能</li>
+                    <li>24時間365日いつでも面接可能</li>
                     <li>所要時間はたったの2分</li>
                 </ul>
 

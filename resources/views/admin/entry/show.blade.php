@@ -73,6 +73,63 @@
     #copy-btn:hover {
         background-color: #999;
     }
+    /* カスタムコントロール */
+    .custom-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 8px 15px;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        box-sizing: border-box;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+    .play-pause-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: white;
+        font-size: 18px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+    .play-pause-btn:hover {
+        color: #ddd;
+    }
+    .volume-container {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .volume-icon {
+        color: white;
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+    }
+    .volume-slider {
+        width: 80px;
+        cursor: pointer;
+    }
+    /* ビデオコンテナの調整 */
+    .video-container, .video-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    video {
+        display: block; /* 下部の隙間除去 */
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+    }
 </style>
 @endpush
 
@@ -119,7 +176,7 @@
                     <div class="video">
                         <span class="video-label waiting-list">評価待ち</span>
                         <div class="video-container">
-                            <video id="interview-video" controls style="width: 100%; max-width: 800px;">
+                            <video id="interview-video" class="custom-video-player" style="width: 100%; max-width: 800px;">
                                 @if(config('filesystems.default') === 's3')
                                     <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
                                 @else
@@ -128,6 +185,13 @@
                                 @endif
                                 お使いのブラウザは動画の再生をサポートしていません。
                             </video>
+                            <div class="custom-controls">
+                                <button type="button" class="play-pause-btn">▶</button>
+                                <div class="volume-container">
+                                    <span class="volume-icon">🔊</span>
+                                    <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
+                                </div>
+                            </div>
                             <div id="custom-subtitle" class="custom-subtitle"></div>
                         </div>
                     </div>
@@ -176,28 +240,46 @@
                     <!-- 不採用画面 -->
                     <div class="video">
                         <span class="video-label rejected">不採用</span>
-                        <video controls style="width: 100%; max-width: 800px;">
-                            @if(config('filesystems.default') === 's3')
-                                <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
-                            @else
-                                <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
-                                <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
-                            @endif
-                        </video>
+                        <div class="video-wrapper">
+                            <video class="custom-video-player" style="width: 100%; max-width: 800px;">
+                                @if(config('filesystems.default') === 's3')
+                                    <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                @else
+                                    <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
+                                    <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                @endif
+                            </video>
+                            <div class="custom-controls">
+                                <button type="button" class="play-pause-btn">▶</button>
+                                <div class="volume-container">
+                                    <span class="volume-icon">🔊</span>
+                                    <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <small>応募者動画ファイルは回答後30日で削除されます</small>
                     @elseif($entry->status === 'passed')
                     <!-- 通過画面 -->
                     <div class="video">
                         <span class="video-label passed">通過</span>
-                        <video controls style="width: 100%; max-width: 800px;">
-                            @if(config('filesystems.default') === 's3')
-                                <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
-                            @else
-                                <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
-                                <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
-                            @endif
-                        </video>
+                        <div class="video-wrapper">
+                            <video class="custom-video-player" style="width: 100%; max-width: 800px;">
+                                @if(config('filesystems.default') === 's3')
+                                    <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                @else
+                                    <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
+                                    <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                @endif
+                            </video>
+                            <div class="custom-controls">
+                                <button type="button" class="play-pause-btn">▶</button>
+                                <div class="volume-container">
+                                    <span class="volume-icon">🔊</span>
+                                    <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <small>応募者動画ファイルは回答後30日で削除されます</small>
                     @else
@@ -233,7 +315,7 @@
         <p class="rejected-confirm">本当にこの応募者を「不採用」にしますか？</p>
         <div class="modal-description">
             <p>「不採用」を選ぶと、登録されているメールまたは電話番号宛に不採用通知が自動送信されます。</p>
-            <p>LINESNS経由で応募された方には自動通知ができません。お手数ですが店舗様より直接「不採用」のご連絡をお願いいたします。</p>
+            <p>LINE等のSNS経由で応募された方には自動通知ができません。お手数ですが店舗様より直接「不採用」のご連絡をお願いいたします。</p>
         </div>
         <div class="modal-btns">
             <button id="cancel-btn" class="cancelled" data-izimodal-close="">キャンセル</button>
@@ -267,6 +349,56 @@
 
 @push('scripts')
 <script>
+// カスタムビデオコントロールの初期化
+document.addEventListener('DOMContentLoaded', function() {
+    const videoPlayers = document.querySelectorAll('.custom-video-player');
+
+    videoPlayers.forEach(video => {
+        const container = video.parentElement;
+        const playBtn = container.querySelector('.play-pause-btn');
+        const volumeSlider = container.querySelector('.volume-slider');
+        const volumeIcon = container.querySelector('.volume-icon');
+
+        // 再生・一時停止
+        playBtn.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        });
+
+        // ビデオの状態に応じてボタン表示を更新
+        video.addEventListener('play', () => {
+            playBtn.textContent = '❚❚';
+        });
+
+        video.addEventListener('pause', () => {
+            playBtn.textContent = '▶';
+        });
+
+        video.addEventListener('ended', () => {
+            playBtn.textContent = '▶';
+        });
+
+        // 音量調整
+        volumeSlider.addEventListener('input', (e) => {
+            video.volume = e.target.value;
+            updateVolumeIcon(e.target.value);
+        });
+
+        function updateVolumeIcon(vol) {
+            if (vol == 0) {
+                volumeIcon.textContent = '🔇';
+            } else if (vol < 0.5) {
+                volumeIcon.textContent = '🔉';
+            } else {
+                volumeIcon.textContent = '🔊';
+            }
+        }
+    });
+});
+
 // VTTファイルを読み込んで字幕を表示
 const video = document.getElementById('interview-video');
 const subtitleDiv = document.getElementById('custom-subtitle');

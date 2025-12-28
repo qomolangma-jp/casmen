@@ -41,7 +41,7 @@ class RejectionNotification extends Mailable
     {
         $shopName = $this->entry->user ? $this->entry->user->shop_name : 'もえなび！';
         return new Content(
-            view: 'emails.rejection-notification',
+            text: 'emails.rejection-notification',
             with: [
                 'entry' => $this->entry,
                 'candidateName' => $this->entry->name,

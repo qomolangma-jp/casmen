@@ -1,52 +1,25 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>アルバイトに関するお知らせ</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .footer {
-            margin-top: 30px;
-            border-top: 1px solid #ccc;
-            padding-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <p>{{ $candidateName }} 様</p>
+■アルバイトの応募のご返答■
+この度は、【もえなび！】よりアルバイトの応募をいただき、誠にありがとうございました。
 
-        <p>この度は、数ある求人の中から<br>
-        {{ $shopName }}にご応募いただき、誠にありがとうございます。</p>
+{{ $shopName }}にご検討いただいた結果、大変心苦しくはありますが今回は採用を見送らせていただくとのことでした。
 
-        <p>お送りいただきました応募情報を拝見し、<br>
-        慎重に選考を行いました結果、<br>
-        誠に残念ながら今回は採用を見送らせていただくことになりました。</p>
+ご了承下さいませ。
 
-        <p>ご希望に添いかねる結果となり、大変恐縮ではございますが、<br>
-        何卒ご了承くださいますようお願い申し上げます。</p>
+■アルバイトをお探しの方へ■
+【もえなび！】ではスカウト型求人もえじょぶ！を始め、様々な角度からアルバイトを探している方へ向けて情報を発信しています。
 
-        <p>多数の求人の中から、当店にご関心をお寄せいただきましたこと、<br>
-        心より感謝申し上げます。</p>
+まだ【もえじょぶ！】をご利用頂いていない方は是非、ご利用をご検討下さい！
+待ってるだけで、お店の方からアルバイトのスカウトが来ますので簡単にアルバイトを始められます♪
 
-        <p>末筆ではございますが、{{ $candidateName }} 様の<br>
-        今後のご健勝とご活躍をお祈り申し上げます。</p>
+■スカウト型求人もえじょぶ！についてはこちら
+https://www.moe-navi.jp/moejob/
 
-        <div class="footer">
-            <p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
-            【もえなび！】<br>
-            <a href="https://moe-navi.jp/">https://moe-navi.jp/</a></p>
-        </div>
-    </div>
-</body>
-</html>
+
+■お店の様子からアルバイト内容を見るなら
+■ナビットのお仕事体験日記！
+https://www.moe-navi.jp/navitto/
+
+
+■初めて萌え系店舗へ応募するなら要チェック！
+■萌え系アルバイト完全ガイド
+https://www.moe-navi.jp/jobbeginner/

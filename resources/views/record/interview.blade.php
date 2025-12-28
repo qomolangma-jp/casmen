@@ -158,7 +158,8 @@
         document.getElementById('question-increment').textContent = index + 1;
 
         // 質問文
-        document.getElementById('question-text').textContent = question.q;
+        // 改行コードを<br>に変換して表示
+        document.getElementById('question-text').innerHTML = question.q.replace(/\r\n/g, '<br>').replace(/[\n\r]/g, '<br>');
 
         // 残り質問数または「最後の質問」表示
         const countdownElement = document.querySelector('.instruction__countdown');

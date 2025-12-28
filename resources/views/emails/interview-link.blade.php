@@ -1,63 +1,37 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>録画面接のご案内</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .footer {
-            margin-top: 30px;
-            border-top: 1px solid #ccc;
-            padding-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <p>{{ $entry->name }} 様</p>
+{{ $entry->name }} 様
 
-        <p>この度は、【{{ $companyName }}】にご応募いただき、誠にありがとうございます。<br>
-        採用担当です。</p>
+この度はご応募ありがとうございます。
+【{{ $companyName }}】です。
 
-        <p>次の選考ステップとして、録画面接（セルフ面接）をお願いしております。<br>
-        お手持ちのスマートフォンやPCから、ご都合の良い時間にご回答ください。</p>
+今回は、スマホでできる「らくらくセルフ面接」のご案内です。
+らくらくセルフ面接では、履歴書だけではわからない
+“あなたの話し方”や“雰囲気”を録画し、お店に届けることができます。
 
-        <p>所要時間は5分〜10分程度です。</p>
+24問の質問に答えるだけで、約2分ほどで完了します。
+来店不要・スタッフ対応なしで、24時間いつでも録画・送信ができます。
 
-        <p>▼ 録画面接はこちらから<br>
-        <a href="{{ $interviewUrl }}">{{ $interviewUrl }}</a></p>
+━━━━━━━━━━━━━━━━
+■ らくらくセルフ面接はこちら
+━━━━━━━━━━━━━━━━
+以下のURLからスタートしてください。
 
-        <p>※ 上記URLの有効期限は、本メール受信後【1週間】となります。<br>
-        お早めにご対応いただけますと幸いです。</p>
+{{ $interviewUrl }}
+※アプリは不要です
 
-        <hr>
-        <p>【録画面接の流れ】<br>
-        1. 上記URLにアクセス<br>
-        2. 画面の案内に従って、質問に動画で回答<br>
-        3. すべての回答が完了したら送信</p>
+━━━━━━━━━━━━━━━━
+■ セルフ面接の様子がわかる紹介動画
+━━━━━━━━━━━━━━━━
 
-        <p>ご不明な点がございましたら、お気軽にお問い合わせください。</p>
-        <hr>
+https://youtu.be/XXXXXXXX
 
-        <p>{{ $entry->name }} 様の素敵な一面を知れることを楽しみにしております。<br>
-        引き続き、よろしくお願いいたします。</p>
+━━━━━━━━━━━━━━━━
+■ 撮影のお願い
+━━━━━━━━━━━━━━━━
+選考をスムーズに進めるため、【3日以内の提出】のご対応をお願い致します。
 
-        <div class="footer">
-            <p>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
-            【{{ $companyName }}】<br>
-            Powered by CASMEN<br>
-            <a href="https://casmen.jp/">https://casmen.jp/</a></p>
-        </div>
-    </div>
-</body>
-</html>
+{{ $entry->name }} 様の雰囲気の伝わる動画を楽しみにしております。
+
+途中で不明点があれば、お気軽にお問い合わせください。
+
+お問い合わせはこちら↓
+support@casmen.jp

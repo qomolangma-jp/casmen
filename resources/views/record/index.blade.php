@@ -251,7 +251,7 @@
                         </div>
                         <div class="flex items-start">
                             <span class="text-pink-400 text-xl mr-3">★</span>
-                            <span class="text-gray-700 font-medium">24時間365日いつでも参加可能</span>
+                            <span class="text-gray-700 font-medium">24時間365日いつでも面接可能</span>
                         </div>
                         <div class="flex items-start">
                             <span class="text-pink-400 text-xl mr-3">☆</span>

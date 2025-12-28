@@ -40,7 +40,7 @@ class PassNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.pass-notification',
+            text: 'emails.pass-notification',
             with: [
                 'entry' => $this->entry,
                 'candidateName' => $this->entry->name,

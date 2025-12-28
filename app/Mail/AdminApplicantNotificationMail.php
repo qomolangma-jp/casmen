@@ -51,7 +51,7 @@ class AdminApplicantNotificationMail extends Mailable
         }
 
         return $this->subject($subject)
-                    ->view($view)
+                    ->text($view)
                     ->with($this->data);
     }
 }
