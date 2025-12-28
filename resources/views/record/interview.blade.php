@@ -21,6 +21,16 @@
         font-weight: bold;
         font-family: 'M PLUS Rounded 1c', sans-serif;
     }
+
+    /* ビデオプレビューの調整 */
+    #interview-video {
+        /* user.cssのサイズ(17.3rem x 29.2rem)を強制適用 */
+        width: 17.3rem !important;
+        height: 29.2rem !important;
+        object-fit: contain !important; /* 枠内に全体を収める */
+        transform: scaleX(-1); /* 鏡のように反転 */
+        background-color: #000; /* 余白を黒くする */
+    }
 </style>
 @endpush
 
@@ -44,12 +54,17 @@
     // カメラとマイクの起動
     async function startCamera() {
         try {
+            // 縦型（ポートレート）に固定
+            const videoConstraints = {
+                facingMode: 'user',
+                width: { ideal: 480 }, // 解像度を下げて負荷を軽減
+                height: { ideal: 854 },
+                frameRate: { ideal: 30 }, // フレームレートを指定して滑らかにする
+                aspectRatio: 0.5625 // 9:16
+            };
+
             stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    facingMode: 'user'
-                },
+                video: videoConstraints,
                 audio: true
             });
 

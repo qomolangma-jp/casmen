@@ -912,20 +912,6 @@ input[type="radio"] {
 	padding: 1rem 0;
 }
 
-.judge-btns {
-	display: flex;
-	margin: 0 0 3rem 0;
-}
-
-.judge-btns button {
-	width: 24rem;
-	color: #fff;
-	font-size: 2.4rem;
-	display: block;
-	border: none;
-	border-radius: .5rem;
-	padding: 1rem 2.3rem;
-}
 
 #reject-btn {
 	background-color: #ff4169;

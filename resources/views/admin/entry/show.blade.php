@@ -286,7 +286,8 @@
                     <!-- 未提出画面 -->
                     <span class="video-label not-submitted">未提出</span>
                     @if($entry->email || $entry->tel)
-                    <button id="resend" type="button" class="create-url" data-izimodal-open=".iziModal-submit">面接URLを再送（残り{{ 3 - ($entry->retake_count ?? 0) }}回）</button>
+                    <button id="resend" type="button" class="create-url btn-md btn-green" data-izimodal-open=".iziModal-submit">面接URLを再送（残り{{ 3 - ($entry->retake_count ?? 0) }}回）</button>
+                    @endif
                     <p class="copy-url-description">LINEやSNSで送る場合は、下記の面接URLをコピーしてご利用ください。</p>
                     <div class="copy-url">
                         <input id="url-display" class="display" type="url" value="{{ route('record.welcome', ['token' => $entry->interview_uuid]) }}" readonly>
@@ -294,7 +295,6 @@
                             <img src="{{ asset('assets/admin/img/copy-icon.png') }}" alt="コピーアイコン">
                         </span>
                     </div>
-                    @endif
                     @endif
                 </div>
                 <div class="back">

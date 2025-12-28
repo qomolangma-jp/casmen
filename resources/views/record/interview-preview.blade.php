@@ -2,9 +2,22 @@
 
 @section('title', 'CASMEN｜らくらくセルフ面接')
 
+@push('styles')
+<style>
+    /* ビデオプレビューの調整 */
+    #preview-video {
+        /* user.cssのサイズ(17.3rem x 29.2rem)を強制適用 */
+        width: 17.3rem !important;
+        height: 29.2rem !important;
+        object-fit: contain !important; /* 枠内に全体を収める */
+        transform: scaleX(-1); /* 鏡のように反転 */
+        background-color: #000; /* 余白を黒くする */
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script src="{{ asset('assets/admin/js/jquery-3.7.1.min.js') }}"></script>
-<script src="{{ asset('assets/user/js/main.js') }}"></script>
 <script>
     // カメラを起動
     let previewStream = null;
@@ -13,9 +26,11 @@
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    facingMode: 'user'
+                    width: { ideal: 480 }, // 解像度を下げて負荷を軽減
+                    height: { ideal: 854 },
+                    frameRate: { ideal: 30 }, // フレームレートを指定して滑らかにする
+                    facingMode: 'user',
+                    aspectRatio: 0.5625 // 9:16
                 },
                 audio: true
             });

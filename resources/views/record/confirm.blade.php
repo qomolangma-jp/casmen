@@ -123,6 +123,7 @@
                 if (videoElement.paused) {
                     // 再生開始（プレビューモードへ切り替え）
                     videoElement.muted = false;
+                    videoElement.volume = 1.0; // 音量を最大に設定
                     videoElement.play();
 
                     // ボタンの表示変更
