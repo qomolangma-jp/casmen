@@ -55,7 +55,7 @@
 
             const videoElement = document.getElementById('interview-video');
             videoElement.srcObject = stream;
-            // videoElement.muted = true; // 音声を有効にするためコメントアウト
+            videoElement.muted = true;
             videoElement.setAttribute('playsinline', ''); // iOS対応
             await videoElement.play();
 
@@ -165,22 +165,20 @@
 
         if (index === totalQuestions - 1) {
             // 最後の質問の場合
-            countdownElement.innerHTML = `質問完了まで残り：<span class="instruction__current-status"><span id="current-time">10</span>秒</span>｜最後の質問`;
+            countdownElement.innerHTML = `質問完了まで残り：<span class="instruction__current-status"><span id="current-time">8</span>秒</span>｜最後の質問`;
         } else {
             // 通常の場合
             const remainingQuestions = totalQuestions - (index + 1);
-            countdownElement.innerHTML = `次の質問まで残り：<span class="instruction__current-status"><span id="current-time">10</span>秒</span>｜残り質問数：<span class="instruction__current-status"><span id="question-decrement">${remainingQuestions}</span>問</span>`;
+            countdownElement.innerHTML = `次の質問まで残り：<span class="instruction__current-status"><span id="current-time">8</span>秒</span>｜残り質問数：<span class="instruction__current-status"><span id="question-decrement">${remainingQuestions}</span>問</span>`;
         }
 
-        // カウントダウンを10秒に設定 (how_to.htmlの記述に合わせて10秒に変更)
-        // how_to.html: "1問につき約10秒"
-        // interview.html: "9秒" (初期値)
-        document.getElementById('current-time').textContent = '10';
+        // カウントダウンを8秒に設定
+        document.getElementById('current-time').textContent = '8';
     }
 
-    // 質問タイマー（10秒後に次の質問へ）
+    // 質問タイマー（8秒後に次の質問へ）
     function startQuestionTimer() {
-        let countdown = 10;
+        let countdown = 8;
         const countdownElement = document.getElementById('current-time');
 
         // 最後の質問の場合はカウントダウン表示がないので更新しない
@@ -320,6 +318,52 @@
         if (countdownInterval) clearInterval(countdownInterval);
         if (questionTimer) clearInterval(questionTimer);
     });
+
+    // 途中やり直しボタンのクリックイベント
+    document.addEventListener('DOMContentLoaded', () => {
+        const interruptBtn = document.getElementById('interrupt-btn');
+        if (interruptBtn) {
+            interruptBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+
+                if (!confirm('最初からやり直しますか？\n※現在の進行状況はリセットされ、やり直し回数が1回消費されます。')) {
+                    return;
+                }
+
+                try {
+                    const formData = new FormData();
+                    formData.append('token', token);
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    const response = await fetch('{{ route("record.interrupt") }}', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // IndexedDBをクリア
+                        try {
+                            const db = await openDB();
+                            const transaction = db.transaction(storeName, 'readwrite');
+                            const store = transaction.objectStore(storeName);
+                            store.clear();
+                        } catch (err) {
+                            console.error('IndexedDBクリアエラー:', err);
+                        }
+
+                        window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
+                    } else {
+                        alert(result.message || 'やり直しの開始に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('やり直しエラー:', error);
+                    alert('通信エラーが発生しました。もう一度お試しください。');
+                }
+            });
+        }
+    });
 </script>
 @endpush
 
@@ -341,7 +385,7 @@
         <div class="instruction instruction__interview bg-frame">
             <div class="instruction__inner">
                 <div class="instruction__video">
-                    <video id="interview-video" autoplay playsinline></video>
+                    <video id="interview-video" autoplay playsinline muted></video>
                 </div>
 
                 <span class="instruction__notice">Q.<span id="question-increment">1</span></span>
@@ -350,7 +394,11 @@
 
             </div>
         </div>
-        <a href="{{ route('record.interview-preview', ['token' => $token]) }}" class="main__btn">最初からやり直す</a>
+        @if(($entry->interrupt_retake_count ?? 0) < 1)
+            <a href="#" id="interrupt-btn" class="main__btn">最初からやり直す<span class="remaining-chance">（残り{{ 1 - ($entry->interrupt_retake_count ?? 0) }}回）</span></a>
+        @else
+            <a href="#" class="main__btn disabled-btn" style="background-color: #ccc; cursor: not-allowed; pointer-events: none;">最初からやり直す<span class="remaining-chance">（残り0回）</span></a>
+        @endif
     </div>
 </main>
 

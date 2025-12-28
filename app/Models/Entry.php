@@ -24,6 +24,7 @@ class Entry extends Model
         'video_path',
         'completed_at',
         'retake_count',
+        'interrupt_retake_count',
         'decision_at'
     ];
 

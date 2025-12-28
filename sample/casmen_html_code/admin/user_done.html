@@ -5,8 +5,9 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="../assets/admin/css/admin.css">
+	<link rel="stylesheet" href="../assets/admin/css/iziModal.min.css">
 	<link rel="shortcut icon" href="../assets/admin/img/favicon.ico" type="image/x-icon">
-	<title>CASMEN｜登録情報の確認、変更</title>
+	<title>CASMEN｜面接URL送信・発行</title>
 </head>
 
 <body>
@@ -37,11 +38,7 @@
 							<a href="user_registration.html">
 								<img src="../assets/admin/img/people-icon.png" alt="グレーの人アイコン" class="default-icon">
 								<img src="../assets/admin/img/hover-people-icon.png" alt="青の人アイコン" class="hover-icon">
-
-								<!-- ここから追加 -->
 								<span>面接URL送信・発行</span>
-								<!-- ここまで追加 -->
-
 							</a>
 						</li>
 						<li>
@@ -75,28 +72,41 @@
 	<main>
 		<div class="main-container">
 			<div class="breadcrumbs">
-				<span><a href="dashboard.html">TOP</a> > 各種設定</span>
+				<span><a href="dashboard.html">TOP</a> > <a href="user_list.html">応募者一覧</a> > 面接URL送信・発行</span>
 			</div>
 			<div class="ray-content registration-content">
-				<h2>登録情報の確認、変更</h2>
-				<dl class="registration-info">
-					<dt>店舗名</dt>
-					<dd>キャスメン</dd>
-					<dt>メールアドレス</dt>
-					<dd>samplemail@casmen.jp</dd>
-					<dt>携帯電話番号</dt>
-					<dd>090-1234-5678</dd>
-					<dt>住所</dt>
-					<dd>
-						123-4567<br>
-						東京都新宿区新宿1-1-1<br>
-						キャスメンビル5F
-					</dd>
-				</dl>
-				<p class="contact">変更をご希望される場合には下記までご連絡下さい。</p>
-				<div class="email">
-					<span class="email-icon"><img src="../assets/admin/img/email-icon.png" alt="メールアイコン"></span>
-					<a href="mailto:support@casmen.jp">support@casmen.jp</a>
+				<h2>応募者情報</h2>
+				<div class="user-status">
+					<span class="user-icon"><img src="../assets/admin/img/user-icon.png" alt="ユーザーアイコン"></span>
+					<span class="user-name">今田美桜</span>
+				</div>
+
+				<!-- 面接URL自動送信から遷移した場合 -->
+				<ul class="applicant-contact">
+					<li>
+						<span><img src="../assets/admin/img/email-icon-gray.png" alt="メールアイコン"></span>
+						<span>samplemail@casmen.jp</span>
+					</li>
+					<li>
+						<span><img src="../assets/admin/img/tel-icon.png" alt="TELアイコン"></span>
+						<span>012-3456-7890</span>
+					</li>
+				</ul>
+				<p class="url-status status-send">面接URLを送信いたしました。</p>
+
+				<!-- 面接URL発行から遷移した場合 -->
+				<!-- <p class="url-status status-create">面接URLを発行いたしました。</p>
+				<p class="description">LINEやSNSで送る場合は、下記の面接URLをコピーしてご利用ください。</p>
+				<div class="copy-url">
+					<input id="url-display" class="display" type="url" placeholder="https://casmen.jp/share/CMhJ7kgBcEkakI2vJy5yrEq0UFGBCN2P" readonly>
+					<span id="copy">
+						<img src="../assets/admin/img/copy-icon.png" alt="コピーアイコン">
+					</span>
+				</div> -->
+
+				<div class="action-btns">
+					<a href="user_registration.html" target="_blank" rel="noopener noreferrer" class="btn-md btn-green">次の応募者へ面接URLを発行する</a>
+					<a href="user_list.html" class="btn-md btn-pink">応募者一覧を見る</a>
 				</div>
 			</div>
 			<div class="privacy-policy">
@@ -111,8 +121,12 @@
 	</footer>
 	<!-- jQuery -->
 	<script src="../assets/admin/js/jquery-3.7.1.min.js"></script>
-	<!-- main.js -->
+	<!-- iziModal -->
+	<script src="../assets/admin/js/iziModal.min.js"></script>
+	<!-- 共通JS -->
 	<script src="../assets/admin/js/main.js"></script>
+	<!-- モーダル表示用JS -->
+	<script src="../assets/admin/js/modal.js"></script>
 </body>
 
 </html>

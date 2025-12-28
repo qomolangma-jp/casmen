@@ -17,6 +17,7 @@
         <!-- 共通ローディング機能 -->
         <link rel="stylesheet" href="{{ asset('css/loading-manager.css') }}">
         <script src="{{ asset('js/loading-manager.js') }}" defer></script>
+        @include('components.google-tag')
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">

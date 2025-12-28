@@ -13,6 +13,7 @@
 
 html {
 	font-size: 10px;
+	scroll-behavior: smooth;
 }
 
 body {
@@ -32,17 +33,6 @@ ul {
 
 img {
 	display: block;
-}
-
-/* === Disabled State === */
-button:disabled,
-input[type="submit"]:disabled,
-.disabled {
-	background-color: #cccccc !important;
-	color: #666666 !important;
-	cursor: not-allowed !important;
-	border-color: #999999 !important;
-	opacity: 0.7;
 }
 
 /* === ヘッダー共通 === */
@@ -490,12 +480,12 @@ main {
 }
 
 .registration-content h2 {
-	margin: 0 0 4rem 0;
+	margin: 0 0 3.5rem 0;
 }
 
 .registration-content p {
 	color: #666;
-	margin: 0 0 .5rem 0;
+	margin: 0 0 1rem 0;
 }
 
 .registration-content label {
@@ -506,6 +496,7 @@ main {
 .input-area {
 	display: flex;
 	align-items: center;
+	margin: 1rem 0 0 0;
 }
 
 .input-area > span {
@@ -532,33 +523,34 @@ main {
 	font-size: 2.4rem;
 }
 
-.registration-content form {
-	padding: 3rem 0 4rem 0;
+.form-item {
+	margin: 3rem 0 0 0;
 }
 
-form .form-item:nth-child(2) {
-	padding: 3rem 0 0 0;
+.error span {
+	display: block;
+	line-height: 1;
 }
 
-form .form-item:nth-child(3) {
-	padding: 3rem 0 0 0;
-}
-
-.name-error {
+.error {
 	display: flex;
 	align-items: end;
+	gap: 1rem;
 	color: #ff4848;
 	font-size: 2rem;
-	padding: .5rem 0 0 5.9rem;
-	margin-bottom: 1rem;
 }
 
-.name-error span:nth-child(1) {
-	margin: 0 1.3rem 0 0;
+.error-name {
+	padding: .5rem 0 0 0;
 }
 
-.name-error span:nth-child(2) {
-	line-height: 1;
+.error-contact {
+	padding: 1rem 0 0 0;
+}
+
+/* 面接URL送信・発行ページ エラー用CSS */
+.input-field.is-error {
+	background-color: #ffd0d0;
 }
 
 .name-required {
@@ -578,42 +570,180 @@ form .form-item:nth-child(3) {
 	line-height: 1;
 }
 
+.flow-btns {
+	display: flex;
+	flex-direction: column;
+	gap: 3rem;
+	padding: 3.9rem 0 0 0;
+}
+
+.btn-txt-left > span {
+	display: block;
+}
+
 .applicant-heading {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 }
 
-.create-url {
-	font-size: 2.4rem;
-	background-color: #4ad561;
-	border: none;
-	border-radius: .5rem;
-	color: #fff;
-	display: block;
-	width: 100%;
-	padding: 1rem 0;
+.apply-section {
+	padding: 0 0 3.9rem 0;
+	border-bottom: .2rem solid #dddddd;
+}
+
+.auto-send-section {
+	padding: 3.9rem 0;
+	border-bottom: .2rem solid #dddddd;
+}
+
+.auto-send-inner > .btn-md,
+.create-url-send-inner > .btn-md {
 	margin: 4rem 0 0 0;
 }
 
-.create-url:hover {
-	background-color: #7ded8f;
+.create-url-send-section {
+	padding: 3.9rem 0 0 0;
+}
+
+.btn {
+	font-size: 2.4rem;
+}
+
+/* ボタンユーティリティ */
+.btn-sm {
+	width: 26rem;
+    height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    color: #fff;
+    border: none;
+    border-radius: .5rem;
 	cursor: pointer;
 }
 
-.applicant-heading > a {
-	width: 22rem;
-	height: 5rem;
-	gap: 1rem;
+.btn-md {
 	display: flex;
-	align-items: center;
 	justify-content: center;
-	font-size: 2.4rem;
-	color: #fff;
-	background-color: #4ad561;
+	width: 100%;
 	border: none;
 	border-radius: .5rem;
+	color: #fff;
+	padding: 1rem 0;
+	cursor: pointer;
+	font-size: 2.4rem;
+}
+
+.btn-lg {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	color: #fff;
+	border-radius: 1rem;
+	padding: 1.7rem;
+	cursor: pointer;
+}
+
+.btn-green {
+	background-color: #4ad561;
+}
+
+.btn-green:hover {
+	background-color: #7ded8f;
+}
+
+.btn-blue {
+	background-color: #5aa1ff;
+}
+
+.btn-blue:hover {
+	background-color: #7ab3fd;
+}
+
+.btn-pink {
+	background-color: #ff80ef;
+}
+
+.btn-pink:hover {
+	background-color: #ffa5f4;
+}
+
+.btn-contact > .triangle-down {
+	color: #5aa1ff;
+}
+
+.btn-contact:hover > .triangle-down {
+	color: #7ab3fd;
+}
+
+.btn-name > .triangle-down {
+	color: #4ad561;
+}
+
+.btn-name:hover > .triangle-down {
+	color: #7ded8f;
+}
+
+.triangle-down {
+	background-color: #fff;
+	width: 4rem;
+	height: 4rem;
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 2.2rem;
+	padding: .3rem 0 0 .1rem;
+}
+
+/* === 面接URL送信・発行後 === */
+.url-status {
+	width: 100%;
+	font-size: 3.2rem;
+	border-radius: .6rem;
+	padding: 1rem 5rem;
+	font-weight: bold;
+}
+
+p.status-send {
+	border: .2rem solid #5aa1ff;
+	color: #5aa1ff;
+	margin: 4.2rem 0 0 0;
+}
+
+p.status-create {
+	border: .2rem solid #4ad561;
+	color: #4ad561;
+	margin: 3.2rem 0 0 0;
+}
+
+p.description {
+	padding: 4rem 0 0 0;
 	margin: 0;
+}
+
+
+
+.action-btns {
+	display: flex;
+	flex-direction: column;
+	gap: 4rem;
+	padding: 6rem 0 0 0;
+}
+
+/* .registration-content > .user-status {
+	display: flex;
+} */
+
+.user-status > .user-name {
+	font-size: 3.6rem;
+	color: #666;
+}
+
+.applicant-heading img {
+	margin: 0 1rem 0 0;
 }
 
 .copy-url-description {
@@ -640,9 +770,8 @@ form .form-item:nth-child(3) {
 
 .copy-url {
 	display: flex;
-	padding: 3rem 0 0 0;
+	padding: 2.6rem 0 0 0;
 	position: relative;
-	margin: 0 0 2.6rem 0;
 }
 
 #copy {
@@ -713,6 +842,10 @@ form .form-item:nth-child(3) {
 
 .applicant-content {
 	padding: 3rem 2rem 2rem 2rem;
+}
+
+.registration-content > .user-status {
+	display: flex;
 }
 
 /* === タブ === */
@@ -1026,7 +1159,7 @@ input[type="radio"] {
 }
 
 .registration-content {
-	padding: 3rem 2rem 5rem 2rem;
+	padding: 3rem 2rem 6rem 2rem;
 }
 
 .problem {
@@ -1142,18 +1275,18 @@ footer {
 
 /* === 面接URL送信 モーダル === */
 .submit-confirm {
-	background-color: #4ad561;
+	background-color: #5aa1ff;
 	color: #fff;
 	padding: 2rem 3rem;
 }
 
 .inline-submit-btn {
-	background-color: #4ad561;
+	background-color: #5aa1ff;
 	color: #fff;
 	cursor: pointer;
 }
 
 .inline-submit-btn:hover {
-	background-color: #7ded8f;
+	background-color: #7ab3fd;
 	color: #fff;
 }

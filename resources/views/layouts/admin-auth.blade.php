@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('assets/admin/css/admin_login.css') }}">
     <link rel="shortcut icon" href="{{ asset('assets/admin/img/favicon.ico') }}" type="image/x-icon">
     <title>@yield('title', 'CASMEN｜管理画面')</title>
+    @include('components.google-tag')
     @stack('styles')
 </head>
 <body>

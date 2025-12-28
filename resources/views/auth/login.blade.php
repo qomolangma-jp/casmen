@@ -46,13 +46,6 @@
                     <img src="{{ asset('assets/admin/img/visible-icon.png') }}" class="visible" alt="表示アイコン">
                 </div>
             </div>
-            <div class="browser">
-                <div class="recommended-browser">
-                    <span>推奨ブラウザ:</span>
-                    <span>Chrome</span>
-                </div>
-                <img src="{{ asset('assets/admin/img/chrome.png') }}" alt="Chromeロゴ">
-            </div>
             <button id="login" type="submit" class="login-btn">Login</button>
         </form>
         @if (Route::has('password.request'))

@@ -38,7 +38,11 @@
 							<a href="user_registration.html">
 								<img src="../assets/admin/img/people-icon.png" alt="グレーの人アイコン" class="default-icon">
 								<img src="../assets/admin/img/hover-people-icon.png" alt="青の人アイコン" class="hover-icon">
-								<span>面接URL発行</span>
+
+								<!-- ここから追加 -->
+								<span>面接URL送信・発行</span>
+								<!-- ここまで追加 -->
+								 
 							</a>
 						</li>
 						<li>
@@ -49,11 +53,7 @@
 							</a>
 						</li>
 						<li>
-
-							<!-- 変更箇所 開始 -->
 							<a href="setting.html">
-							<!-- 変更箇所　終了 -->
-
 								<img src="../assets/admin/img/setting-icon.png" alt="グレーの歯車アイコン" class="default-icon">
 								<img src="../assets/admin/img/hover-setting-icon.png" alt="青の歯車アイコン" class="hover-icon">
 								<span>各種設定</span>
@@ -179,11 +179,7 @@
 		</div>
 
 		<!-- 通過モーダル -->
-
-		<!-- 変更箇所　開始 -->
 		<div id="modal-accepted" class="modal iziModal-passed">
-		<!-- 変更箇所　終了 -->
-
 			<p class="passed-confirm">本当にこの応募者を「通過」にしますか？</p>
 			<div class="modal-description">
 				<p>※「通過」を選ぶと、ステータスが「通過」に変更されます。</p>
@@ -199,11 +195,7 @@
 		<!-- 面接URL再送モーダル -->
 		<div id="modal-submit" class="modal iziModal-submit">
 			<p class="submit-confirm">面接URLを応募者へ送信しますか？</p>
-
-			<!-- 変更箇所　開始 -->
 			<div class="modal-btns submit-modal-btns">
-			<!-- 変更箇所　終了 -->
-
 				<button id="cancelled" class="cancelled" data-iziModal-close="">キャンセル</button>
 				<button id="submit" type="submit" class="inline-submit-btn">送信</button>
 			</div>
@@ -219,15 +211,10 @@
 	<script src="../assets/admin/js/jquery-3.7.1.min.js"></script>
 	<!-- iziModal -->
 	<script src="../assets/admin/js/iziModal.min.js"></script>
-
-	<!-- 変更箇所　開始 -->
-
 	<!-- 共通JS -->
 	<script src="../assets/admin/js/main.js"></script>
 	<!-- モーダル表示用JS -->
 	<script src="../assets/admin/js/modal.js"></script>
-
-	<!-- 変更箇所　終了 -->
 </body>
 
 </html>

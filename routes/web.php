@@ -41,6 +41,7 @@ Route::post('/record/preview', [RecordController::class, 'preview'])->name('reco
 Route::post('/record/submit', [RecordController::class, 'submit'])->name('record.submit'); // 最終送信
 Route::post('/record/process-subtitles', [RecordController::class, 'processSubtitles'])->name('record.process-subtitles'); // 字幕処理
 Route::post('/record/retake', [RecordController::class, 'retake'])->name('record.retake'); // 録り直し
+Route::post('/record/interrupt', [RecordController::class, 'interrupt'])->name('record.interrupt'); // 途中やり直し
 Route::get('/record/video/{filename}', [RecordController::class, 'serveVideo'])->name('record.video'); // 動画配信
 Route::get('/record/complete', [RecordController::class, 'complete'])->name('record.complete'); // 面接完了ページ
 

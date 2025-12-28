@@ -312,8 +312,8 @@ class RecordController extends Controller
 
                 foreach ($timestamps as $index => $ts) {
                     $startTime = $this->formatVttTime($ts['startTime']);
-                    // 各質問は5秒間表示
-                    $endTime = $this->formatVttTime($ts['startTime'] + 5000);
+                    // 各質問は8秒間表示
+                    $endTime = $this->formatVttTime($ts['startTime'] + 8000);
 
                     $vttContent .= ($index + 1) . "\n";
                     $vttContent .= "{$startTime} --> {$endTime} line:90% position:50% align:center\n";
@@ -432,6 +432,54 @@ class RecordController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => '録り直しの開始に失敗しました: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * 途中やり直し機能
+     */
+    public function interrupt(Request $request)
+    {
+        $token = $request->input('token');
+        $entry = Entry::where('interview_uuid', $token)->first();
+
+        if (!$entry) {
+            return response()->json([
+                'success' => false,
+                'message' => '無効なトークンです。'
+            ], 400);
+        }
+
+        // 途中やり直し回数をチェック（1回まで）
+        $interruptRetakeCount = $entry->interrupt_retake_count ?? 0;
+        if ($interruptRetakeCount >= 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'やり直し回数の上限に達しています。'
+            ], 400);
+        }
+
+        try {
+            // 既存の動画データを削除
+            EntryInterview::where('entry_id', $entry->entry_id)->delete();
+
+            // 途中やり直し回数を増加
+            $entry->update([
+                'interrupt_retake_count' => $interruptRetakeCount + 1,
+                'status' => 'recording'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => '最初からやり直します。',
+                'remaining_retakes' => 1 - ($interruptRetakeCount + 1)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'やり直しの開始に失敗しました: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -588,7 +636,7 @@ class RecordController extends Controller
         $token = $request->get('token');
 
         $entry = Entry::where('interview_uuid', $token)->first();
-        $questions = Question::where('category_id', 2)->inRandomOrder()->take(5)->get();
+        $questions = Question::where('category_id', 2)->orderBy('order')->get();
 
         return view('record.interview-preview', compact('token', 'entry', 'questions'));
     }
@@ -601,7 +649,7 @@ class RecordController extends Controller
         $token = $request->get('token');
 
         $entry = Entry::where('interview_uuid', $token)->first();
-        $questions = Question::where('category_id', 2)->inRandomOrder()->take(5)->get();
+        $questions = Question::where('category_id', 2)->orderBy('order')->get();
 
         return view('record.interview', compact('token', 'entry', 'questions'));
     }
@@ -613,7 +661,7 @@ class RecordController extends Controller
     {
         $token = $request->get('token');
         $entry = Entry::where('interview_uuid', $token)->first();
-        $questions = Question::where('category_id', 2)->get();
+        $questions = Question::where('category_id', 2)->orderBy('order')->get();
 
         return view('record.confirm', compact('token', 'entry', 'questions'));
     }

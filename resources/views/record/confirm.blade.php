@@ -69,7 +69,6 @@
 
             videoElement.src = URL.createObjectURL(recordedVideoBlob);
             videoElement.controls = false;
-            // videoElement.muted = true; // 音声を有効にするためコメントアウト
             videoElement.setAttribute('playsinline', ''); // iOS対応
 
             // 字幕表示のセットアップ
@@ -94,7 +93,7 @@
             for (let i = 0; i < questionTimestamps.length; i++) {
                 const timestamp = questionTimestamps[i];
                 const startTime = timestamp.startTime;
-                const endTime = startTime + 5000; // 5秒間表示
+                const endTime = startTime + 8000; // 8秒間表示
 
                 if (currentTime >= startTime && currentTime < endTime) {
                     currentSubtitle = `Q${i + 1}: ${timestamp.question}`;
@@ -155,7 +154,6 @@
         function stopPreview() {
             videoElement.pause();
             videoElement.currentTime = 0;
-            // videoElement.muted = true; // 音声を有効にするためコメントアウト
 
             // ボタンの表示変更
             if (previewBtn) {
@@ -317,9 +315,42 @@
         if (retakeLink && !retakeLink.classList.contains('disabled-btn')) {
             retakeLink.addEventListener('click', async (e) => {
                 e.preventDefault();
-                // 録り直し処理（必要ならサーバーに通知など）
-                // ここでは単純にプレビュー画面に戻る
-                window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
+
+                if (!confirm('録り直しをしますか？\n※現在の録画データは削除され、録り直し回数が1回消費されます。')) {
+                    return;
+                }
+
+                try {
+                    const formData = new FormData();
+                    formData.append('token', token);
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    const response = await fetch('{{ route("record.retake") }}', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // IndexedDBをクリア
+                        try {
+                            const db = await openDB();
+                            const transaction = db.transaction(storeName, 'readwrite');
+                            const store = transaction.objectStore(storeName);
+                            store.clear();
+                        } catch (err) {
+                            console.error('IndexedDBクリアエラー:', err);
+                        }
+
+                        window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
+                    } else {
+                        alert(result.message || '録り直しの開始に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('録り直しエラー:', error);
+                    alert('通信エラーが発生しました。もう一度お試しください。');
+                }
             });
         }
     });

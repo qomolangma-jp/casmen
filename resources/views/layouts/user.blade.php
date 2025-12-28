@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{ asset('assets/user/css/user.css') }}">
     <link rel="shortcut icon" href="{{ asset('assets/user/img/favicon.ico') }}" type="image/x-icon">
     <title>@yield('title', 'CASMEN｜らくらくセルフ面接')</title>
+    @include('components.google-tag')
     @stack('styles')
 </head>
 <body>
