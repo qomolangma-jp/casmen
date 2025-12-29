@@ -297,7 +297,7 @@
             for (let i = 0; i < questionTimestamps.length; i++) {
                 const timestamp = questionTimestamps[i];
                 const startTime = timestamp.startTime;
-                const endTime = startTime + 8000; // 8秒間表示
+                const endTime = startTime + 5000; // 5秒間表示
 
                 if (currentTime >= startTime && currentTime < endTime) {
                     currentSubtitle = 'Q' + (i + 1) + ': ' + timestamp.question;
@@ -466,7 +466,12 @@
                 // FormDataを作成して動画データと字幕情報を送信
                 const formData = new FormData();
                 formData.append('token', token);
-                formData.append('video', recordedVideoBlob, 'interview.webm');
+
+                // 正しいファイル拡張子を設定
+                const fileExtension = recordedVideoBlob.type.includes('mp4') ? 'mp4' : 'webm';
+                const fileName = 'interview.' + fileExtension;
+                formData.append('video', recordedVideoBlob, fileName);
+
                 formData.append('timestamps', JSON.stringify(questionTimestamps));
                 formData.append('_token', '{{ csrf_token() }}');
 

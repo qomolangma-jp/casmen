@@ -334,8 +334,8 @@ class RecordController extends Controller
 
                 foreach ($timestamps as $index => $ts) {
                     $startTime = $this->formatVttTime($ts['startTime']);
-                    // 各質問は8秒間表示
-                    $endTime = $this->formatVttTime($ts['startTime'] + 8000);
+                    // 各質問は5秒間表示
+                    $endTime = $this->formatVttTime($ts['startTime'] + 5000);
 
                     $vttContent .= ($index + 1) . "\n";
                     $vttContent .= "{$startTime} --> {$endTime} line:90% position:50% align:center\n";
