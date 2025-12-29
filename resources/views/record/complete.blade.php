@@ -26,7 +26,6 @@
             </div>
         </div>
 
-        <button id="close-btn" type="button" class="main__btn" onclick="window.close()">閉じる</button>
     </div>
 </main>
 

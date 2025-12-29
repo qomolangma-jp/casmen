@@ -641,6 +641,11 @@ class RecordController extends Controller
             return view('record.error')->with('errorMessage', 'このURLは既に使用済みです。新しいURLの発行をお店にご依頼ください。');
         }
 
+        // 確認画面待機中の場合は確認画面へリダイレクト
+        if ($entry->status === 'confirming') {
+            return redirect()->route('record.confirm', ['token' => $token]);
+        }
+
         $expirationDays = config('app.interview_url_expiration_days', 14);
         $expiresAt = $entry->created_at->addDays($expirationDays);
 
@@ -657,6 +662,12 @@ class RecordController extends Controller
     public function howto(Request $request)
     {
         $token = $request->get('token');
+
+        $entry = Entry::where('interview_uuid', $token)->first();
+        if ($entry && $entry->status === 'confirming') {
+            return redirect()->route('record.confirm', ['token' => $token]);
+        }
+
         return view('record.howto', compact('token'));
     }
 
@@ -672,6 +683,11 @@ class RecordController extends Controller
         // 既に送信済みの場合はエラーページへ
         if ($entry && $entry->status === 'completed') {
             return redirect()->route('record.error', ['token' => $token, 'message' => 'このインタビューは既に送信済みです。']);
+        }
+
+        // 確認画面待機中の場合は確認画面へリダイレクト
+        if ($entry && $entry->status === 'confirming') {
+            return redirect()->route('record.confirm', ['token' => $token]);
         }
 
         $questions = Question::where('category_id', 2)->orderBy('order')->get();
@@ -693,6 +709,11 @@ class RecordController extends Controller
             return redirect()->route('record.error', ['token' => $token, 'message' => 'このインタビューは既に送信済みです。']);
         }
 
+        // 確認画面待機中の場合は確認画面へリダイレクト
+        if ($entry && $entry->status === 'confirming') {
+            return redirect()->route('record.confirm', ['token' => $token]);
+        }
+
         //$questions = Question::where('category_id', 2)->orderBy('order')->get();
         $questions = Question::where('category_id', 2)->orderBy('order')->take(15)->get();
 
@@ -710,6 +731,12 @@ class RecordController extends Controller
         // 既に送信済みの場合はエラーページへ
         if ($entry && $entry->status === 'completed') {
             return redirect()->route('record.error', ['token' => $token, 'message' => 'このインタビューは既に送信済みです。']);
+        }
+
+        // ステータスを確認画面待機中に更新
+        if ($entry && $entry->status !== 'completed' && $entry->status !== 'confirming') {
+            $entry->status = 'confirming';
+            $entry->save();
         }
 
         // メモリ制限のため、質問数を5問に制限
