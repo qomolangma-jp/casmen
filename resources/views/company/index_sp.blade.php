@@ -4,7 +4,7 @@
 <head>
     <x-google-tag />
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=640px, user-scalable=no">
 	<link rel="stylesheet" href="{{ asset('assets/company/css/company.css') }}">
 	<link rel="shortcut icon" href="{{ asset('assets/company/img/favicon.ico') }}" type="image/x-icon">
 	<title>CASMEN｜運営会社</title>

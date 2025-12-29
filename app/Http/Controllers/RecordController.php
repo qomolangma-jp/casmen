@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class RecordController extends Controller
 {
@@ -114,9 +115,9 @@ class RecordController extends Controller
 
             // 質問番号がある場合は質問ごとのファイル名、ない場合は従来のファイル名
             if ($questionNumber) {
-                $fileName = 'interview_' . $entry->entry_id . '_question_' . $questionNumber . '_' . time() . '.' . $extension;
+                $fileName = 'interview_q_' . Str::random(40) . '.' . $extension;
             } else {
-                $fileName = 'interview_' . $entry->entry_id . '_' . time() . '.' . $extension;
+                $fileName = 'interview_' . Str::random(40) . '.' . $extension;
             }
 
             // ファイルを保存
@@ -307,7 +308,7 @@ class RecordController extends Controller
                 }
             }
 
-            $fileName = 'interview_' . $entry->entry_id . '_' . time() . '.' . $extension;
+            $fileName = 'interview_' . Str::random(40) . '.' . $extension;
             $filePath = 'interviews/' . $fileName;
 
             Log::info("ファイル名生成: " . $fileName);
@@ -334,8 +335,8 @@ class RecordController extends Controller
 
                 foreach ($timestamps as $index => $ts) {
                     $startTime = $this->formatVttTime($ts['startTime']);
-                    // 各質問は5秒間表示
-                    $endTime = $this->formatVttTime($ts['startTime'] + 5000);
+                    // 各質問は8秒間表示
+                    $endTime = $this->formatVttTime($ts['startTime'] + 8000);
 
                     $vttContent .= ($index + 1) . "\n";
                     $vttContent .= "{$startTime} --> {$endTime} line:90% position:50% align:center\n";
@@ -754,21 +755,23 @@ class RecordController extends Controller
             $videoFile = $request->file('video');
             $timestamps = json_decode($request->input('timestamps', '[]'), true);
 
+            $randomStr = Str::random(40);
+
             // 元の動画を保存
-            $fileName = 'interview_' . $entry->entry_id . '_' . time() . '.webm';
+            $fileName = 'interview_' . $randomStr . '.webm';
 
             $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
             $path = $videoFile->storeAs('interviews', $fileName, $disk);
 
             // 字幕ファイルを生成（WebVTT形式）
-            $vttFileName = 'interview_' . $entry->entry_id . '_' . time() . '.vtt';
+            $vttFileName = 'interview_' . $randomStr . '.vtt';
 
             $vttContent = "WEBVTT\n\n";
 
             foreach ($timestamps as $index => $ts) {
                 $startTime = $this->formatVttTime($ts['startTime']);
-                // 各質問は5秒間表示
-                $endTime = $this->formatVttTime($ts['startTime'] + 5000);
+                // 各質問は8秒間表示
+                $endTime = $this->formatVttTime($ts['startTime'] + 8000);
 
                 $vttContent .= ($index + 1) . "\n";
                 $vttContent .= "{$startTime} --> {$endTime}\n";

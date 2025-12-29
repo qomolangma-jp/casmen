@@ -74,7 +74,7 @@ class VideoProcessingService
             $durationCommand = sprintf('"%s" -i "%s" 2>&1 | grep "Duration"', $ffmpegPath, $inputFullPath);
             exec($durationCommand, $durationOutput);
 
-            $videoDuration = 5; // デフォルト5秒
+            $videoDuration = 8; // デフォルト8秒
 
             // 動画の実際の長さを解析
             foreach ($durationOutput as $line) {

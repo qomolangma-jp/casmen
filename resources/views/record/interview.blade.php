@@ -78,12 +78,13 @@
     // カメラとマイクの起動
     async function startCamera() {
         try {
-            // カメラストリームを取得（解像度を640x480に制限して容量を節約）
+            // カメラストリームを取得（解像度を320x240、フレームレート15fpsに制限して容量を極限まで節約）
             stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: 'user',
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
+                    width: { ideal: 320 },
+                    height: { ideal: 240 },
+                    frameRate: { ideal: 15 }
                 },
                 audio: true
             });
@@ -141,9 +142,9 @@
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
             const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-            // ビットレートを1.5Mbpsに制限して容量をさらに節約（安定性重視）
+            // ビットレートを250kbpsに制限して容量を極限まで節約（安定性重視）
             let options = {
-                videoBitsPerSecond: 1500000
+                videoBitsPerSecond: 250000
             };
 
             // iPhone/Safariの場合はmp4を最優先
@@ -270,20 +271,20 @@
 
         if (index === totalQuestions - 1) {
             // 最後の質問の場合
-            countdownElement.innerHTML = `質問完了まで残り：<span class="instruction__current-status"><span id="current-time">5</span>秒</span>｜最後の質問`;
+            countdownElement.innerHTML = `質問完了まで残り：<span class="instruction__current-status"><span id="current-time">8</span>秒</span>｜最後の質問`;
         } else {
             // 通常の場合
             const remainingQuestions = totalQuestions - (index + 1);
-            countdownElement.innerHTML = `次の質問まで残り：<span class="instruction__current-status"><span id="current-time">5</span>秒</span>｜残り質問数：<span class="instruction__current-status"><span id="question-decrement">${remainingQuestions}</span>問</span>`;
+            countdownElement.innerHTML = `次の質問まで残り：<span class="instruction__current-status"><span id="current-time">8</span>秒</span>｜残り質問数：<span class="instruction__current-status"><span id="question-decrement">${remainingQuestions}</span>問</span>`;
         }
 
-        // カウントダウンを5秒に設定
-        document.getElementById('current-time').textContent = '5';
+        // カウントダウンを8秒に設定
+        document.getElementById('current-time').textContent = '8';
     }
 
-    // 質問タイマー（5秒後に次の質問へ）
+    // 質問タイマー（8秒後に次の質問へ）
     function startQuestionTimer() {
-        let countdown = 5;
+        let countdown = 8;
         const countdownElement = document.getElementById('current-time');
 
         // 最後の質問の場合はカウントダウン表示がないので更新しない
