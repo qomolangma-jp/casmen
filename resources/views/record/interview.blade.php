@@ -238,20 +238,20 @@
 
         if (index === totalQuestions - 1) {
             // 最後の質問の場合
-            countdownElement.innerHTML = `質問完了まで残り：<span class="instruction__current-status"><span id="current-time">8</span>秒</span>｜最後の質問`;
+            countdownElement.innerHTML = `質問完了まで残り：<span class="instruction__current-status"><span id="current-time">5</span>秒</span>｜最後の質問`;
         } else {
             // 通常の場合
             const remainingQuestions = totalQuestions - (index + 1);
-            countdownElement.innerHTML = `次の質問まで残り：<span class="instruction__current-status"><span id="current-time">8</span>秒</span>｜残り質問数：<span class="instruction__current-status"><span id="question-decrement">${remainingQuestions}</span>問</span>`;
+            countdownElement.innerHTML = `次の質問まで残り：<span class="instruction__current-status"><span id="current-time">5</span>秒</span>｜残り質問数：<span class="instruction__current-status"><span id="question-decrement">${remainingQuestions}</span>問</span>`;
         }
 
-        // カウントダウンを8秒に設定
-        document.getElementById('current-time').textContent = '8';
+        // カウントダウンを5秒に設定
+        document.getElementById('current-time').textContent = '5';
     }
 
-    // 質問タイマー（8秒後に次の質問へ）
+    // 質問タイマー（5秒後に次の質問へ）
     function startQuestionTimer() {
-        let countdown = 8;
+        let countdown = 5;
         const countdownElement = document.getElementById('current-time');
 
         // 最後の質問の場合はカウントダウン表示がないので更新しない
