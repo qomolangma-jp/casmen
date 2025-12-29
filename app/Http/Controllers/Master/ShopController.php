@@ -83,7 +83,8 @@ class ShopController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $shop = User::whereNotNull('shop_name')->findOrFail($id);
+        return view('master.shop.edit', compact('shop'));
     }
 
     /**
@@ -91,7 +92,23 @@ class ShopController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $shop = User::whereNotNull('shop_name')->findOrFail($id);
+
+        $request->validate([
+            'shop_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $shop->id,
+            'tel' => 'nullable|string|max:20',
+        ]);
+
+        $shop->update([
+            'shop_name' => $request->shop_name,
+            'name' => $request->name,
+            'email' => $request->email,
+            'tel' => $request->tel,
+        ]);
+
+        return redirect()->route('master.shop.index')->with('success', '店舗情報を更新しました。');
     }
 
     /**
@@ -99,6 +116,9 @@ class ShopController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $shop = User::whereNotNull('shop_name')->findOrFail($id);
+        $shop->delete();
+
+        return redirect()->route('master.shop.index')->with('success', '店舗を削除しました。');
     }
 }

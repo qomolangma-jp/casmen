@@ -186,12 +186,16 @@
                                     <a href="{{ route('master.shop.show', $shop->id) }}" class="text-red-600 hover:text-red-900">
                                         詳細
                                     </a>
-                                    <button type="button" class="text-blue-600 hover:text-blue-900">
+                                    <a href="{{ route('master.shop.edit', $shop->id) }}" class="text-blue-600 hover:text-blue-900">
                                         編集
-                                    </button>
-                                    <button type="button" class="text-gray-600 hover:text-gray-900">
-                                        削除
-                                    </button>
+                                    </a>
+                                    <form action="{{ route('master.shop.destroy', $shop->id) }}" method="POST" onsubmit="return confirm('本当に削除しますか？');" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-gray-600 hover:text-gray-900">
+                                            削除
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

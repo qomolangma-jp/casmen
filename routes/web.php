@@ -86,7 +86,7 @@ Route::prefix('master')->name('master.')->middleware(['auth', 'master.role'])->g
     Route::get('/', [MasterTopController::class, 'index'])->name('dashboard');
 
     // ID: 13, 14 - 登録店舗（リソースコントローラー）
-    Route::resource('shop', MasterShopController::class)->only(['index', 'show']);
+    Route::resource('shop', MasterShopController::class);
 
     // ID: 15, 16 - 面接URL（リソースコントローラー）
     Route::resource('link', MasterLinkController::class)->only(['index', 'show']);

@@ -50,14 +50,40 @@
     let recordingStartTime = null;
     let questionTimestamps = [];
     let recordedMimeType = ''; // 実際に使用されたmimeTypeを保存
+    let wakeLock = null; // 画面ロック防止用
+
+    // Wake Lock API (画面スリープ防止)
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Wake Lock is active');
+
+                wakeLock.addEventListener('release', () => {
+                    console.log('Wake Lock released');
+                });
+            }
+        } catch (err) {
+            console.error(`Wake Lock error: ${err.name}, ${err.message}`);
+        }
+    }
+
+    function releaseWakeLock() {
+        if (wakeLock !== null) {
+            wakeLock.release().catch(err => console.error(err));
+            wakeLock = null;
+        }
+    }
 
     // カメラとマイクの起動
     async function startCamera() {
         try {
-            // カメラストリームを取得（制約を最小限にしてデバイスのネイティブ設定を使用）
+            // カメラストリームを取得（解像度を640x480に制限して容量を節約）
             stream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: 'user'
+                    facingMode: 'user',
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
                 },
                 audio: true
             });
@@ -107,12 +133,18 @@
 
     // 録画開始（継続録画）
     function startRecording() {
+        // 画面スリープ防止をリクエスト
+        requestWakeLock();
+
         try {
             // iPhone/Safari判定
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
             const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-            let options = {};
+            // ビットレートを1.5Mbpsに制限して容量をさらに節約（安定性重視）
+            let options = {
+                videoBitsPerSecond: 1500000
+            };
 
             // iPhone/Safariの場合はmp4を最優先
             if (isIOS || isSafari) {
@@ -353,6 +385,9 @@
         const blob = new Blob(recordedChunks, { type: blobType });
         console.log('Blob作成:', blob.size, 'bytes, type:', blob.type);
 
+        // メモリ解放のためにrecordedChunksをクリア
+        recordedChunks = [];
+
         if (blob.size === 0) {
             console.error('録画データのサイズが0です');
             alert('録画データが空です。もう一度お試しください。');
@@ -377,7 +412,14 @@
             window.location.href = "{{ route('record.confirm') }}?token=" + token;
         } catch (error) {
             console.error('IndexedDB保存エラー:', error);
-            alert('録画データの保存に失敗しました。容量不足の可能性があります。');
+            // エラーの詳細を表示
+            let errorMsg = '録画データの保存に失敗しました。';
+            if (error.name === 'QuotaExceededError') {
+                errorMsg += 'ブラウザの保存容量が不足しています。不要なデータを削除するか、PCでお試しください。';
+            } else {
+                errorMsg += 'エラー: ' + error.message;
+            }
+            alert(errorMsg);
         }
     }
 
@@ -388,6 +430,7 @@
 
     // ページを離れる時にカメラとタイマーを停止
     window.addEventListener('beforeunload', () => {
+        releaseWakeLock(); // Wake Lock解放
         if (stream) {
             stream.getTracks().forEach(track => track.stop());
         }

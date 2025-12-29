@@ -203,8 +203,15 @@
             // Blobのtypeが空の場合、保存されたmimeTypeで再作成
             if (!recordedVideoBlob.type && savedMimeType) {
                 debugLog('Blobにtypeがないため、再作成します', 'warn');
-                recordedVideoBlob = new Blob([recordedVideoBlob], { type: savedMimeType });
-                debugLog('再作成後のBlobタイプ: ' + recordedVideoBlob.type);
+                try {
+                    // Blobコンストラクタのエラーハンドリング
+                    recordedVideoBlob = new Blob([recordedVideoBlob], { type: savedMimeType });
+                    debugLog('再作成後のBlobタイプ: ' + recordedVideoBlob.type);
+                } catch (e) {
+                    debugLog('Blob再作成エラー: ' + e.message, 'error');
+                    // エラーが発生した場合でも、元のBlobを使用してみる（またはユーザーに通知）
+                    alert('動画データの読み込みに問題が発生しました: ' + e.message);
+                }
             }
 
             // デバイス情報を先に読み込む

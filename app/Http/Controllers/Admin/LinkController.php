@@ -77,31 +77,33 @@ class LinkController extends Controller
         }
 
         if ($action === 'send') {
-            $sentMethod = '';
-            $errorMsg = null;
+            $sentMethods = [];
+            $errorMsgs = [];
 
             if ($request->email) {
                 // Send Email
                 try {
                     Mail::to($request->email)->send(new InterviewLinkMail($entry, $interviewUrl));
-                    $sentMethod = 'email';
+                    $sentMethods[] = 'メール';
                 } catch (\Exception $e) {
                     Log::error('Email send failed: ' . $e->getMessage());
-                    $errorMsg = 'メール送信に失敗しました。';
-                }
-            } elseif ($request->phone) {
-                // Send SMS
-                try {
-                    $this->sendSms($request->phone, $interviewUrl, $entry->user->shop_name ?? 'CASMEN');
-                    $sentMethod = 'sms';
-                } catch (\Exception $e) {
-                    Log::error('SMS send failed: ' . $e->getMessage());
-                    $errorMsg = 'SMS送信に失敗しました。';
+                    $errorMsgs[] = 'メール送信に失敗しました。';
                 }
             }
 
-            if ($errorMsg) {
-                 return redirect()->back()->withErrors(['error' => $errorMsg])->withInput();
+            if ($request->phone) {
+                // Send SMS
+                try {
+                    $this->sendSms($request->phone, $interviewUrl, $entry->user->shop_name ?? 'CASMEN');
+                    $sentMethods[] = 'SMS';
+                } catch (\Exception $e) {
+                    Log::error('SMS send failed: ' . $e->getMessage());
+                    $errorMsgs[] = 'SMS送信に失敗しました。';
+                }
+            }
+
+            if (empty($sentMethods) && !empty($errorMsgs)) {
+                 return redirect()->back()->withErrors(['error' => implode("\n", $errorMsgs)])->withInput();
             }
 
             // 管理者へURL送信完了のお知らせ
@@ -115,7 +117,10 @@ class LinkController extends Controller
 
             return redirect()->route('admin.link.create')->with([
                 'success_action' => 'send',
-                'interview_url' => $interviewUrl
+                'interview_url' => $interviewUrl,
+                'entry_name' => $entry->name,
+                'entry_email' => $entry->email,
+                'entry_tel' => $entry->tel,
             ]);
 
         } else {
@@ -132,7 +137,10 @@ class LinkController extends Controller
 
             return redirect()->route('admin.link.create')->with([
                 'success_action' => 'issue',
-                'interview_url' => $interviewUrl
+                'interview_url' => $interviewUrl,
+                'entry_name' => $entry->name,
+                'entry_email' => $entry->email,
+                'entry_tel' => $entry->tel,
             ]);
         }
     }
