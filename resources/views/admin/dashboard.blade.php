@@ -76,9 +76,7 @@
                 </span>
             </div>
         </div>
-        <div class="privacy-policy">
-            <a href="#">個人情報の取り扱いについて</a>
-        </div>
+        {{-- <x-admin-privacy-link /> --}}
     </div>
 </main>
 @endsection

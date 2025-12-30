@@ -450,6 +450,10 @@
                     return;
                 }
 
+                // ボタンを無効化
+                interruptBtn.classList.add('disabled-btn');
+                interruptBtn.style.pointerEvents = 'none';
+
                 try {
                     const formData = new FormData();
                     formData.append('token', token);
@@ -473,7 +477,7 @@
                             console.error('IndexedDBクリアエラー:', err);
                         }
 
-                        window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
+                        window.location.href = "{{ route('record.interview-preview') }}?token=" + token + "&t=" + new Date().getTime();
                     } else {
                         alert(result.message || 'やり直しの開始に失敗しました。');
                     }

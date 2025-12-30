@@ -306,7 +306,7 @@
             </div>
         </div>
         <div class="privacy-policy">
-            <a href="#">個人情報の取り扱いについて</a>
+            <a href="{{ route('company.policy') }}" target="_blank">個人情報の取り扱いについて</a>
         </div>
     </div>
 

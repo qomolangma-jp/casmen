@@ -83,6 +83,10 @@
             </div>
         </div>
         <a href="{{ route('record.interview', ['token' => $token]) }}" class="main__btn start-btn">セルフ面接スタート</a>
+
+        @if(($entry->interrupt_retake_count ?? 0) >= 1)
+            <a href="#" class="main__btn disabled-btn" style="background-color: #ccc; cursor: not-allowed; pointer-events: none; margin-top: 2.6rem;">最初からやり直す<span class="remaining-chance">（残り0回）</span></a>
+        @endif
     </div>
 </main>
 

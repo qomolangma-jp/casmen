@@ -601,6 +601,10 @@
                     return;
                 }
 
+                // ボタンを無効化
+                retakeLink.classList.add('disabled-btn');
+                retakeLink.style.pointerEvents = 'none';
+
                 debugLog('録り直し処理を開始...');
 
                 try {
@@ -626,7 +630,7 @@
                             console.error('IndexedDBクリアエラー:', err);
                         }
 
-                        window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
+                        window.location.href = "{{ route('record.interview-preview') }}?token=" + token + "&t=" + new Date().getTime();
                     } else {
                         alert(result.message || '録り直しの開始に失敗しました。');
                     }
@@ -649,8 +653,14 @@
 
 <main class="main">
     <div class="main__container">
+        @if(session('warning'))
+            <div style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 15px; margin: 20px; text-align: center; color: #856404; font-size: 1.8rem;">
+                <strong>⚠️ {{ session('warning') }}</strong>
+            </div>
+        @endif
+
         <div class="instruction instruction__interview bg-frame">
-            <div class="instruction__confirm-inner">
+            <div class="instruction__confirm-inner">`
                 <div class="instruction__confirm-video">
                     <!-- 動画ロード中のプレースホルダー -->
                     <div id="video-placeholder">

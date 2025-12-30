@@ -20,7 +20,7 @@
                 <span class="instruction__error-message"><i class="bi bi-exclamation-triangle-fill"></i>エラーが発生しました</span>
 
                 @if(isset($errorMessage))
-                    <p class="error-detail" style="color: red; font-weight: bold; margin-bottom: 10px;">{{ $errorMessage }}</p>
+                    <p class="error-detail" style="color: red; font-weight: bold; margin-bottom: 10px;">{!! $errorMessage !!}</p>
                 @endif
 
                 <p>解決しない場合は、サポートまでご連絡<br>ください。</p>

@@ -20,7 +20,7 @@
         // 二重送信防止（フォーム送信時）
         document.addEventListener('submit', function(e) {
             if (e.target.tagName === 'FORM') {
-                const submitButtons = e.target.querySelectorAll('button[type="submit"], input[type="submit"]');
+                const submitButtons = e.target.querySelectorAll('button, input[type="submit"]');
                 submitButtons.forEach(button => {
                     button.disabled = true;
                 });

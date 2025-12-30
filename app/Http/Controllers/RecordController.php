@@ -32,16 +32,16 @@ class RecordController extends Controller
             $entry = Entry::where('interview_uuid', $token)->first();
 
             if (!$entry) {
-                $errorMessage = 'URLが見つかりません。URLが正しいかご確認ください。';
+                $errorMessage = 'URLが見つかりません。<br>URLが正しいかご確認ください。';
             } elseif ($entry->status === 'completed') {
-                $errorMessage = 'このURLは既に使用済みです。新しいURLの発行をお店にご依頼ください。';
+                $errorMessage = 'このURLは既に使用済みです。<br>新しいURLの発行をお店にご依頼ください。';
             } else {
                 // 有効期限チェック（created_atから2週間）
                 $expirationDays = config('app.interview_url_expiration_days', 14);
                 $expiresAt = $entry->created_at->addDays($expirationDays);
 
                 if (now()->gt($expiresAt)) {
-                    $errorMessage = 'このURLの有効期限が切れています。新しいURLの発行をお店にご依頼ください。';
+                    $errorMessage = 'このURLの有効期限が切れています。<br>新しいURLの発行をお店にご依頼ください。';
                 } else {
                     $isValidToken = true;
                 }
@@ -477,10 +477,9 @@ class RecordController extends Controller
             }
 
             // 録り直し回数を増加
-            $entry->update([
-                'retake_count' => $retakeCount + 1,
-                'status' => 'recording'
-            ]);
+            $entry->retake_count = $retakeCount + 1;
+            $entry->status = 'recording';
+            $entry->save();
 
             return response()->json([
                 'success' => true,
@@ -532,10 +531,9 @@ class RecordController extends Controller
             EntryInterview::where('entry_id', $entry->entry_id)->delete();
 
             // 途中やり直し回数を増加
-            $entry->update([
-                'interrupt_retake_count' => $interruptRetakeCount + 1,
-                'status' => 'recording'
-            ]);
+            $entry->interrupt_retake_count = $interruptRetakeCount + 1;
+            $entry->status = 'recording';
+            $entry->save();
 
             return response()->json([
                 'success' => true,
@@ -669,17 +667,22 @@ class RecordController extends Controller
         $entry = Entry::where('interview_uuid', $token)->first();
 
         if (!$entry) {
-            return view('record.error')->with('errorMessage', 'URLが見つかりません。URLが正しいかご確認ください。');
+            return view('record.error')->with('errorMessage', 'URLが見つかりません。<br>URLが正しいかご確認ください。');
+        }
+
+        // 評価済み（採用・不採用が決定）の場合はエラー
+        if ($entry->status === 'rejected' || $entry->status === 'passed' || $entry->decision_at !== null) {
+            return view('record.error')->with('errorMessage', 'このURLは既に使用済みです。<br>新しいURLの発行をお店にご依頼ください。');
         }
 
         if ($entry->status === 'completed') {
-            return view('record.error')->with('errorMessage', 'このURLは既に使用済みです。新しいURLの発行をお店にご依頼ください。');
+            return view('record.error')->with('errorMessage', '面接動画を受け付けました。<br>評価結果をお待ちください。');
         }
 
         // 確認画面待機中の場合は確認画面へリダイレクト
-        if ($entry->status === 'confirming') {
-            return redirect()->route('record.confirm', ['token' => $token]);
-        }
+        // if ($entry->status === 'confirming') {
+        //     return redirect()->route('record.confirm', ['token' => $token]);
+        // }
 
         $expirationDays = config('app.interview_url_expiration_days', 14);
         $expiresAt = $entry->created_at->addDays($expirationDays);
@@ -699,9 +702,15 @@ class RecordController extends Controller
         $token = $request->get('token');
 
         $entry = Entry::where('interview_uuid', $token)->first();
-        if ($entry && $entry->status === 'confirming') {
-            return redirect()->route('record.confirm', ['token' => $token]);
+
+        // 評価済みの場合はエラー
+        if ($entry && ($entry->status === 'rejected' || $entry->status === 'passed' || $entry->decision_at !== null)) {
+            return view('record.error')->with('errorMessage', 'このURLは既に使用済みです。');
         }
+
+        // if ($entry && $entry->status === 'confirming') {
+        //     return redirect()->route('record.confirm', ['token' => $token]);
+        // }
 
         return view('record.howto', compact('token'));
     }
@@ -721,9 +730,9 @@ class RecordController extends Controller
         }
 
         // 確認画面待機中の場合は確認画面へリダイレクト
-        if ($entry && $entry->status === 'confirming') {
-            return redirect()->route('record.confirm', ['token' => $token]);
-        }
+        // if ($entry && $entry->status === 'confirming') {
+        //     return redirect()->route('record.confirm', ['token' => $token]);
+        // }
 
         $questions = Question::where('category_id', 2)->orderBy('order')->get();
 
@@ -739,14 +748,24 @@ class RecordController extends Controller
 
         $entry = Entry::where('interview_uuid', $token)->first();
 
+        // 評価済みの場合はエラー
+        if ($entry && ($entry->status === 'rejected' || $entry->status === 'passed' || $entry->decision_at !== null)) {
+            return view('record.error')->with('errorMessage', 'このURLは既に使用済みです。');
+        }
+
         // 既に送信済みの場合はエラーページへ
         if ($entry && $entry->status === 'completed') {
             return redirect()->route('record.error', ['token' => $token, 'message' => 'このインタビューは既に送信済みです。']);
         }
 
-        // 確認画面待機中の場合は確認画面へリダイレクト
+        // 確認画面待機中かつやり直し回数が0の場合は確認画面へリダイレクト
         if ($entry && $entry->status === 'confirming') {
-            return redirect()->route('record.confirm', ['token' => $token]);
+            $interruptRetakeCount = $entry->interrupt_retake_count ?? 0;
+            if ($interruptRetakeCount >= 1) {
+                // やり直し回数が残っていない場合は確認画面に戻す
+                return redirect()->route('record.confirm', ['token' => $token])
+                    ->with('warning', 'やり直し回数が残っていないため、面接画面にアクセスできません。');
+            }
         }
 
         //$questions = Question::where('category_id', 2)->orderBy('order')->get();
@@ -762,6 +781,11 @@ class RecordController extends Controller
     {
         $token = $request->get('token');
         $entry = Entry::where('interview_uuid', $token)->first();
+
+        // 評価済みの場合はエラー
+        if ($entry && ($entry->status === 'rejected' || $entry->status === 'passed' || $entry->decision_at !== null)) {
+            return view('record.error')->with('errorMessage', 'このURLは既に使用済みです。');
+        }
 
         // 既に送信済みの場合はエラーページへ
         if ($entry && $entry->status === 'completed') {

@@ -91,7 +91,7 @@
     <script>
         // 二重送信防止
         $(document).on('submit', 'form', function() {
-            $(this).find('button[type="submit"], input[type="submit"]').prop('disabled', true);
+            $(this).find('button, input[type="submit"]').prop('disabled', true);
         });
     </script>
     @stack('scripts')
