@@ -23,11 +23,6 @@
                 <label for="tab2">すべて</label>
             </div>
             <ul class="waiting-review-list">
-                @php
-                    $waitingEntries = $entries->filter(function($entry) {
-                        return $entry->status === 'completed' && empty($entry->decision_at);
-                    });
-                @endphp
                 @forelse ($waitingEntries as $entry)
                     <li>
                         <a href="{{ route('admin.entry.show', $entry->entry_id) }}">
@@ -119,9 +114,7 @@
                 @endforelse
             </ul>
             <div class="paging">
-                <div class="paging-btns">
-                    <a href="#">1</a>
-                </div>
+                {{ $entries->links('vendor.pagination.admin') }}
             </div>
         </div>
         <div class="privacy-policy">

@@ -246,7 +246,7 @@ video {
 }
 
 .instruction__error-inner {
-	padding: 5rem 0 0 6rem;
+	padding: 7rem 6rem 0;
 }
 
 .instruction__title {
@@ -606,4 +606,18 @@ span.instruction__notice {
 	margin: 0 auto;
 	color: #3f7eff;
 	text-decoration: underline;
+}
+
+/* === Disabled Button Style === */
+button:disabled,
+input[type="submit"]:disabled,
+.btn:disabled,
+.main__btn:disabled,
+.instruction__retake-btn:disabled,
+.instruction__preview-btn:disabled {
+    background-color: #ccc !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    border-color: #ccc !important;
+    opacity: 0.7;
 }

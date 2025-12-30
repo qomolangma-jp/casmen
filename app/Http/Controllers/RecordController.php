@@ -88,6 +88,13 @@ class RecordController extends Controller
             ], 400);
         }
 
+        if ($entry->status === 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'このインタビューは既に完了しています。'
+            ], 400);
+        }
+
         try {
             // 動画ファイルを保存
             $videoFile = $request->file('video');
@@ -202,6 +209,13 @@ class RecordController extends Controller
             ], 400);
         }
 
+        if ($entry->status === 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'このインタビューは既に完了しています。'
+            ], 400);
+        }
+
         // entry_interviewsから動画ファイルパスを取得
         $interviews = EntryInterview::where('entry_id', $entry->entry_id)
                                   ->with('question')
@@ -266,6 +280,13 @@ class RecordController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => '無効なトークンです。'
+            ], 400);
+        }
+
+        if ($entry->status === 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'このインタビューは既に完了しています。'
             ], 400);
         }
 
@@ -418,6 +439,13 @@ class RecordController extends Controller
             ], 400);
         }
 
+        if ($entry->status === 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'このインタビューは既に完了しています。'
+            ], 400);
+        }
+
         // 録り直し回数をチェック（1回まで）
         $retakeCount = $entry->retake_count ?? 0;
         if ($retakeCount >= 1) {
@@ -480,6 +508,13 @@ class RecordController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => '無効なトークンです。'
+            ], 400);
+        }
+
+        if ($entry->status === 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'このインタビューは既に完了しています。'
             ], 400);
         }
 
@@ -769,6 +804,13 @@ class RecordController extends Controller
                 'success' => false,
                 'message' => '有効なトークンが見つかりません。'
             ], 404);
+        }
+
+        if ($entry->status === 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'このインタビューは既に完了しています。'
+            ], 400);
         }
 
         if (!$request->hasFile('video')) {

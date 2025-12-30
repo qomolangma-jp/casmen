@@ -421,7 +421,9 @@ main {
 .paging-btns {
 	display: flex;
 	gap: 2rem;
-	width: 14rem;
+	/* width: 14rem; */
+    width: auto;
+    justify-content: center;
 	margin: 0 auto;
 }
 
@@ -438,7 +440,7 @@ main {
 	background-color: #4d9aff;
 }
 
-.paging-btns a:nth-child(1) {
+.paging-btns a.active {
 	color: #fff;
 	background-color: #4d9aff;
 }
@@ -1289,4 +1291,18 @@ footer {
 .inline-submit-btn:hover {
 	background-color: #7ab3fd;
 	color: #fff;
+}
+
+/* === Disabled Button Style === */
+button:disabled,
+input[type="submit"]:disabled,
+.btn:disabled,
+.btn-sm:disabled,
+.btn-md:disabled,
+.btn-lg:disabled {
+    background-color: #ccc !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    border-color: #ccc !important;
+    opacity: 0.7;
 }

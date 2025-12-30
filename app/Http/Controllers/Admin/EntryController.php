@@ -22,8 +22,19 @@ class EntryController extends Controller
      */
     public function index()
     {
-        $entries = Entry::where('user_id', Auth::id())->orderBy('entry_id', 'desc')->get();
-        return view('admin.entry.index', compact('entries'));
+        // 評価待ちの応募者（全件取得）
+        $waitingEntries = Entry::where('user_id', Auth::id())
+            ->where('status', 'completed')
+            ->whereNull('decision_at')
+            ->orderBy('entry_id', 'desc')
+            ->get();
+
+        // 全応募者（ページネーション）
+        $entries = Entry::where('user_id', Auth::id())
+            ->orderBy('entry_id', 'desc')
+            ->paginate(10);
+
+        return view('admin.entry.index', compact('entries', 'waitingEntries'));
     }
 
     /**
