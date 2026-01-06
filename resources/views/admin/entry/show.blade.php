@@ -14,8 +14,13 @@
         color: white;
         padding: 12px 20px;
         text-align: center;
+<<<<<<< HEAD
         font-size: 16px;
         line-height: 1.5;
+=======
+        width: 90%;
+        display: block;
+>>>>>>> 0c63ab33bf4160433b68b530c2ffab7cdc11506d
         z-index: 10;
     }
 
@@ -36,6 +41,31 @@
         border: none;
         padding: 8px 16px;
         border-radius: 4px;
+<<<<<<< HEAD
+=======
+        white-space: normal;
+        word-wrap: break-word;
+        line-height: 1.5;
+    }
+
+    /* 質問切り替えボタン */
+    .question-nav {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin: 15px 0;
+        padding: 10px;
+        background-color: #f5f5f5;
+        border-radius: 8px;
+    }
+    .question-nav button {
+        background-color: #4a5568;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+>>>>>>> 0c63ab33bf4160433b68b530c2ffab7cdc11506d
         cursor: pointer;
         font-size: 14px;
     }
@@ -217,7 +247,11 @@
                                         <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
                                     </div>
                                 </div>
+<<<<<<< HEAD
                                 <div id="custom-subtitle" class="custom-subtitle"></div>
+=======
+                                <div id="custom-subtitle" class="custom-subtitle" style="position: absolute; bottom: 60px; left: 0; right: 0; background: rgba(0,0,0,0.8); color: white; padding: 12px 20px; text-align: center; font-size: 16px; line-height: 1.5; z-index: 10;"></div>
+>>>>>>> 0c63ab33bf4160433b68b530c2ffab7cdc11506d
                             </div>
 
                             <!-- 質問データをJavaScriptに渡す -->

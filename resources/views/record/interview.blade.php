@@ -33,6 +33,7 @@
 
     /* ローディングスピナー */
     .loading-spinner {
+<<<<<<< HEAD
         width: 60px;
         height: 60px;
         border: 5px solid #f3f3f3;
@@ -40,6 +41,15 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin: 0 auto;
+=======
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #1976d2;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+>>>>>>> 0c63ab33bf4160433b68b530c2ffab7cdc11506d
     }
 
     @keyframes spin {
@@ -48,6 +58,7 @@
     }
 
     #upload-status {
+<<<<<<< HEAD
         position: fixed;
         top: 45%;
         left: 0;
@@ -59,6 +70,17 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
+=======
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        z-index: 1000;
+>>>>>>> 0c63ab33bf4160433b68b530c2ffab7cdc11506d
     }
 
     .instruction__video {
@@ -67,11 +89,17 @@
 
     #upload-status p {
         color: white;
+<<<<<<< HEAD
         font-size: 2rem;
         font-weight: bold;
         margin: 1.5rem 0 0 0;
         text-align: center;
         line-height: 1.6;
+=======
+        font-size: 1.6rem;
+        font-weight: bold;
+        margin: 1rem 0 0 0;
+>>>>>>> 0c63ab33bf4160433b68b530c2ffab7cdc11506d
     }
 </style>
 @endpush
@@ -558,7 +586,11 @@
                     <video id="interview-video" autoplay playsinline muted></video>
 
                     <!-- アップロード中表示 -->
+<<<<<<< HEAD
                     <div id="upload-status" style="display: none;">
+=======
+                    <div id="upload-status" style="display: none; text-align: center;">
+>>>>>>> 0c63ab33bf4160433b68b530c2ffab7cdc11506d
                         <div class="loading-spinner"></div>
                         <p>
                             <span id="upload-message">動画をアップロード中...</span>
