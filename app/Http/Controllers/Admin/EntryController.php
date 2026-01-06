@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Entry;
+use App\Models\EntryInterview;
 use App\Mail\PassNotification;
 use App\Mail\RejectionNotification;
 use App\Mail\InterviewLinkMail;
@@ -44,7 +45,25 @@ class EntryController extends Controller
     public function show($id)
     {
         $entry = Entry::where('user_id', Auth::id())->findOrFail($id);
-        return view('admin.entry.show', compact('entry'));
+
+        // 質問ごとの動画を取得
+        $entryInterviews = EntryInterview::where('entry_id', $entry->entry_id)
+                                         ->with('question')
+                                         ->orderBy('question_id')
+                                         ->get();
+
+        // JavaScript用に質問データをマッピング
+        $interviewQuestionsData = $entryInterviews->map(function($interview) {
+            return [
+                'question' => $interview->question->q ?? '質問なし',
+                'file_path' => $interview->file_path,
+                'video_url' => config('filesystems.default') === 's3'
+                    ? route('record.video', ['filename' => basename($interview->file_path)])
+                    : route('record.video', ['filename' => basename($interview->file_path)]),
+            ];
+        });
+
+        return view('admin.entry.show', compact('entry', 'entryInterviews', 'interviewQuestionsData'));
     }
 
     /**

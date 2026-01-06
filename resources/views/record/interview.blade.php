@@ -30,6 +30,45 @@
         object-fit: contain !important; /* 枠内に全体を収める */
         background-color: #000; /* 余白を黒くする */
     }
+
+    /* ローディングスピナー */
+    .loading-spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #1976d2;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    #upload-status {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        z-index: 1000;
+    }
+
+    .instruction__video {
+        position: relative;
+    }
+
+    #upload-status p {
+        color: white;
+        font-size: 1.6rem;
+        font-weight: bold;
+        margin: 1rem 0 0 0;
+    }
 </style>
 @endpush
 
@@ -44,13 +83,14 @@
     let currentQuestionIndex = 0;
     let stream = null;
     let mediaRecorder = null;
-    let recordedChunks = [];
+    let recordedChunks = []; // 現在の質問の録画チャンク
     let countdownInterval = null;
     let questionTimer = null;
     let recordingStartTime = null;
-    let questionTimestamps = [];
+    let currentQuestionRecordingStart = null; // 現在の質問の録画開始時刻
     let recordedMimeType = ''; // 実際に使用されたmimeTypeを保存
     let wakeLock = null; // 画面ロック防止用
+    let uploadedCount = 0; // アップロード完了数
 
     // Wake Lock API (画面スリープ防止)
     async function requestWakeLock() {
@@ -199,8 +239,8 @@
 
             mediaRecorder.onstop = () => {
                 console.log('録画停止、チャンク数:', recordedChunks.length);
-                // 録画完了後、confirmページへ遷移
-                saveRecordingAndRedirect();
+                // 質問ごとに即座にアップロード
+                uploadCurrentQuestion();
             };
 
             // 定期的にデータを取得（1秒ごと）
@@ -218,17 +258,9 @@
                 isMobile,
                 isPortrait,
                 videoWidth: settings.width,
-                videoHeight: settings.height
-            });
-
-            // IndexedDBにデバイス情報を保存
-            saveToIndexedDB('deviceInfo', JSON.stringify({
-                isMobile,
-                isPortrait,
-                videoWidth: settings.width,
                 videoHeight: settings.height,
                 userAgent: navigator.userAgent
-            }));
+            });
         } catch (error) {
             console.error('録画の開始に失敗しました:', error);
             alert('録画を開始できませんでした。\nエラー: ' + error.message);
@@ -238,13 +270,10 @@
     // 最初の質問を表示
     function showFirstQuestion() {
         displayQuestion(0);
-        // 質問開始時刻を記録
-        const timestamp = Date.now() - recordingStartTime;
-        questionTimestamps.push({
-            index: 0,
-            question: questions[0].q,
-            startTime: timestamp
-        });
+        // 質問ごとの録画開始時刻を記録
+        currentQuestionRecordingStart = Date.now();
+        // 質問ごとにチャンクをリセット
+        recordedChunks = [];
         startQuestionTimer();
     }
 
@@ -302,24 +331,12 @@
             if (countdown === 0) {
                 clearInterval(questionTimer);
 
-                // 次の質問へ
-                if (currentQuestionIndex + 1 < totalQuestions) {
-                    const nextIndex = currentQuestionIndex + 1;
-                    displayQuestion(nextIndex);
-
-                    // 質問開始時刻を記録
-                    const timestamp = Date.now() - recordingStartTime;
-                    questionTimestamps.push({
-                        index: nextIndex,
-                        question: questions[nextIndex].q,
-                        startTime: timestamp
-                    });
-
-                    startQuestionTimer();
-                } else {
-                    // 全質問終了
-                    stopRecording();
+                // 現在の質問の録画を停止（アップロードはonstopで実行）
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
                 }
+
+                // 次の質問があるかチェックは uploadCurrentQuestion() 内で行う
             } else {
                 if (countdownElement) {
                     countdownElement.textContent = countdown;
@@ -339,41 +356,8 @@
         }
     }
 
-    // IndexedDB Helper
-    const dbName = 'InterviewDB';
-    const storeName = 'videos';
-
-    function openDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName, 1);
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains(storeName)) {
-                    db.createObjectStore(storeName);
-                }
-            };
-            request.onsuccess = (event) => {
-                resolve(event.target.result);
-            };
-            request.onerror = (event) => {
-                reject(event.target.error);
-            };
-        });
-    }
-
-    async function saveToIndexedDB(key, value) {
-        const db = await openDB();
-        return new Promise((resolve, reject) => {
-            const transaction = db.transaction(storeName, 'readwrite');
-            const store = transaction.objectStore(storeName);
-            const request = store.put(value, key);
-            request.onsuccess = () => resolve();
-            request.onerror = (event) => reject(event.target.error);
-        });
-    }
-
-    // 録画データを保存してconfirmページへ遷移
-    async function saveRecordingAndRedirect() {
+    // 現在の質問の録画をアップロード
+    async function uploadCurrentQuestion() {
         if (recordedChunks.length === 0) {
             console.error('録画データがありません');
             alert('録画データが保存されていません。もう一度お試しください。');
@@ -384,10 +368,7 @@
         // 実際に録画されたmimeTypeを使用
         const blobType = recordedMimeType || 'video/webm';
         const blob = new Blob(recordedChunks, { type: blobType });
-        console.log('Blob作成:', blob.size, 'bytes, type:', blob.type);
-
-        // メモリ解放のためにrecordedChunksをクリア
-        recordedChunks = [];
+        console.log('質問' + (currentQuestionIndex + 1) + 'のBlob作成:', blob.size, 'bytes, type:', blob.type);
 
         if (blob.size === 0) {
             console.error('録画データのサイズが0です');
@@ -396,32 +377,93 @@
             return;
         }
 
-        try {
-            // IndexedDBに保存
-            await saveToIndexedDB('recordedVideo', blob);
-            await saveToIndexedDB('videoToken', token);
-            await saveToIndexedDB('questionTimestamps', JSON.stringify(questionTimestamps));
-            await saveToIndexedDB('videoMimeType', blobType); // mimeTypeも保存
-            console.log('IndexedDBに保存完了');
+        // ファイル拡張子を決定
+        const extension = blobType.includes('mp4') ? 'mp4' : 'webm';
+        const questionNumber = currentQuestionIndex + 1;
 
-            // カメラを停止
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-
-            // confirmページへ遷移
-            window.location.href = "{{ route('record.confirm') }}?token=" + token;
-        } catch (error) {
-            console.error('IndexedDB保存エラー:', error);
-            // エラーの詳細を表示
-            let errorMsg = '録画データの保存に失敗しました。';
-            if (error.name === 'QuotaExceededError') {
-                errorMsg += 'ブラウザの保存容量が不足しています。不要なデータを削除するか、PCでお試しください。';
-            } else {
-                errorMsg += 'エラー: ' + error.message;
-            }
-            alert(errorMsg);
+        // アップロード中表示を表示
+        const uploadStatus = document.getElementById('upload-status');
+        const uploadMessage = document.getElementById('upload-message');
+        if (uploadStatus && uploadMessage) {
+            uploadMessage.textContent = `質問${questionNumber}の動画をアップロード中...`;
+            uploadStatus.style.display = 'block';
         }
+
+        // FormDataを作成
+        const formData = new FormData();
+        formData.append('video', blob, `interview_question_${questionNumber}.${extension}`);
+        formData.append('question_number', questionNumber);
+        formData.append('total_questions', totalQuestions);
+        formData.append('token', token);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        try {
+            // サーバーにアップロード
+            const response = await fetch('{{ route("record.upload") }}', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            // アップロード中表示を非表示
+            if (uploadStatus) {
+                uploadStatus.style.display = 'none';
+            }
+
+            if (data.success) {
+                console.log(`質問${questionNumber}の動画アップロード成功:`, data.file_path);
+                uploadedCount++;
+
+                // メモリ解放
+                recordedChunks = [];
+
+                // 次の質問または完了処理
+                if (currentQuestionIndex + 1 < totalQuestions) {
+                    // 次の質問へ
+                    const nextIndex = currentQuestionIndex + 1;
+                    displayQuestion(nextIndex);
+                    currentQuestionRecordingStart = Date.now();
+
+                    // MediaRecorderを再開
+                    if (mediaRecorder && mediaRecorder.state === 'inactive') {
+                        mediaRecorder.start(1000);
+                    }
+
+                    startQuestionTimer();
+                } else {
+                    // 全質問完了
+                    console.log('全質問のアップロード完了');
+                    completeInterview();
+                }
+            } else {
+                console.error(`質問${questionNumber}の動画アップロード失敗:`, data.message);
+                alert(`質問${questionNumber}の動画保存に失敗しました: ` + data.message);
+                window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
+            }
+        } catch (error) {
+            // アップロード中表示を非表示
+            if (uploadStatus) {
+                uploadStatus.style.display = 'none';
+            }
+            console.error(`質問${questionNumber}の動画アップロードエラー:`, error);
+            alert('動画のアップロード中にエラーが発生しました。\nもう一度お試しください。');
+            window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
+        }
+    }
+
+    // 全質問完了処理
+    function completeInterview() {
+        // カメラを停止
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+
+        // Wake Lock解放
+        releaseWakeLock();
+
+        // 完了ページへ遷移
+        window.location.href = "{{ route('record.complete') }}?token=" + token;
     }
 
     // ページ読み込み時にカメラ起動
@@ -510,6 +552,14 @@
             <div class="instruction__inner">
                 <div class="instruction__video">
                     <video id="interview-video" autoplay playsinline muted></video>
+
+                    <!-- アップロード中表示 -->
+                    <div id="upload-status" style="display: none; text-align: center;">
+                        <div class="loading-spinner"></div>
+                        <p>
+                            <span id="upload-message">動画をアップロード中...</span>
+                        </p>
+                    </div>
                 </div>
 
                 <span class="instruction__notice">Q.<span id="question-increment">1</span></span>
