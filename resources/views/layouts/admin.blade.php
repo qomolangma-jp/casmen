@@ -56,7 +56,7 @@
                             <a href="{{ route('admin.setting.index') }}">
                                 <img src="{{ asset('assets/admin/img/setting-icon.png') }}" alt="グレーの歯車アイコン" class="default-icon">
                                 <img src="{{ asset('assets/admin/img/hover-setting-icon.png') }}" alt="青の歯車アイコン" class="hover-icon">
-                                <span>各種設定</span>
+                                <span>登録情報</span>
                             </a>
                         </li>
                         <li>

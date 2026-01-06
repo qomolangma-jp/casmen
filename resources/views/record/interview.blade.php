@@ -619,7 +619,7 @@
                 uploadStatus.style.display = 'none';
             }
             console.error(`質問${questionNumber}の動画アップロードエラー:`, error);
-            alert('動画のアップロード中にエラーが発生しました。\nもう一度お試しください。');
+            alert('動画のアップロード中にエラーが発生しました\nもう一度お試しください。');
             window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
         }
     }
@@ -890,7 +890,7 @@
         } catch (error) {
             console.error('送信エラー:', error);
             if (uploadStatus) uploadStatus.style.display = 'none';
-            alert('送信中にエラーが発生しました。\n' + error.message);
+            alert('送信中にエラーが発生しました\n' + error.message);
 
             // ボタンを再有効化
             submitBtn.disabled = false;
@@ -927,7 +927,7 @@
             }
         } catch (error) {
             console.error('やり直しエラー:', error);
-            alert('通信エラーが発生しました。もう一度お試しください。');
+            alert('通信エラーが発生しましたもう一度お試しください。');
         }
     }
 
@@ -1006,7 +1006,7 @@
                     }
                 } catch (error) {
                     console.error('やり直しエラー:', error);
-                    alert('通信エラーが発生しました。もう一度お試しください。');
+                    alert('通信エラーが発生しましたもう一度お試しください。');
                 }
             });
         }

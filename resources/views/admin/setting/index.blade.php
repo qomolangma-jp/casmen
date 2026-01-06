@@ -1,15 +1,15 @@
 @extends('layouts.admin')
 
-@section('title', 'CASMEN｜登録情報の確認、変更')
+@section('title', 'CASMEN｜登録情報')
 
 @section('content')
 <main>
     <div class="main-container">
         <div class="breadcrumbs">
-            <span><a href="{{ route('admin.dashboard') }}">TOP</a> > 各種設定</span>
+            <span><a href="{{ route('admin.dashboard') }}">TOP</a> > 登録情報</span>
         </div>
         <div class="ray-content registration-content">
-            <h2>登録情報の確認、変更</h2>
+            <h2>登録情報</h2>
             <dl class="registration-info">
                 <dt>店舗名</dt>
                 <dd>{{ $user->shop_name ?? '未登録' }}</dd>

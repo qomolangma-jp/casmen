@@ -7,24 +7,32 @@
             <a href="{{ $paginator->previousPageUrl() }}" rel="prev" aria-label="@lang('pagination.previous')">&lsaquo;</a>
         @endif
 
-        {{-- Pagination Elements --}}
-        @foreach ($elements as $element)
-            {{-- "Three Dots" Separator --}}
-            @if (is_string($element))
-                <a class="disabled" aria-disabled="true"><span>{{ $element }}</span></a>
+        {{-- First Page --}}
+        @if ($paginator->currentPage() > 2)
+            <a href="{{ $paginator->url(1) }}">1</a>
+            @if ($paginator->currentPage() > 3)
+                <span class="dots">...</span>
             @endif
+        @endif
 
-            {{-- Array Of Links --}}
-            @if (is_array($element))
-                @foreach ($element as $page => $url)
-                    @if ($page == $paginator->currentPage())
-                        <a class="active" aria-current="page">{{ $page }}</a>
-                    @else
-                        <a href="{{ $url }}">{{ $page }}</a>
-                    @endif
-                @endforeach
+        {{-- Current Page and Adjacent --}}
+        @if ($paginator->currentPage() > 1)
+            <a href="{{ $paginator->url($paginator->currentPage() - 1) }}">{{ $paginator->currentPage() - 1 }}</a>
+        @endif
+
+        <a class="active" aria-current="page">{{ $paginator->currentPage() }}</a>
+
+        @if ($paginator->currentPage() < $paginator->lastPage())
+            <a href="{{ $paginator->url($paginator->currentPage() + 1) }}">{{ $paginator->currentPage() + 1 }}</a>
+        @endif
+
+        {{-- Last Page --}}
+        @if ($paginator->currentPage() < $paginator->lastPage() - 1)
+            @if ($paginator->currentPage() < $paginator->lastPage() - 2)
+                <span class="dots">...</span>
             @endif
-        @endforeach
+            <a href="{{ $paginator->url($paginator->lastPage()) }}">{{ $paginator->lastPage() }}</a>
+        @endif
 
         {{-- Next Page Link --}}
         @if ($paginator->hasMorePages())

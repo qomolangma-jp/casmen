@@ -86,7 +86,7 @@
                                 </a>
                                 <a href="#create-url-send" class="btn-lg btn-green btn-name">
                                     <div class="btn-txt-left">
-                                        <span>＜応募者の指名のみがわかる場合＞</span>
+                                        <span>＜応募者の氏名のみがわかる場合＞</span>
                                         <span>店舗様ご自身で面接URLを送ります</span>
                                     </div>
                                     <span class="triangle-down">▼</span>
@@ -98,16 +98,15 @@
                     <section id="auto-send" class="auto-send-section">
                         <div class="auto-send-inner">
                             <h2>面接URL自動送信</h2>
+                            <div class="description">
+								<p class="copy-url-description">
+									メールアドレス、または電話番号をご入力ください。<br>
+									※どちらか一方の入力で問題ありません。
+								</p>
+							</div>
                             <figure>
                                 <img src="{{ asset('assets/admin/img/flow_01.png') }}" alt="連絡先入力">
                             </figure>
-
-                            @if ($errors->has('contact_error'))
-                                <div class="error error-contact" style="display: flex; margin-bottom: 10px;">
-                                    <span><img src="{{ asset('assets/admin/img/warning-icon.png') }}" alt="警告アイコン"></span>
-                                    <span>{{ $errors->first('contact_error') }}</span>
-                                </div>
-                            @endif
 
                             <div class="form-item">
                                 <label for="email">メールアドレス</label>
@@ -115,7 +114,7 @@
                                     <span>
                                         <img src="{{ asset('assets/admin/img/email-icon.png') }}" alt="メールアイコン">
                                     </span>
-                                    <input id="email" class="input-field @error('email') is-error @enderror" name="email" type="email" autocomplete="off" value="{{ old('email') }}">
+                                    <input id="email" class="input-field @error('email') is-error @enderror @error('contact_error') is-error @enderror" name="email" type="email" autocomplete="off" value="{{ old('email') }}">
                                 </div>
                                 @error('email')
                                 <div class="error" style="display: flex;">
@@ -130,9 +129,15 @@
                                     <span>
                                         <img src="{{ asset('assets/admin/img/phone-icon.png') }}" alt="電話アイコン">
                                     </span>
-                                    <input id="tel" class="input-field @error('phone') is-error @enderror" name="phone" type="tel" maxlength="13" autocomplete="off" value="{{ old('phone') }}">
+                                    <input id="tel" class="input-field @error('phone') is-error @enderror @error('contact_error') is-error @enderror" name="phone" type="tel" maxlength="13" autocomplete="off" value="{{ old('phone') }}">
                                 </div>
                                 @error('phone')
+                                <div class="error" style="display: flex;">
+                                    <span><img src="{{ asset('assets/admin/img/warning-icon.png') }}" alt="警告アイコン"></span>
+                                    <span>{{ $message }}</span>
+                                </div>
+                                @enderror
+                                @error('contact_error')
                                 <div class="error" style="display: flex;">
                                     <span><img src="{{ asset('assets/admin/img/warning-icon.png') }}" alt="警告アイコン"></span>
                                     <span>{{ $message }}</span>
@@ -156,7 +161,7 @@
                                 </p>
                             </div>
                             <figure>
-                                <img src="{{ asset('assets/admin/img/flow_02.png') }}" alt="指名のみ入力">
+                                <img src="{{ asset('assets/admin/img/flow_02.png') }}" alt="氏名のみ入力">
                             </figure>
                             <button type="button" onclick="submitIssue()" class="btn-md btn-green">面接URL発行</button>
                         </div>
@@ -164,9 +169,9 @@
                 </form>
             @endif
         </div>
-        <div class="privacy-policy">
+        {{-- <div class="privacy-policy">
             <a href="{{ route('company.policy') }}" target="_blank">個人情報の取り扱いについて</a>
-        </div>
+        </div> --}}
     </div>
 </main>
 

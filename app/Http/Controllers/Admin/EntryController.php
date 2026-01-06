@@ -8,8 +8,8 @@ use App\Models\EntryInterview;
 use App\Mail\PassNotification;
 use App\Mail\RejectionNotification;
 use App\Mail\InterviewLinkMail;
-use App\Mail\AdminApplicantNotificationMail;
 use Illuminate\Http\Request;
+use App\Mail\AdminApplicantNotificationMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -21,21 +21,25 @@ class EntryController extends Controller
      * サイトマップ ID: 9 - 応募者一覧
      * 全応募者データを取得して一覧表示
      */
-    public function index()
+    public function index(Request $request)
     {
-        // 評価待ちの応募者（全件取得）
+        $filter = $request->get('filter', 'waiting'); // デフォルトは評価待ち
+
+        // 評価待ちの応募者（ページネーション）
         $waitingEntries = Entry::where('user_id', Auth::id())
             ->where('status', 'completed')
             ->whereNull('decision_at')
             ->orderBy('entry_id', 'desc')
-            ->get();
+            ->paginate(5, ['*'], 'waiting_page')
+            ->onEachSide(0);
 
         // 全応募者（ページネーション）
         $entries = Entry::where('user_id', Auth::id())
             ->orderBy('entry_id', 'desc')
-            ->paginate(10);
+            ->paginate(5, ['*'], 'all_page')
+            ->onEachSide(0);
 
-        return view('admin.entry.index', compact('entries', 'waitingEntries'));
+        return view('admin.entry.index', compact('entries', 'waitingEntries', 'filter'));
     }
 
     /**

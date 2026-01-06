@@ -946,7 +946,7 @@ class RecordController extends Controller
     public function error(Request $request)
     {
         $token = $request->get('token');
-        $errorMessage = $request->get('message', 'エラーが発生しました。');
+        $errorMessage = $request->get('message', 'エラーが発生しました');
 
         return view('record.error', compact('token', 'errorMessage'));
     }

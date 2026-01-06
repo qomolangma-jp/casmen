@@ -485,11 +485,11 @@
                     alert(data.message);
                     location.reload();
                 } else {
-                    alert('エラーが発生しました。');
+                    alert('エラーが発生しました');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('エラーが発生しました。');
+                alert('エラーが発生しました');
             }
 
             rejectModal.classList.add('hidden');
@@ -512,11 +512,11 @@
                     alert(data.message);
                     location.reload();
                 } else {
-                    alert('エラーが発生しました。');
+                    alert('エラーが発生しました');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('エラーが発生しました。');
+                alert('エラーが発生しました');
             }
 
             passModal.classList.add('hidden');

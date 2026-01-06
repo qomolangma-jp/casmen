@@ -11,48 +11,48 @@
         <div class="ray-content applicant-content">
             <div class="applicant-heading">
                 <h2>応募者一覧</h2>
-                <a href="{{ route('admin.link.create') }}" class="create-url">
+                <a href="{{ route('admin.link.create') }}" class="create-url btn-sm btn-green">
                     <img src="{{ asset('assets/admin/img/plus-icon.png') }}" alt="プラスアイコン">
-                    <span>面接URL発行</span>
+                    <span>面接URL送信・発行</span>
                 </a>
             </div>
-            <input id="tab1" name="tab" type="radio" checked>
-            <input id="tab2" name="tab" type="radio">
+            <input id="tab1" name="tab" type="radio" {{ $filter === 'waiting' ? 'checked' : '' }}>
+            <input id="tab2" name="tab" type="radio" {{ $filter === 'all' ? 'checked' : '' }}>
             <div class="tabs">
                 <label for="tab1">評価待ち</label>
                 <label for="tab2">すべて</label>
             </div>
             <ul class="waiting-review-list">
                 @forelse ($waitingEntries as $entry)
-                    <li>
-                        <a href="{{ route('admin.entry.show', $entry->entry_id) }}">
-                            <div class="user-status">
-                                <div class="status-label">
-                                    <span class="review-request">評価を行ってください</span>
-                                    <span class="label waiting-review">評価待ち</span>
+                        <li>
+                            <a href="{{ route('admin.entry.show', $entry->entry_id) }}">
+                                <div class="user-status">
+                                    <div class="status-label">
+                                        <span class="review-request">評価を行ってください</span>
+                                        <span class="label waiting-review">評価待ち</span>
+                                    </div>
+                                    <span>
+                                        <span class="user-icon"><img src="{{ asset('assets/admin/img/user-icon.png') }}" alt="ユーザーアイコン"></span>
+                                        <span class="user-name">{{ $entry->name }}</span>
+                                    </span>
                                 </div>
-                                <span>
-                                    <span class="user-icon"><img src="{{ asset('assets/admin/img/user-icon.png') }}" alt="ユーザーアイコン"></span>
-                                    <span class="user-name">{{ $entry->name }}</span>
-                                </span>
-                            </div>
-                            <div class="user-contact">
-                                <ul class="contact-icon-list">
-                                    @if($entry->email)
-                                        <li><img src="{{ asset('assets/admin/img/email-icon-gray.png') }}" alt="メールアイコン"></li>
+                                <div class="user-contact">
+                                    <ul class="contact-icon-list">
+                                        @if($entry->email)
+                                            <li><img src="{{ asset('assets/admin/img/email-icon-gray.png') }}" alt="メールアイコン"></li>
+                                        @endif
+                                        @if($entry->tel)
+                                            <li><img src="{{ asset('assets/admin/img/tel-icon.png') }}" alt="TELアイコン"></li>
+                                        @endif
+                                        @if($entry->video_path)
+                                            <li><img src="{{ asset('assets/admin/img/movie-icon.png') }}" alt="動画アイコン"></li>
+                                        @endif
+                                    </ul>
+                                    @if($entry->completed_at)
+                                        <span>動画提出: <time datetime="{{ $entry->completed_at->format('Y-m-d\TH:i') }}">{{ $entry->completed_at->format('Y/m/d H:i') }}</time></span>
                                     @endif
-                                    @if($entry->tel)
-                                        <li><img src="{{ asset('assets/admin/img/tel-icon.png') }}" alt="TELアイコン"></li>
-                                    @endif
-                                    @if($entry->video_path)
-                                        <li><img src="{{ asset('assets/admin/img/movie-icon.png') }}" alt="動画アイコン"></li>
-                                    @endif
-                                </ul>
-                                @if($entry->completed_at)
-                                    <span>動画提出: <time datetime="{{ $entry->completed_at->format('Y-m-d\TH:i') }}">{{ $entry->completed_at->format('Y/m/d H:i') }}</time></span>
-                                @endif
-                            </div>
-                        </a>
+                                </div>
+                            </a>
                     </li>
                 @empty
                     <li>
@@ -105,21 +105,26 @@
                             </div>
                         </a>
                     </li>
-                @empty
-                    <li>
-                        <div class="user-status" style="padding: 2rem; text-align: center; color: #666;">
-                            応募者データがありません
-                        </div>
-                    </li>
-                @endforelse
+                    @empty
+                        <li>
+                            <div class="user-status" style="padding: 2rem; text-align: center; color: #666;">
+                                応募者データがありません
+                            </div>
+                        </li>
+                    @endforelse
             </ul>
             <div class="paging">
-                {{ $entries->links('vendor.pagination.admin') }}
+                <div class="waiting-pagination">
+                    {{ $waitingEntries->appends(['filter' => 'waiting'])->links('vendor.pagination.admin') }}
+                </div>
+                <div class="all-pagination">
+                    {{ $entries->appends(['filter' => 'all'])->links('vendor.pagination.admin') }}
+                </div>
             </div>
         </div>
-        <div class="privacy-policy">
+        {{-- <div class="privacy-policy">
             <a href="{{ route('company.policy') }}" target="_blank">個人情報の取り扱いについて</a>
-        </div>
+        </div> --}}
     </div>
 </main>
 @endsection
