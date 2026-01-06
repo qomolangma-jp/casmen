@@ -152,7 +152,7 @@
     /* 質問表示のスタイル */
     .preview-question-info {
         text-align: center;
-        margin: 2rem 0 1rem 0;
+        margin: 0;
     }
 
     .preview-question-label {
@@ -163,7 +163,7 @@
     }
 
     .preview-question-text {
-        font-size: 2.2rem;
+        font-size: 2rem;
         color: #333;
         line-height: 1.5;
         margin-bottom: 1.5rem;
@@ -178,6 +178,14 @@
     const questions = @json($questions);
     const token = "{{ $token }}";
     const totalQuestions = questions.length;
+
+    // デバッグ: questions配列の構造を確認
+    console.log('=== questions配列の構造 ===');
+    console.log('questions:', questions);
+    if (questions.length > 0) {
+        console.log('questions[0]:', questions[0]);
+        console.log('questions[0]のキー:', Object.keys(questions[0]));
+    }
 
     let currentQuestionIndex = 0;
     let stream = null;
@@ -565,11 +573,13 @@
                 // このバッチに含まれる質問を収集
                 const batchQuestions = [];
                 for (let i = batchStartQuestion - 1; i < batchEndQuestion; i++) {
+                    console.log(`質問${i + 1}の情報:`, questions[i]);
                     batchQuestions.push({
                         question_number: i + 1,
-                        question_text: questions[i].question
+                        question_text: questions[i].q || questions[i].question || questions[i].question_text
                     });
                 }
+                console.log('batchQuestions:', batchQuestions);
 
                 uploadedVideos.push({
                     batch_number: batchNumber,
@@ -640,26 +650,55 @@
         const previewScreen = document.getElementById('preview-screen');
         currentPreviewIndex = 0;
         currentSubtitleIndex = 0;
-        // 最初の動画を表示
-        updatePreviewDisplay();
 
-        // プレビュー画面を表示
+        // プレビュー画面を先に表示
         previewScreen.classList.add('active');
         console.log('プレビュー画面のクラス:', previewScreen.className);
         console.log('プレビュー画面の表示状態:', window.getComputedStyle(previewScreen).display);
+
+        // DOMが更新されるのを待ってから動画を表示
+        setTimeout(() => {
+            updatePreviewDisplay();
+        }, 100);
     }
 
     // プレビュー表示を更新
     function updatePreviewDisplay() {
         const batchInfo = uploadedVideos[currentPreviewIndex];
         console.log('プレビュー表示を更新:', currentPreviewIndex, batchInfo);
+        console.log('batchInfo.questions:', batchInfo.questions);
 
         currentSubtitleIndex = 0;
 
+        // questionsプロパティが存在するか確認
+        if (!batchInfo.questions || batchInfo.questions.length === 0) {
+            console.error('batchInfo.questionsが存在しないか空です');
+            console.error('batchInfo:', batchInfo);
+            return;
+        }
+
         // 最初の質問情報を表示
         const firstQuestion = batchInfo.questions[0];
-        document.getElementById('preview-question-label').textContent = `Q${firstQuestion.question_number}`;
-        document.getElementById('preview-question-text').textContent = firstQuestion.question_text;
+        console.log('firstQuestion:', firstQuestion);
+
+        // 要素の存在確認
+        const questionLabelElement = document.getElementById('preview-question-label');
+        const questionTextElement = document.getElementById('preview-question-text');
+
+        console.log('preview-question-label要素:', questionLabelElement);
+        console.log('preview-question-text要素:', questionTextElement);
+
+        if (questionLabelElement) {
+            questionLabelElement.textContent = `Q${firstQuestion.question_number}`;
+        } else {
+            console.error('preview-question-label要素が見つかりません');
+        }
+
+        if (questionTextElement) {
+            questionTextElement.textContent = firstQuestion.question_text;
+        } else {
+            console.error('preview-question-text要素が見つかりません');
+        }
 
         // 動画を更新
         const videoElement = document.getElementById('preview-video');
@@ -719,14 +758,15 @@
             navBtn.style.display = 'flex';
             navBtn.classList.remove('disabled-btn');
             navBtn.textContent = '次の動画へ';
-            submitBtn.style.display = 'none';
         } else {
-            // 最後のバッチ：「送信する」ボタンを表示
+            // 最後のバッチ
             navBtn.style.display = 'flex';
             navBtn.classList.add('disabled-btn');
             navBtn.textContent = '最終確認中';
-            submitBtn.style.display = 'block';
         }
+
+        // 送信ボタンは常に表示
+        submitBtn.style.display = 'block';
     }
 
     // 動画再生中に字幕を更新（6秒ごと）
@@ -768,12 +808,27 @@
     async function submitFromPreview() {
         console.log('送信ボタンがクリックされました');
 
+        // ボタンを無効化（多重送信防止）
+        const submitBtn = document.getElementById('preview-submit-btn');
+        if (submitBtn.disabled) {
+            console.log('既に送信処理中です');
+            return;
+        }
+
         if (!confirm('この内容で送信してもよろしいですか？\n送信後は変更できません。')) {
             console.log('ユーザーがキャンセルしました');
             return;
         }
 
         console.log('送信処理を開始します');
+
+        // ボタンを無効化してローディング表示
+        submitBtn.disabled = true;
+        submitBtn.classList.add('disabled-btn');
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '送信中...';
 
         // ローディング表示
         const uploadStatus = document.getElementById('upload-status');
@@ -824,11 +879,55 @@
                 console.error('送信失敗:', result.message);
                 if (uploadStatus) uploadStatus.style.display = 'none';
                 alert(result.message || '送信に失敗しました。');
+
+                // ボタンを再有効化
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('disabled-btn');
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+                submitBtn.textContent = originalText;
             }
         } catch (error) {
             console.error('送信エラー:', error);
             if (uploadStatus) uploadStatus.style.display = 'none';
             alert('送信中にエラーが発生しました。\n' + error.message);
+
+            // ボタンを再有効化
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('disabled-btn');
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+            submitBtn.textContent = originalText;
+        }
+    }
+
+    // プレビュー画面から録り直し
+    async function retakeFromPreview() {
+        if (!confirm('最初からやり直しますか？\n※現在の録画内容はリセットされ、やり直し回数が1回消費されます。')) {
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('token', token);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            const response = await fetch('{{ route("record.interrupt") }}', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // ページをリロードして最初から開始
+                window.location.href = "{{ route('record.interview') }}?token=" + token + "&t=" + new Date().getTime();
+            } else {
+                alert(result.message || 'やり直しの開始に失敗しました。');
+            }
+        } catch (error) {
+            console.error('やり直しエラー:', error);
+            alert('通信エラーが発生しました。もう一度お試しください。');
         }
     }
 

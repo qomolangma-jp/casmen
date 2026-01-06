@@ -136,4 +136,17 @@ return [
 
     'interview_url_expiration_days' => env('INTERVIEW_URL_EXPIRATION_DAYS', 14),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Interview Question Category Slug
+    |--------------------------------------------------------------------------
+    |
+    | This value determines which category of questions will be used for
+    | the interview. You can change this in the .env file or directly here.
+    | The value should match a 'slug' in the mst_categories table.
+    |
+    */
+
+    'interview_category_slug' => env('INTERVIEW_CATEGORY_SLUG', 'q_1'),
+
 ];

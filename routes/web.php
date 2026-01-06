@@ -5,6 +5,8 @@ use App\Http\Controllers\TopController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\Admin\DashboardController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Admin\LinkController;
 use App\Http\Controllers\Admin\NoticeController;
 use App\Http\Controllers\Admin\EntryController;
@@ -14,7 +16,6 @@ use App\Http\Controllers\Master\ShopController as MasterShopController;
 use App\Http\Controllers\Master\LinkController as MasterLinkController;
 use App\Http\Controllers\Master\QuestionController as MasterQuestionController;
 use App\Http\Controllers\Master\CategoryController as MasterCategoryController;
-use Illuminate\Support\Facades\Route;
 
 // 求職者向けページ（サイトマップ ID: 1, 2）
 Route::get('/', [TopController::class, 'index'])->name('top.index'); // ID: 1 - TOP

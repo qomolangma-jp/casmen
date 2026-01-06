@@ -15,7 +15,24 @@ use Illuminate\Support\Str;
 
 class RecordController extends Controller
 {
-        /**
+    /**
+     * 面接用の質問カテゴリーIDを取得
+     */
+    private function getInterviewCategoryId()
+    {
+        $slug = config('app.interview_category_slug', 'q_1');
+        $category = \App\Models\Category::where('slug', $slug)->first();
+
+        if (!$category) {
+            Log::warning("Interview category not found for slug: {$slug}");
+            // デフォルトでcategory_id=2を返す（後方互換性）
+            return 2;
+        }
+
+        return $category->category_id;
+    }
+
+    /**
      * サイトマップ ID: 2 - らくらくセルフ面接（求職者向け）
      * らくらくセルフ面接機能
      */
@@ -50,10 +67,10 @@ class RecordController extends Controller
             $errorMessage = '面接URLが指定されていません。';
         }
 
-        // category_id=2の質問を取得（面接用質問）
+        // 面接用質問を取得
         $questions = [];
         if ($isValidToken) {
-            $questions = Question::where('category_id', 2)
+            $questions = Question::where('category_id', $this->getInterviewCategoryId())
                                 ->orderBy('order')
                                 ->get();
         }
@@ -144,7 +161,7 @@ class RecordController extends Controller
             if ($startQuestion && $endQuestion) {
                 Log::info("バッチアップロード: start={$startQuestion}, end={$endQuestion}");
 
-                $allQuestions = Question::where('category_id', 2)->orderBy('order')->get();
+                $allQuestions = Question::where('category_id', $this->getInterviewCategoryId())->orderBy('order')->get();
 
                 // バッチに含まれる各質問のレコードを作成
                 for ($i = $startQuestion; $i <= $endQuestion; $i++) {
@@ -166,7 +183,7 @@ class RecordController extends Controller
                 // 従来の1問ずつのアップロード（後方互換性のため残す）
                 Log::info("質問検索開始: questionNumber={$questionNumber}");
 
-                $allQuestions = Question::where('category_id', 2)->orderBy('order')->get();
+                $allQuestions = Question::where('category_id', $this->getInterviewCategoryId())->orderBy('order')->get();
                 $questionIndex = $questionNumber - 1;
                 $question = $allQuestions->get($questionIndex);
 
@@ -808,7 +825,7 @@ class RecordController extends Controller
         //     return redirect()->route('record.confirm', ['token' => $token]);
         // }
 
-        $questions = Question::where('category_id', 2)->orderBy('order')->get();
+        $questions = Question::where('category_id', $this->getInterviewCategoryId())->orderBy('order')->get();
 
         return view('record.interview-preview', compact('token', 'entry', 'questions'));
     }
@@ -842,8 +859,8 @@ class RecordController extends Controller
             }
         }
 
-        //$questions = Question::where('category_id', 2)->orderBy('order')->get();
-        $questions = Question::where('category_id', 2)->orderBy('order')->take(15)->get();
+        $questions = Question::where('category_id', $this->getInterviewCategoryId())->orderBy('order')->get();
+        //$questions = Question::where('category_id', $this->getInterviewCategoryId())->orderBy('order')->take(20)->get();
 
         // アップロード済みの動画データを取得
         $uploadedInterviews = EntryInterview::where('entry_id', $entry->entry_id)
@@ -863,6 +880,7 @@ class RecordController extends Controller
 
             Log::info("バッチ数: " . $grouped->count());
 
+            $questionIndex = 0; // 全体の質問インデックス
             foreach ($grouped as $filePath => $interviews) {
                 $videoUrl = $disk === 's3'
                     ? Storage::disk('s3')->url($filePath)
@@ -872,8 +890,9 @@ class RecordController extends Controller
 
                 $batchQuestions = [];
                 foreach ($interviews as $interview) {
+                    $questionIndex++; // 1から始まる質問番号
                     $batchQuestions[] = [
-                        'question_number' => $interview->question->order + 1,
+                        'question_number' => $questionIndex,
                         'question_text' => $interview->question->q
                     ];
                 }
@@ -916,7 +935,7 @@ class RecordController extends Controller
         }
 
         // メモリ制限のため、質問数を5問に制限
-        $questions = Question::where('category_id', 2)->orderBy('order')->take(5)->get();
+        $questions = Question::where('category_id', $this->getInterviewCategoryId())->orderBy('order')->take(5)->get();
 
         return view('record.confirm', compact('token', 'entry', 'questions'));
     }
