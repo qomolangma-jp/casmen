@@ -648,9 +648,16 @@ class RecordController extends Controller
     /**
      * 面接完了ページ
      */
-    public function complete()
+    public function complete(Request $request)
     {
-        return view('record.complete');
+        $token = $request->get('token');
+        $entry = null;
+
+        if ($token) {
+            $entry = Entry::where('interview_uuid', $token)->first();
+        }
+
+        return view('record.complete', compact('token', 'entry'));
     }
 
     /**
