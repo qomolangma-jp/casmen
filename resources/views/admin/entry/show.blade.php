@@ -41,31 +41,6 @@
         border: none;
         padding: 8px 16px;
         border-radius: 4px;
-<<<<<<< HEAD
-=======
-        white-space: normal;
-        word-wrap: break-word;
-        line-height: 1.5;
-    }
-
-    /* 質問切り替えボタン */
-    .question-nav {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-        margin: 15px 0;
-        padding: 10px;
-        background-color: #f5f5f5;
-        border-radius: 8px;
-    }
-    .question-nav button {
-        background-color: #4a5568;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
->>>>>>> 0c63ab33bf4160433b68b530c2ffab7cdc11506d
         cursor: pointer;
         font-size: 14px;
     }
