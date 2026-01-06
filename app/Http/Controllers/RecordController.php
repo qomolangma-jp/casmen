@@ -207,9 +207,9 @@ class RecordController extends Controller
             }
 
             // 動画のURLを生成
-            $videoUrl = $disk === 's3'
-                ? Storage::disk('s3')->url($path)
-                : asset('storage/' . $path);
+            // 動画URLは常にローカルルート経由で返す（S3の場合は署名付きURLにリダイレクト）
+            $filename = basename($path);
+            $videoUrl = route('record.video', ['filename' => $filename]);
 
             return response()->json([
                 'success' => true,
@@ -882,9 +882,9 @@ class RecordController extends Controller
 
             $questionIndex = 0; // 全体の質問インデックス
             foreach ($grouped as $filePath => $interviews) {
-                $videoUrl = $disk === 's3'
-                    ? Storage::disk('s3')->url($filePath)
-                    : asset('storage/' . $filePath);
+                // 動画URLは常にローカルルート経由で返す（S3の場合は署名付きURLにリダイレクト）
+                $filename = basename($filePath);
+                $videoUrl = route('record.video', ['filename' => $filename]);
 
                 Log::info("動画URL生成: filePath={$filePath}, videoUrl={$videoUrl}");
 
