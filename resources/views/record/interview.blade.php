@@ -49,12 +49,19 @@
 
     #upload-status {
         position: fixed;
-        top: 45%;
+        top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         background-color: rgba(0, 0, 0, 0.85);
         z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .upload-statusinner {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -72,6 +79,94 @@
         margin: 1.5rem 0 0 0;
         text-align: center;
         line-height: 1.6;
+    }
+
+    #upload-status.completed {
+        background-color: rgba(0, 150, 0, 0.85);
+    }
+
+    #upload-status.completed .loading-spinner {
+        display: none;
+    }
+
+    .upload-check {
+        display: none;
+        width: 60px;
+        height: 60px;
+        border: 5px solid #ffffff;
+        border-radius: 50%;
+        position: relative;
+    }
+
+    .upload-check::after {
+        content: '';
+        position: absolute;
+        left: 18px;
+        top: 8px;
+        width: 15px;
+        height: 30px;
+        border: solid white;
+        border-width: 0 5px 5px 0;
+        transform: rotate(45deg);
+    }
+
+    #upload-status.completed .upload-check {
+        display: block;
+    }
+
+    /* プレビュー画面のスタイル */
+    #preview-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #ffffff;
+        z-index: 10000;
+        display: none;
+        overflow-y: auto;
+    }
+
+    #preview-screen.active {
+        display: block;
+    }
+
+    /* プレビュー用のビデオサイズ調整 */
+    .instruction__preview-video > video {
+        height: 55rem;
+        width: 32rem;
+        margin: 0;
+        object-fit: contain;
+        background-color: #000;
+    }
+
+    /* プレビューボタンのスタイル調整 */
+    .instruction__preview-btns {
+        display: flex;
+        justify-content: space-between;
+        margin: 0 auto;
+        padding: 2.7rem 0 2rem 0;
+        font-weight: 500;
+    }
+
+    /* 質問表示のスタイル */
+    .preview-question-info {
+        text-align: center;
+        margin: 2rem 0 1rem 0;
+    }
+
+    .preview-question-label {
+        font-size: 2.6rem;
+        font-weight: bold;
+        color: #9f4ecd;
+        margin-bottom: 1rem;
+    }
+
+    .preview-question-text {
+        font-size: 2.2rem;
+        color: #333;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
     }
 </style>
 @endpush
@@ -95,6 +190,7 @@
     let recordedMimeType = ''; // 実際に使用されたmimeTypeを保存
     let wakeLock = null; // 画面ロック防止用
     let uploadedCount = 0; // アップロード完了数
+    let uploadedVideos = []; // アップロードされた動画の情報を保存
 
     // Wake Lock API (画面スリープ防止)
     async function requestWakeLock() {
@@ -243,8 +339,8 @@
 
             mediaRecorder.onstop = () => {
                 console.log('録画停止、チャンク数:', recordedChunks.length);
-                // 質問ごとに即座にアップロード
-                uploadCurrentQuestion();
+                // 5問ごとまたは最後の質問でアップロード
+                uploadBatchQuestions();
             };
 
             // 定期的にデータを取得（1秒ごと）
@@ -276,8 +372,7 @@
         displayQuestion(0);
         // 質問ごとの録画開始時刻を記録
         currentQuestionRecordingStart = Date.now();
-        // 質問ごとにチャンクをリセット
-        recordedChunks = [];
+        // チャンクは最初から累積する（5問ごとにリセット）
         startQuestionTimer();
     }
 
@@ -304,20 +399,20 @@
 
         if (index === totalQuestions - 1) {
             // 最後の質問の場合
-            countdownElement.innerHTML = `質問完了まで残り：<span class="instruction__current-status"><span id="current-time">8</span>秒</span>｜最後の質問`;
+            countdownElement.innerHTML = `質問完了まで残り：<span class="instruction__current-status"><span id="current-time">6</span>秒</span>｜最後の質問`;
         } else {
             // 通常の場合
             const remainingQuestions = totalQuestions - (index + 1);
-            countdownElement.innerHTML = `次の質問まで残り：<span class="instruction__current-status"><span id="current-time">8</span>秒</span>｜残り質問数：<span class="instruction__current-status"><span id="question-decrement">${remainingQuestions}</span>問</span>`;
+            countdownElement.innerHTML = `次の質問まで残り：<span class="instruction__current-status"><span id="current-time">6</span>秒</span>｜残り質問数：<span class="instruction__current-status"><span id="question-decrement">${remainingQuestions}</span>問</span>`;
         }
 
-        // カウントダウンを8秒に設定
-        document.getElementById('current-time').textContent = '8';
+        // カウントダウンを6秒に設定
+        document.getElementById('current-time').textContent = '6';
     }
 
-    // 質問タイマー（8秒後に次の質問へ）
+    // 質問タイマー（6秒後に次の質問へ）
     function startQuestionTimer() {
-        let countdown = 8;
+        let countdown = 6;
         const countdownElement = document.getElementById('current-time');
 
         // 最後の質問の場合はカウントダウン表示がないので更新しない
@@ -335,18 +430,34 @@
             if (countdown === 0) {
                 clearInterval(questionTimer);
 
-                // 現在の質問の録画を停止（アップロードはonstopで実行）
-                if (mediaRecorder && mediaRecorder.state === 'recording') {
-                    mediaRecorder.stop();
-                }
+                // 5問ごとまたは最後の質問で録画を停止
+                const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
+                const isFifthQuestion = (currentQuestionIndex + 1) % 5 === 0;
 
-                // 次の質問があるかチェックは uploadCurrentQuestion() 内で行う
+                if (isLastQuestion || isFifthQuestion) {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                    }
+                } else {
+                    // 5問ごとでなければ次の質問へ進む
+                    moveToNextQuestion();
+                }
             } else {
                 if (countdownElement) {
                     countdownElement.textContent = countdown;
                 }
             }
         }, 1000);
+    }
+
+    // 次の質問へ遷移
+    function moveToNextQuestion() {
+        if (currentQuestionIndex + 1 < totalQuestions) {
+            const nextIndex = currentQuestionIndex + 1;
+            displayQuestion(nextIndex);
+            currentQuestionRecordingStart = Date.now();
+            startQuestionTimer();
+        }
     }
 
     // 録画停止
@@ -360,8 +471,8 @@
         }
     }
 
-    // 現在の質問の録画をアップロード
-    async function uploadCurrentQuestion() {
+    // 5問分の録画をまとめてアップロード
+    async function uploadBatchQuestions() {
         if (recordedChunks.length === 0) {
             console.error('録画データがありません');
             alert('録画データが保存されていません。もう一度お試しください。');
@@ -385,18 +496,30 @@
         const extension = blobType.includes('mp4') ? 'mp4' : 'webm';
         const questionNumber = currentQuestionIndex + 1;
 
+        // 5問バッチの開始と終了質問番号を計算
+        const batchNumber = Math.floor(currentQuestionIndex / 5) + 1;
+        const batchStartQuestion = Math.floor(currentQuestionIndex / 5) * 5 + 1;
+        const batchEndQuestion = Math.min(batchStartQuestion + 4, totalQuestions);
+
+        console.log(`バッチ${batchNumber}: 質問${batchStartQuestion}-${batchEndQuestion}をアップロード`);
+
         // アップロード中表示を表示
         const uploadStatus = document.getElementById('upload-status');
         const uploadMessage = document.getElementById('upload-message');
+        const uploadStartTime = Date.now(); // アップロード開始時刻を記録
+
         if (uploadStatus && uploadMessage) {
-            uploadMessage.textContent = `質問${questionNumber}の動画をアップロード中...`;
-            uploadStatus.style.display = 'block';
+            uploadMessage.textContent = `質問${batchStartQuestion}-${batchEndQuestion}の動画をアップロード中...`;
+            uploadStatus.style.display = 'flex';
         }
 
         // FormDataを作成
         const formData = new FormData();
-        formData.append('video', blob, `interview_question_${questionNumber}.${extension}`);
-        formData.append('question_number', questionNumber);
+        formData.append('video', blob, `interview_batch_${batchNumber}.${extension}`);
+        formData.append('batch_number', batchNumber);
+        formData.append('start_question', batchStartQuestion);
+        formData.append('end_question', batchEndQuestion);
+        formData.append('question_number', questionNumber); // 現在の質問番号（最後の質問）
         formData.append('total_questions', totalQuestions);
         formData.append('token', token);
         formData.append('_token', '{{ csrf_token() }}');
@@ -410,31 +533,66 @@
 
             const data = await response.json();
 
-            // アップロード中表示を非表示
-            if (uploadStatus) {
-                uploadStatus.style.display = 'none';
+            // 最低2秒間は表示を維持
+            const elapsedTime = Date.now() - uploadStartTime;
+            const remainingTime = Math.max(0, 2000 - elapsedTime);
+
+            if (remainingTime > 0) {
+                await new Promise(resolve => setTimeout(resolve, remainingTime));
             }
 
             if (data.success) {
+                // 完了表示に切り替え
+                if (uploadStatus && uploadMessage) {
+                    uploadStatus.classList.add('completed');
+                    uploadMessage.textContent = '完了！';
+
+                    // 0.8秒後にフェードアウト
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    uploadStatus.style.display = 'none';
+                    uploadStatus.classList.remove('completed');
+                }
                 console.log(`質問${questionNumber}の動画アップロード成功:`, data.file_path);
+                console.log(`質問${questionNumber}のvideo_url:`, data.video_url);
+                console.log('サーバーレスポンス:', data);
                 uploadedCount++;
+
+                // アップロードされた動画情報を保存（5問分の情報を含む）
+                const batchNumber = Math.floor(currentQuestionIndex / 5) + 1;
+                const batchStartQuestion = Math.floor(currentQuestionIndex / 5) * 5 + 1;
+                const batchEndQuestion = Math.min(batchStartQuestion + 4, totalQuestions);
+
+                // このバッチに含まれる質問を収集
+                const batchQuestions = [];
+                for (let i = batchStartQuestion - 1; i < batchEndQuestion; i++) {
+                    batchQuestions.push({
+                        question_number: i + 1,
+                        question_text: questions[i].question
+                    });
+                }
+
+                uploadedVideos.push({
+                    batch_number: batchNumber,
+                    start_question: batchStartQuestion,
+                    end_question: batchEndQuestion,
+                    video_url: data.video_url,
+                    file_path: data.file_path,
+                    questions: batchQuestions
+                });
+                console.log('uploadedVideos配列:', uploadedVideos);
 
                 // メモリ解放
                 recordedChunks = [];
 
                 // 次の質問または完了処理
                 if (currentQuestionIndex + 1 < totalQuestions) {
-                    // 次の質問へ
-                    const nextIndex = currentQuestionIndex + 1;
-                    displayQuestion(nextIndex);
-                    currentQuestionRecordingStart = Date.now();
-
                     // MediaRecorderを再開
                     if (mediaRecorder && mediaRecorder.state === 'inactive') {
                         mediaRecorder.start(1000);
                     }
 
-                    startQuestionTimer();
+                    // 次の質問へ
+                    moveToNextQuestion();
                 } else {
                     // 全質問完了
                     console.log('全質問のアップロード完了');
@@ -466,13 +624,233 @@
         // Wake Lock解放
         releaseWakeLock();
 
-        // 完了ページへ遷移
-        window.location.href = "{{ route('record.complete') }}?token=" + token;
+        // プレビュー画面を表示
+        showPreviewScreen();
     }
 
-    // ページ読み込み時にカメラ起動
+    let currentPreviewIndex = 0;
+    let currentSubtitleIndex = 0; // 現在表示中の字幕インデックス
+
+    // プレビュー画面を表示
+    function showPreviewScreen() {
+        console.log('プレビュー画面を表示します');
+        console.log('アップロード済みバッチ数:', uploadedVideos.length);
+        console.log('アップロード済み動画情報:', uploadedVideos);
+
+        const previewScreen = document.getElementById('preview-screen');
+        currentPreviewIndex = 0;
+        currentSubtitleIndex = 0;
+        // 最初の動画を表示
+        updatePreviewDisplay();
+
+        // プレビュー画面を表示
+        previewScreen.classList.add('active');
+        console.log('プレビュー画面のクラス:', previewScreen.className);
+        console.log('プレビュー画面の表示状態:', window.getComputedStyle(previewScreen).display);
+    }
+
+    // プレビュー表示を更新
+    function updatePreviewDisplay() {
+        const batchInfo = uploadedVideos[currentPreviewIndex];
+        console.log('プレビュー表示を更新:', currentPreviewIndex, batchInfo);
+
+        currentSubtitleIndex = 0;
+
+        // 最初の質問情報を表示
+        const firstQuestion = batchInfo.questions[0];
+        document.getElementById('preview-question-label').textContent = `Q${firstQuestion.question_number}`;
+        document.getElementById('preview-question-text').textContent = firstQuestion.question_text;
+
+        // 動画を更新
+        const videoElement = document.getElementById('preview-video');
+        console.log('動画要素にsrcを設定:', batchInfo.video_url);
+
+        // 既存のイベントリスナーを削除
+        videoElement.removeEventListener('timeupdate', handleTimeUpdate);
+        videoElement.removeEventListener('ended', handleVideoEnded);
+
+        videoElement.src = batchInfo.video_url;
+        videoElement.load();
+        console.log('動画要素のsrc:', videoElement.src);
+
+        // 動画のロードエラーをハンドリング
+        videoElement.onerror = function(e) {
+            console.error('動画ロードエラー:', e);
+            console.error('動画要素の状態:', {
+                error: videoElement.error,
+                errorCode: videoElement.error ? videoElement.error.code : null,
+                errorMessage: videoElement.error ? videoElement.error.message : null,
+                networkState: videoElement.networkState,
+                readyState: videoElement.readyState,
+                currentSrc: videoElement.currentSrc
+            });
+
+            // エラーコードの意味を表示
+            if (videoElement.error) {
+                const errorMessages = {
+                    1: 'MEDIA_ERR_ABORTED: ユーザーによる中断',
+                    2: 'MEDIA_ERR_NETWORK: ネットワークエラー',
+                    3: 'MEDIA_ERR_DECODE: デコードエラー',
+                    4: 'MEDIA_ERR_SRC_NOT_SUPPORTED: フォーマットがサポートされていない'
+                };
+                console.error('エラー詳細:', errorMessages[videoElement.error.code] || '不明なエラー');
+            }
+        };
+
+        // 動画のロード成功を確認
+        videoElement.onloadeddata = function() {
+            console.log('動画ロード成功、再生可能です');
+        };
+
+        videoElement.oncanplay = function() {
+            console.log('動画の再生準備完了');
+        };
+
+        // 動画再生中に字幕を更新
+        videoElement.addEventListener('timeupdate', handleTimeUpdate);
+        videoElement.addEventListener('ended', handleVideoEnded);
+
+        // ボタンの表示を更新
+        const navBtn = document.getElementById('preview-nav-btn');
+        const submitBtn = document.getElementById('preview-submit-btn');
+
+        if (currentPreviewIndex < uploadedVideos.length - 1) {
+            // 最後ではない場合：「次のバッチへ」ボタンを表示
+            navBtn.style.display = 'flex';
+            navBtn.classList.remove('disabled-btn');
+            navBtn.textContent = '次の動画へ';
+            submitBtn.style.display = 'none';
+        } else {
+            // 最後のバッチ：「送信する」ボタンを表示
+            navBtn.style.display = 'flex';
+            navBtn.classList.add('disabled-btn');
+            navBtn.textContent = '最終確認中';
+            submitBtn.style.display = 'block';
+        }
+    }
+
+    // 動画再生中に字幕を更新（6秒ごと）
+    function handleTimeUpdate(event) {
+        const videoElement = event.target;
+        const currentTime = videoElement.currentTime;
+        const batchInfo = uploadedVideos[currentPreviewIndex];
+
+        // 6秒ごとに質問を切り替え
+        const newSubtitleIndex = Math.floor(currentTime / 6);
+
+        if (newSubtitleIndex !== currentSubtitleIndex && newSubtitleIndex < batchInfo.questions.length) {
+            currentSubtitleIndex = newSubtitleIndex;
+            const question = batchInfo.questions[currentSubtitleIndex];
+            document.getElementById('preview-question-label').textContent = `Q${question.question_number}`;
+            document.getElementById('preview-question-text').textContent = question.question_text;
+            console.log(`字幕更新: Q${question.question_number}`);
+        }
+    }
+
+    // 動画再生終了時の処理
+    function handleVideoEnded() {
+        console.log('動画再生終了');
+        // 次のバッチがあれば自動的に進む
+        if (currentPreviewIndex < uploadedVideos.length - 1) {
+            navigatePreview();
+        }
+    }
+
+    // プレビューのナビゲーション
+    function navigatePreview() {
+        if (currentPreviewIndex < uploadedVideos.length - 1) {
+            currentPreviewIndex++;
+            updatePreviewDisplay();
+        }
+    }
+
+    // プレビュー画面から提出
+    async function submitFromPreview() {
+        console.log('送信ボタンがクリックされました');
+
+        if (!confirm('この内容で送信してもよろしいですか？\n送信後は変更できません。')) {
+            console.log('ユーザーがキャンセルしました');
+            return;
+        }
+
+        console.log('送信処理を開始します');
+
+        // ローディング表示
+        const uploadStatus = document.getElementById('upload-status');
+        const uploadMessage = document.getElementById('upload-message');
+        if (uploadStatus && uploadMessage) {
+            uploadMessage.textContent = '送信中...';
+            uploadStatus.style.display = 'flex';
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('token', token);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            console.log('送信URL:', '{{ route("record.submitInterview") }}');
+            console.log('送信データ:', { token: token });
+
+            const response = await fetch('{{ route("record.submitInterview") }}', {
+                method: 'POST',
+                body: formData
+            });
+
+            console.log('レスポンス受信:', response.status, response.statusText);
+
+            // エラーレスポンスの場合
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('サーバーエラー:', errorText);
+                throw new Error(`サーバーエラー (${response.status}): ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            console.log('レスポンスJSON:', result);
+
+            if (result.success) {
+                console.log('送信成功、完了ページへ遷移します');
+
+                // 成功表示
+                if (uploadStatus && uploadMessage) {
+                    uploadStatus.classList.add('completed');
+                    uploadMessage.textContent = '送信完了！';
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
+                // 完了ページへ遷移
+                window.location.href = "{{ route('record.complete') }}?token=" + token;
+            } else {
+                console.error('送信失敗:', result.message);
+                if (uploadStatus) uploadStatus.style.display = 'none';
+                alert(result.message || '送信に失敗しました。');
+            }
+        } catch (error) {
+            console.error('送信エラー:', error);
+            if (uploadStatus) uploadStatus.style.display = 'none';
+            alert('送信中にエラーが発生しました。\n' + error.message);
+        }
+    }
+
+    // ページ読み込み時にカメラ起動またはプレビュー表示
     window.addEventListener('DOMContentLoaded', () => {
-        startCamera();
+        // サーバーから渡されたアップロード済み動画データをチェック
+        const serverUploadedVideos = @json($uploadedVideos ?? []);
+
+        console.log('=== ページ読み込み ===');
+        console.log('serverUploadedVideos:', serverUploadedVideos);
+        console.log('serverUploadedVideos.length:', serverUploadedVideos.length);
+
+        if (serverUploadedVideos.length > 0) {
+            // アップロード済みの動画がある場合はプレビュー画面を表示
+            console.log('アップロード済み動画を検出、プレビュー画面を表示します');
+            uploadedVideos = serverUploadedVideos;
+            showPreviewScreen();
+        } else {
+            // 新規録画の場合はカメラを起動
+            console.log('新規録画、カメラを起動します');
+            startCamera();
+        }
     });
 
     // ページを離れる時にカメラとタイマーを停止
@@ -558,15 +936,14 @@
                     <video id="interview-video" autoplay playsinline muted></video>
 
                     <!-- アップロード中表示 -->
-<<<<<<< HEAD
                     <div id="upload-status" style="display: none;">
-=======
-                    <div id="upload-status" style="display: none; text-align: center;">
->>>>>>> 0c63ab33bf4160433b68b530c2ffab7cdc11506d
-                        <div class="loading-spinner"></div>
-                        <p>
-                            <span id="upload-message">動画をアップロード中...</span>
-                        </p>
+                        <div class="upload-statusinner">
+                            <div class="loading-spinner"></div>
+                            <div class="upload-check"></div>
+                            <p>
+                                <span id="upload-message">次の質問を準備中...</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -583,6 +960,51 @@
         @endif
     </div>
 </main>
+
+<!-- プレビュー画面 -->
+<div id="preview-screen">
+    <header class="header">
+        <div class="header__container">
+            <img src="{{ asset('assets/user/img/logo2.png') }}" alt="らくらくセルフ面接">
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="main__container">
+            <div class="instruction instruction__interview bg-frame">
+                <div class="instruction__confirm-inner">
+                    <div class="preview-question-info" id="preview-question-info">
+                        <div class="preview-question-label" id="preview-question-label">Q1</div>
+                        <div class="preview-question-text" id="preview-question-text"></div>
+                    </div>
+
+                    <div class="instruction__preview-video">
+                        <video id="preview-video" controls></video>
+                    </div>
+
+                    <div class="instruction__preview-btns">
+                        @if(($entry->interrupt_retake_count ?? 0) < 1)
+                            <a href="#" id="preview-retake-btn" class="instruction__retake-btn" onclick="retakeFromPreview(); return false;">録り直し<span class="remaining-chance">（残り{{ 1 - ($entry->interrupt_retake_count ?? 0) }}回）</span></a>
+                        @else
+                            <a href="#" class="instruction__retake-btn disabled-btn">録り直し<span class="remaining-chance">（残り0回）</span></a>
+                        @endif
+
+                        <a href="#" id="preview-nav-btn" class="instruction__preview-btn" onclick="navigatePreview(); return false;">次の質問へ</a>
+                    </div>
+                </div>
+            </div>
+
+            <button id="preview-submit-btn" type="button" class="main__btn" onclick="submitFromPreview()" style="display: none;">送信する</button>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer__container">
+            <p>ご不明点やトラブルがあれば、下記のサポートまでお気軽にご連絡ください。</p>
+            <a href="mailto:support@casmen.jp">support@casmen.jp</a>
+        </div>
+    </footer>
+</div>
 
 <footer class="footer">
     <div class="footer__container">

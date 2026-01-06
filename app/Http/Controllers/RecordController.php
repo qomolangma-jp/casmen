@@ -137,53 +137,68 @@ class RecordController extends Controller
                 Log::info("公開URL確認: " . asset('storage/' . $path));
             }
 
-            // 質問番号がある場合はentry_interviewsテーブルに保存（字幕なし）
-            if ($questionNumber) {
+            // バッチアップロードの場合（start_question と end_question が指定されている）
+            $startQuestion = $request->input('start_question');
+            $endQuestion = $request->input('end_question');
+
+            if ($startQuestion && $endQuestion) {
+                Log::info("バッチアップロード: start={$startQuestion}, end={$endQuestion}");
+
+                $allQuestions = Question::where('category_id', 2)->orderBy('order')->get();
+
+                // バッチに含まれる各質問のレコードを作成
+                for ($i = $startQuestion; $i <= $endQuestion; $i++) {
+                    $questionIndex = $i - 1;
+                    $question = $allQuestions->get($questionIndex);
+
+                    if ($question) {
+                        EntryInterview::create([
+                            'entry_id' => $entry->entry_id,
+                            'question_id' => $question->question_id,
+                            'file_path' => $path // 同じ動画ファイルを参照
+                        ]);
+                        Log::info("EntryInterview保存完了: question_id={$question->question_id}, path={$path}");
+                    } else {
+                        Log::error("質問が見つかりません: questionNumber={$i}");
+                    }
+                }
+            } elseif ($questionNumber) {
+                // 従来の1問ずつのアップロード（後方互換性のため残す）
                 Log::info("質問検索開始: questionNumber={$questionNumber}");
 
                 $allQuestions = Question::where('category_id', 2)->orderBy('order')->get();
-                Log::info("全質問数: " . $allQuestions->count());
-
-                // 全質問の詳細をログ出力
-                foreach ($allQuestions as $idx => $q) {
-                    Log::info("質問データ[{$idx}]: question_id={$q->question_id}, order={$q->order}, text={$q->q}");
-                }
-
-                // 質問番号（1,2,3）を配列インデックス（0,1,2）に変換して対応する質問を取得
                 $questionIndex = $questionNumber - 1;
                 $question = $allQuestions->get($questionIndex);
 
-                Log::info("取得した質問: questionIndex={$questionIndex}, question_id=" . ($question ? $question->question_id : 'null') . ", text=" . ($question ? $question->q : 'null'));
-
                 if ($question) {
-                    // 字幕なしで元の動画ファイルを保存
-                    $originalVideoPath = $path;
-
-                    Log::info("字幕なし動画保存: original={$originalVideoPath}, question_id={$question->question_id}");
-
                     $entryInterview = EntryInterview::create([
                         'entry_id' => $entry->entry_id,
                         'question_id' => $question->question_id,
-                        'file_path' => $originalVideoPath
+                        'file_path' => $path
                     ]);
-
-                    Log::info("EntryInterview保存完了: ID={$entryInterview->interview_id}, entry_id={$entry->entry_id}, question_id={$question->question_id}, path={$originalVideoPath}");
+                    Log::info("EntryInterview保存完了: ID={$entryInterview->interview_id}");
                 } else {
-                    Log::error("質問が見つかりません: questionNumber={$questionNumber}, category_id=2");
+                    Log::error("質問が見つかりません: questionNumber={$questionNumber}");
                 }
-            }            // 最後の質問の場合のみEntryレコードを更新
+            }
+
+            // 最後の質問の場合、video_pathを更新（statusはcompletedにはしない）
             if (!$questionNumber || $questionNumber == $request->input('total_questions')) {
                 $entry->update([
-                    'status' => 'completed',
-                    'video_path' => $path,
-                    'completed_at' => now()
+                    'video_path' => $path
                 ]);
             }
+
+            // 動画のURLを生成
+            $videoUrl = $disk === 's3'
+                ? Storage::disk('s3')->url($path)
+                : asset('storage/' . $path);
 
             return response()->json([
                 'success' => true,
                 'message' => $questionNumber ? "質問{$questionNumber}の動画がアップロードされました。" : '面接動画がアップロードされました。',
-                'file_path' => $path
+                'file_path' => $path,
+                'video_url' => $videoUrl
             ]);
 
         } catch (\Exception $e) {
@@ -661,6 +676,58 @@ class RecordController extends Controller
     }
 
     /**
+     * プレビュー画面からの送信処理
+     */
+    public function submitInterview(Request $request)
+    {
+        $token = $request->input('token');
+        $entry = Entry::where('interview_uuid', $token)->first();
+
+        if (!$entry) {
+            return response()->json([
+                'success' => false,
+                'message' => '無効なトークンです。'
+            ], 400);
+        }
+
+        if ($entry->status === 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'このインタビューは既に完了しています。'
+            ], 400);
+        }
+
+        try {
+            // ステータスをcompletedに更新
+            $entry->update([
+                'status' => 'completed',
+                'completed_at' => now()
+            ]);
+
+            // 管理者に通知メールを送信
+            try {
+                Mail::to(config('mail.admin_address'))->send(
+                    new AdminApplicantNotificationMail($entry, 'new_application', [])
+                );
+                Log::info("管理者通知メール送信成功: entry_id={$entry->entry_id}");
+            } catch (\Exception $e) {
+                Log::error("管理者通知メール送信失敗: " . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => '面接動画を送信しました。'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => '送信に失敗しました: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * ウェルカムページ（新しいUI）
      */
     public function welcome(Request $request)
@@ -778,7 +845,50 @@ class RecordController extends Controller
         //$questions = Question::where('category_id', 2)->orderBy('order')->get();
         $questions = Question::where('category_id', 2)->orderBy('order')->take(15)->get();
 
-        return view('record.interview', compact('token', 'entry', 'questions'));
+        // アップロード済みの動画データを取得
+        $uploadedInterviews = EntryInterview::where('entry_id', $entry->entry_id)
+            ->with('question')
+            ->orderBy('question_id')
+            ->get();
+
+        Log::info("アップロード済み動画取得: entry_id={$entry->entry_id}, 件数=" . $uploadedInterviews->count());
+
+        // 動画URLを生成
+        $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+        $uploadedVideos = [];
+
+        if ($uploadedInterviews->isNotEmpty()) {
+            // バッチごとにグループ化（同じfile_pathを持つものをグループ化）
+            $grouped = $uploadedInterviews->groupBy('file_path');
+
+            Log::info("バッチ数: " . $grouped->count());
+
+            foreach ($grouped as $filePath => $interviews) {
+                $videoUrl = $disk === 's3'
+                    ? Storage::disk('s3')->url($filePath)
+                    : asset('storage/' . $filePath);
+
+                Log::info("動画URL生成: filePath={$filePath}, videoUrl={$videoUrl}");
+
+                $batchQuestions = [];
+                foreach ($interviews as $interview) {
+                    $batchQuestions[] = [
+                        'question_number' => $interview->question->order + 1,
+                        'question_text' => $interview->question->q
+                    ];
+                }
+
+                $uploadedVideos[] = [
+                    'video_url' => $videoUrl,
+                    'file_path' => $filePath,
+                    'questions' => $batchQuestions
+                ];
+            }
+        }
+
+        Log::info("uploadedVideos配列: " . json_encode($uploadedVideos));
+
+        return view('record.interview', compact('token', 'entry', 'questions', 'uploadedVideos'));
     }
 
     /**

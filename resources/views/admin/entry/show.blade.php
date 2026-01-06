@@ -206,7 +206,7 @@
                         @if(isset($entryInterviews) && $entryInterviews->count() > 0)
                             <!-- 単一の動画プレーヤー -->
                             <div class="video-container" style="position: relative; max-width: 800px; margin: 0 auto;">
-                                <video id="interview-video" class="custom-video-player" style="width: 100%;">
+                                <video id="interview-video" class="custom-video-player" style="width: 100%; min-height: 450px; background-color: #000;">
                                     <source id="video-source" src="" type="video/webm">
                                     お使いのブラウザは動画の再生をサポートしていません。
                                 </video>
@@ -542,6 +542,38 @@ function initQuestionPlayer() {
 
     if (!video || !videoSource || questions.length === 0) return;
 
+    let isFirstLoad = true; // 最初の読み込みかどうか
+    let currentBatchStart = 0; // 現在の動画の最初の質問インデックス
+    let currentBatchEnd = 0; // 現在の動画の最後の質問インデックス
+
+    // 動画形式を判定（1問目と2問目のvideo_urlが同じなら5問ごと、違うなら1問ごと）
+    let isBatchMode = false;
+    if (questions.length > 1) {
+        isBatchMode = questions[0].video_url === questions[1].video_url;
+        console.log(`動画形式: ${isBatchMode ? '5問ごと' : '1問ごと'}`);
+    }
+
+    // 動画再生中に時刻に応じて字幕を更新（5問ごとの場合のみ）
+    if (isBatchMode) {
+        video.addEventListener('timeupdate', () => {
+            const currentTime = video.currentTime;
+            const relativeQuestionIndex = Math.floor(currentTime / 6);
+            const absoluteQuestionIndex = currentBatchStart + relativeQuestionIndex;
+
+            if (absoluteQuestionIndex >= currentBatchStart &&
+                absoluteQuestionIndex <= currentBatchEnd &&
+                absoluteQuestionIndex < questions.length) {
+
+                if (currentQuestionIndex !== absoluteQuestionIndex) {
+                    currentQuestionIndex = absoluteQuestionIndex;
+                    if (subtitleDiv && questions[absoluteQuestionIndex]) {
+                        subtitleDiv.textContent = `Q${absoluteQuestionIndex + 1}. ${questions[absoluteQuestionIndex].question}`;
+                    }
+                }
+            }
+        });
+    }
+
     // 質問を読み込む
     function loadQuestion(index) {
         if (index < 0 || index >= questions.length) return;
@@ -549,22 +581,57 @@ function initQuestionPlayer() {
         currentQuestionIndex = index;
         const question = questions[index];
 
+        // 5問ごとの場合は範囲を計算、1問ごとの場合は自分自身のみ
+        if (isBatchMode) {
+            currentBatchStart = Math.floor(index / 5) * 5;
+            currentBatchEnd = Math.min(currentBatchStart + 4, questions.length - 1);
+        } else {
+            currentBatchStart = index;
+            currentBatchEnd = index;
+        }
+
+        // 読み込み中メッセージを表示
+        if (subtitleDiv) {
+            subtitleDiv.textContent = '次の動画を読み込み中...';
+        }
+
         // 動画ソースを変更
         videoSource.src = question.video_url;
         video.load();
-
-        // 字幕を表示
-        if (subtitleDiv) {
-            subtitleDiv.textContent = `Q${index + 1}. ${question.question}`;
-        }
-
-        console.log(`質問${index + 1}を読み込みました:`, question.question);
     }
 
-    // 動画が終了したら次の質問へ自動遷移
+    // 動画が読み込まれたら字幕を更新
+    video.addEventListener('loadeddata', () => {
+        // 最初の動画読み込み時に高さを固定
+        if (isFirstLoad) {
+            const videoHeight = video.offsetHeight;
+            if (videoHeight > 0) {
+                video.style.minHeight = videoHeight + 'px';
+                console.log('動画の高さを固定しました:', videoHeight + 'px');
+            }
+            isFirstLoad = false;
+        }
+
+        // 動画開始時は現在のバッチの最初の質問を表示
+        if (subtitleDiv && questions[currentBatchStart]) {
+            subtitleDiv.textContent = `Q${currentBatchStart + 1}. ${questions[currentBatchStart].question}`;
+        }
+    });
+
+// 動画が終了したら次へ
     video.addEventListener('ended', () => {
-        if (currentQuestionIndex < questions.length - 1) {
-            loadQuestion(currentQuestionIndex + 1);
+        let nextIndex;
+
+        if (isBatchMode) {
+            // 5問ごとの場合: 次の5問セットの最初の質問へ
+            nextIndex = currentBatchEnd + 1;
+        } else {
+            // 1問ごとの場合: 次の質問へ
+            nextIndex = currentQuestionIndex + 1;
+        }
+
+        if (nextIndex < questions.length) {
+            loadQuestion(nextIndex);
             video.play();
         } else {
             console.log('全ての質問の再生が完了しました');

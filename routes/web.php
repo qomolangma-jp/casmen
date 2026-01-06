@@ -38,7 +38,8 @@ Route::get('/record/error', [RecordController::class, 'error'])->name('record.er
 // 既存のAPI用ルート
 Route::post('/record/upload', [RecordController::class, 'upload'])->name('record.upload'); // 面接動画アップロード
 Route::post('/record/preview', [RecordController::class, 'preview'])->name('record.preview'); // 動画プレビュー
-Route::post('/record/submit', [RecordController::class, 'submit'])->name('record.submit'); // 最終送信
+Route::post('/record/submit', [RecordController::class, 'submit'])->name('record.submit'); // 最終送信（旧）
+Route::post('/record/submit-interview', [RecordController::class, 'submitInterview'])->name('record.submitInterview'); // 最終送信（新）
 Route::post('/record/process-subtitles', [RecordController::class, 'processSubtitles'])->name('record.process-subtitles'); // 字幕処理
 Route::post('/record/retake', [RecordController::class, 'retake'])->name('record.retake'); // 録り直し
 Route::post('/record/interrupt', [RecordController::class, 'interrupt'])->name('record.interrupt'); // 途中やり直し

@@ -54,12 +54,16 @@ class EntryController extends Controller
 
         // JavaScript用に質問データをマッピング
         $interviewQuestionsData = $entryInterviews->map(function($interview) {
+            $videoUrl = config('filesystems.default') === 's3'
+                ? route('record.video', ['filename' => basename($interview->file_path)])
+                : route('record.video', ['filename' => basename($interview->file_path)]);
+
+            Log::info("Admin動画URL生成: file_path={$interview->file_path}, video_url={$videoUrl}");
+
             return [
                 'question' => $interview->question->q ?? '質問なし',
                 'file_path' => $interview->file_path,
-                'video_url' => config('filesystems.default') === 's3'
-                    ? route('record.video', ['filename' => basename($interview->file_path)])
-                    : route('record.video', ['filename' => basename($interview->file_path)]),
+                'video_url' => $videoUrl,
             ];
         });
 
