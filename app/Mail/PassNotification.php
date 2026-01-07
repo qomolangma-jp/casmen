@@ -30,7 +30,7 @@ class PassNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '【合格通知】面接結果のご連絡',
+            subject: '【らくらくセルフ面接】アルバイトに関するお知らせ',
         );
     }
 
@@ -45,6 +45,7 @@ class PassNotification extends Mailable
                 'entry' => $this->entry,
                 'candidateName' => $this->entry->name,
                 'email' => $this->entry->email,
+                'shopName' => $this->entry->user->shop_name ?? '店舗名',
             ]
         );
     }

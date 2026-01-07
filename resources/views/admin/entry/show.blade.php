@@ -200,9 +200,8 @@
                 <div class="status">
                     @if($entry->video_path && $entry->status === 'completed' && empty($entry->decision_at))
                     <!-- 評価待ち画面 -->
+                    <span class="video-label waiting-review">評価待ち</span>
                     <div class="video">
-                        <span class="video-label waiting-list">評価待ち</span>
-
                         @if(isset($entryInterviews) && $entryInterviews->count() > 0)
                             <!-- 単一の動画プレーヤー -->
                             <div class="video-container" style="position: relative; max-width: 800px; margin: 0 auto;">
@@ -290,39 +289,14 @@
                     <small>応募者動画ファイルは回答後30日で削除されます</small>
                     @elseif($entry->status === 'rejected')
                     <!-- 不採用画面 -->
+                    <span class="video-label rejected">不採用</span>
                     <div class="video">
-                        <span class="video-label rejected">不採用</span>
-
                         @if(isset($entryInterviews) && $entryInterviews->count() > 0)
-                            @foreach($entryInterviews as $index => $interview)
-                                <div class="video-wrapper" style="margin-bottom: 2rem;">
-                                    <h4 style="margin-bottom: 1rem; color: #333;">質問{{ $index + 1 }}: {{ $interview->question->q ?? '質問なし' }}</h4>
-                                    <video class="custom-video-player" style="width: 100%; max-width: 800px;">
-                                        @if(config('filesystems.default') === 's3')
-                                            <source src="{{ route('record.video', ['filename' => basename($interview->file_path)]) }}" type="video/webm">
-                                        @else
-                                            <source src="{{ asset('storage/' . $interview->file_path) }}" type="video/webm">
-                                            <source src="{{ route('record.video', ['filename' => basename($interview->file_path)]) }}" type="video/webm">
-                                        @endif
-                                    </video>
-                                    <div class="custom-controls">
-                                        <button type="button" class="play-pause-btn">▶</button>
-                                        <div class="volume-container">
-                                            <span class="volume-icon">🔊</span>
-                                            <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @else
-                            <div class="video-wrapper">
-                                <video class="custom-video-player" style="width: 100%; max-width: 800px;">
-                                    @if(config('filesystems.default') === 's3')
-                                        <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
-                                    @else
-                                        <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
-                                        <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
-                                    @endif
+                            <!-- 単一の動画プレーヤー -->
+                            <div class="video-container" style="position: relative; max-width: 800px; margin: 0 auto;">
+                                <video id="interview-video" class="custom-video-player" style="width: 100%; min-height: 450px; background-color: #000;">
+                                    <source id="video-source" src="" type="video/webm">
+                                    お使いのブラウザは動画の再生をサポートしていません。
                                 </video>
                                 <div class="custom-controls">
                                     <button type="button" class="play-pause-btn">▶</button>
@@ -331,45 +305,47 @@
                                         <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
                                     </div>
                                 </div>
+                                <div id="custom-subtitle" class="custom-subtitle"></div>
+                            </div>
+
+                            <!-- 質問データをJavaScriptに渡す -->
+                            <script>
+                                window.interviewQuestions = @json($interviewQuestionsData);
+                            </script>
+                        @else
+                            <!-- 従来の動画表示（entryInterviewsがない場合のフォールバック） -->
+                            <div class="video-container">
+                                <video id="interview-video" class="custom-video-player" style="width: 100%; max-width: 800px;">
+                                    @if(config('filesystems.default') === 's3')
+                                        <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                    @else
+                                        <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
+                                        <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                    @endif
+                                    お使いのブラウザは動画の再生をサポートしていません。
+                                </video>
+                                <div class="custom-controls">
+                                    <button type="button" class="play-pause-btn">▶</button>
+                                    <div class="volume-container">
+                                        <span class="volume-icon">🔊</span>
+                                        <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
+                                    </div>
+                                </div>
+                                <div id="custom-subtitle" class="custom-subtitle"></div>
                             </div>
                         @endif
                     </div>
                     <small>応募者動画ファイルは回答後30日で削除されます</small>
                     @elseif($entry->status === 'passed')
                     <!-- 通過画面 -->
+                    <span class="video-label passed">通過</span>
                     <div class="video">
-                        <span class="video-label passed">通過</span>
-
                         @if(isset($entryInterviews) && $entryInterviews->count() > 0)
-                            @foreach($entryInterviews as $index => $interview)
-                                <div class="video-wrapper" style="margin-bottom: 2rem;">
-                                    <h4 style="margin-bottom: 1rem; color: #333;">質問{{ $index + 1 }}: {{ $interview->question->q ?? '質問なし' }}</h4>
-                                    <video class="custom-video-player" style="width: 100%; max-width: 800px;">
-                                        @if(config('filesystems.default') === 's3')
-                                            <source src="{{ route('record.video', ['filename' => basename($interview->file_path)]) }}" type="video/webm">
-                                        @else
-                                            <source src="{{ asset('storage/' . $interview->file_path) }}" type="video/webm">
-                                            <source src="{{ route('record.video', ['filename' => basename($interview->file_path)]) }}" type="video/webm">
-                                        @endif
-                                    </video>
-                                    <div class="custom-controls">
-                                        <button type="button" class="play-pause-btn">▶</button>
-                                        <div class="volume-container">
-                                            <span class="volume-icon">🔊</span>
-                                            <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @else
-                            <div class="video-wrapper">
-                                <video class="custom-video-player" style="width: 100%; max-width: 800px;">
-                                    @if(config('filesystems.default') === 's3')
-                                        <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
-                                    @else
-                                        <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
-                                        <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
-                                    @endif
+                            <!-- 単一の動画プレーヤー -->
+                            <div class="video-container" style="position: relative; max-width: 800px; margin: 0 auto;">
+                                <video id="interview-video" class="custom-video-player" style="width: 100%; min-height: 450px; background-color: #000;">
+                                    <source id="video-source" src="" type="video/webm">
+                                    お使いのブラウザは動画の再生をサポートしていません。
                                 </video>
                                 <div class="custom-controls">
                                     <button type="button" class="play-pause-btn">▶</button>
@@ -378,6 +354,33 @@
                                         <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
                                     </div>
                                 </div>
+                                <div id="custom-subtitle" class="custom-subtitle"></div>
+                            </div>
+
+                            <!-- 質問データをJavaScriptに渡す -->
+                            <script>
+                                window.interviewQuestions = @json($interviewQuestionsData);
+                            </script>
+                        @else
+                            <!-- 従来の動画表示（entryInterviewsがない場合のフォールバック） -->
+                            <div class="video-container">
+                                <video id="interview-video" class="custom-video-player" style="width: 100%; max-width: 800px;">
+                                    @if(config('filesystems.default') === 's3')
+                                        <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                    @else
+                                        <source src="{{ asset('storage/' . $entry->video_path) }}" type="video/webm">
+                                        <source src="{{ route('record.video', ['filename' => basename($entry->video_path)]) }}" type="video/webm">
+                                    @endif
+                                    お使いのブラウザは動画の再生をサポートしていません。
+                                </video>
+                                <div class="custom-controls">
+                                    <button type="button" class="play-pause-btn">▶</button>
+                                    <div class="volume-container">
+                                        <span class="volume-icon">🔊</span>
+                                        <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1">
+                                    </div>
+                                </div>
+                                <div id="custom-subtitle" class="custom-subtitle"></div>
                             </div>
                         @endif
                     </div>

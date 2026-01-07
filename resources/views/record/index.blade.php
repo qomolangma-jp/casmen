@@ -1699,7 +1699,7 @@ document.getElementById('previewAllBtn').addEventListener('click', async () => {
 
 // 送信するボタン
 document.getElementById('submitAllBtn').addEventListener('click', async () => {
-    if (!confirm('面接動画を送信しますか？送信後は変更できません。')) {
+    if (!confirm('面接動画を送信しますか？')) {
         return;
     }
 

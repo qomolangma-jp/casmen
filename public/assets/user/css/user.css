@@ -207,7 +207,7 @@ video {
 	background-image: url('../img/frill-lg.png');
 	background-repeat: no-repeat;
 	background-position: 50% 40%;
-	margin: 0 0 4.4rem 0;
+	margin: 0 0 3rem 0;
 }
 
 .instruction__interview::before {
@@ -377,7 +377,7 @@ span.instruction__notice {
 .instruction__confirm-inner {
 	width: 48rem;
 	margin: 0 auto;
-	padding: 13rem 0 0 0;
+	padding: 12rem 0 0 0;
 }
 
 .instruction__confirm-video {

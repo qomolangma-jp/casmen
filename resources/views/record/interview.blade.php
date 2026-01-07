@@ -82,7 +82,7 @@
     }
 
     #upload-status.completed {
-        background-color: rgba(0, 150, 0, 0.85);
+        background-color: rgba(0, 0, 0, 0.85);
     }
 
     #upload-status.completed .loading-spinner {
@@ -133,8 +133,8 @@
 
     /* プレビュー用のビデオサイズ調整 */
     .instruction__preview-video > video {
-        height: 55rem;
-        width: 32rem;
+        height: 48rem;
+        width: 28rem;
         margin: 0;
         object-fit: contain;
         background-color: #000;
@@ -143,10 +143,15 @@
     /* プレビューボタンのスタイル調整 */
     .instruction__preview-btns {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         margin: 0 auto;
         padding: 2.7rem 0 2rem 0;
         font-weight: 500;
+    }
+
+    /* 次の動画へボタンを非表示 */
+    #preview-nav-btn {
+        display: none !important;
     }
 
     /* 質問表示のスタイル */
@@ -167,6 +172,68 @@
         color: #333;
         line-height: 1.5;
         margin-bottom: 1.5rem;
+    }
+
+    /* 送信確認モーダル */
+    #submit-confirm-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 10001; /* preview-screen(10000)より上 */
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #submit-confirm-modal .modal-content {
+        background-color: #fff;
+        padding: 3rem 2rem;
+        border-radius: 1.5rem;
+        width: 90%;
+        max-width: 32rem;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    #submit-confirm-modal .modal-message {
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 3rem;
+        color: #333;
+        line-height: 1.5;
+    }
+
+    #submit-confirm-modal .modal-btns {
+        display: flex;
+        justify-content: space-between;
+        gap: 1.5rem;
+    }
+
+    #submit-confirm-modal .modal-btn {
+        flex: 1;
+        padding: 1.2rem 0;
+        border-radius: 5rem;
+        font-size: 1.6rem;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        outline: none;
+        appearance: none;
+    }
+
+    #submit-confirm-modal .modal-btn-cancel {
+        background-color: #fff;
+        color: #9f4ecd;
+        border: 0.2rem solid #9f4ecd;
+    }
+
+    #submit-confirm-modal .modal-btn-ok {
+        background-color: #9f4ecd;
+        color: #fff;
+        border: 0.2rem solid #9f4ecd;
     }
 </style>
 @endpush
@@ -539,7 +606,22 @@
                 body: formData
             });
 
+            console.log('サーバーレスポンス受信:', response.status, response.statusText);
+            console.log('レスポンスヘッダー:', {
+                contentType: response.headers.get('content-type'),
+                contentLength: response.headers.get('content-length')
+            });
+
+            // レスポンスがJSONでない場合のエラーハンドリング
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const responseText = await response.text();
+                console.error('JSONでないレスポンスを受信:', responseText.substring(0, 500));
+                throw new Error('サーバーから不正なレスポンスが返されました（JSON形式ではありません）');
+            }
+
             const data = await response.json();
+            console.log('JSONパース成功:', data);
 
             // 最低2秒間は表示を維持
             const elapsedTime = Date.now() - uploadStartTime;
@@ -553,12 +635,32 @@
                 // 完了表示に切り替え
                 if (uploadStatus && uploadMessage) {
                     uploadStatus.classList.add('completed');
-                    uploadMessage.textContent = '完了！';
 
-                    // 0.8秒後にフェードアウト
-                    await new Promise(resolve => setTimeout(resolve, 800));
+                    const checkMark = uploadStatus.querySelector('.upload-check');
+
+                    // バッチ番号が1〜3の場合はキャラクター画像、4以降はチェックマーク
+                    if (batchNumber <= 3) {
+                        // チェックマークを非表示にする（画像を表示するため）
+                        if (checkMark) checkMark.style.display = 'none';
+
+                        // キャラクター画像を表示
+                        const charaImgUrl = `{{ asset('assets/user/img/Chara-') }}${batchNumber}.png`;
+                        uploadMessage.innerHTML = `<img src="${charaImgUrl}" alt="送信完了" style="width: 18rem; height: auto; display: block; margin: 0 auto;">`;
+                    } else {
+                        // 4回目以降はチェックマークと「完了！」テキストを表示
+                        if (checkMark) checkMark.style.display = 'block';
+                        uploadMessage.textContent = '完了！';
+                    }
+
+                    // 2秒後にフェードアウト（画像を確認できるよう少し長めに）
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
                     uploadStatus.style.display = 'none';
                     uploadStatus.classList.remove('completed');
+
+                    // 表示をリセット
+                    if (checkMark) checkMark.style.display = ''; // インラインスタイルを削除してクラス制御に戻す
+                    uploadMessage.textContent = '次の質問を準備中...';
                 }
                 console.log(`質問${questionNumber}の動画アップロード成功:`, data.file_path);
                 console.log(`質問${questionNumber}のvideo_url:`, data.video_url);
@@ -566,9 +668,7 @@
                 uploadedCount++;
 
                 // アップロードされた動画情報を保存（5問分の情報を含む）
-                const batchNumber = Math.floor(currentQuestionIndex / 5) + 1;
-                const batchStartQuestion = Math.floor(currentQuestionIndex / 5) * 5 + 1;
-                const batchEndQuestion = Math.min(batchStartQuestion + 4, totalQuestions);
+                // batchNumber, batchStartQuestion, batchEndQuestion は既に定義済みなので再定義不要
 
                 // このバッチに含まれる質問を収集
                 const batchQuestions = [];
@@ -618,8 +718,20 @@
             if (uploadStatus) {
                 uploadStatus.style.display = 'none';
             }
+
+            // エラー詳細をログ出力
             console.error(`質問${questionNumber}の動画アップロードエラー:`, error);
-            alert('動画のアップロード中にエラーが発生しました\nもう一度お試しください。');
+            console.error('エラータイプ:', error.constructor.name);
+            console.error('エラーメッセージ:', error.message);
+            console.error('エラースタック:', error.stack);
+
+            // より詳細なエラー情報をユーザーに表示
+            let errorMessage = '動画のアップロード中にエラーが発生しました\n\n';
+            errorMessage += 'エラー詳細: ' + error.message + '\n';
+            errorMessage += 'エラータイプ: ' + error.constructor.name + '\n\n';
+            errorMessage += 'もう一度お試しください。';
+
+            alert(errorMessage);
             window.location.href = "{{ route('record.interview-preview') }}?token=" + token;
         }
     }
@@ -743,29 +855,18 @@
 
         videoElement.oncanplay = function() {
             console.log('動画の再生準備完了');
+            // 動画の準備ができたら自動再生
+            videoElement.play().catch(err => {
+                console.error('自動再生エラー:', err);
+            });
         };
 
         // 動画再生中に字幕を更新
         videoElement.addEventListener('timeupdate', handleTimeUpdate);
         videoElement.addEventListener('ended', handleVideoEnded);
 
-        // ボタンの表示を更新
-        const navBtn = document.getElementById('preview-nav-btn');
-        const submitBtn = document.getElementById('preview-submit-btn');
-
-        if (currentPreviewIndex < uploadedVideos.length - 1) {
-            // 最後ではない場合：「次のバッチへ」ボタンを表示
-            navBtn.style.display = 'flex';
-            navBtn.classList.remove('disabled-btn');
-            navBtn.textContent = '次の動画へ';
-        } else {
-            // 最後のバッチ
-            navBtn.style.display = 'flex';
-            navBtn.classList.add('disabled-btn');
-            navBtn.textContent = '最終確認中';
-        }
-
         // 送信ボタンは常に表示
+        const submitBtn = document.getElementById('preview-submit-btn');
         submitBtn.style.display = 'block';
     }
 
@@ -804,8 +905,26 @@
         }
     }
 
+    // 送信確認モーダルを表示
+    function showSubmitConfirmModal() {
+        // ボタンが既に無効化されている場合は何もしない
+        const submitBtn = document.getElementById('preview-submit-btn');
+        if (submitBtn.disabled) return;
+
+        document.getElementById('submit-confirm-modal').style.display = 'flex';
+    }
+
+    // 送信確認モーダルを非表示
+    function hideSubmitConfirmModal() {
+        document.getElementById('submit-confirm-modal').style.display = 'none';
+        console.log('ユーザーがキャンセルしました');
+    }
+
     // プレビュー画面から提出
     async function submitFromPreview() {
+        // モーダルを閉じる
+        hideSubmitConfirmModal();
+
         console.log('送信ボタンがクリックされました');
 
         // ボタンを無効化（多重送信防止）
@@ -815,10 +934,12 @@
             return;
         }
 
-        if (!confirm('この内容で送信してもよろしいですか？\n送信後は変更できません。')) {
+        /* confirmはモーダルで代替したため削除
+        if (!confirm('この内容で送信してもよろしいですか？')) {
             console.log('ユーザーがキャンセルしました');
             return;
         }
+        */
 
         console.log('送信処理を開始します');
 
@@ -903,7 +1024,7 @@
 
     // プレビュー画面から録り直し
     async function retakeFromPreview() {
-        if (!confirm('最初からやり直しますか？\n※現在の録画内容はリセットされ、やり直し回数が1回消費されます。')) {
+        if (!confirm('最初からやり直しますか？\n※今回の録画内容は削除され、元に戻せません。\n※やり直しは1回だけなので、次の面接が最後になります。')) {
             return;
         }
 
@@ -969,9 +1090,10 @@
             interruptBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
 
-                if (!confirm('最初からやり直しますか？\n※現在の進行状況はリセットされ、やり直し回数が1回消費されます。')) {
+                if (!confirm('最初からやり直しますか？\n※今回の録画内容は削除され、元に戻せません。\n※やり直しは1回だけなので、次の面接が最後になります。')) {
                     return;
                 }
+
 
                 // ボタンを無効化
                 interruptBtn.classList.add('disabled-btn');
@@ -1093,7 +1215,7 @@
                 </div>
             </div>
 
-            <button id="preview-submit-btn" type="button" class="main__btn" onclick="submitFromPreview()" style="display: none;">送信する</button>
+            <button id="preview-submit-btn" type="button" class="main__btn" onclick="showSubmitConfirmModal()" style="display: none;">送信する</button>
         </div>
     </main>
 
@@ -1103,6 +1225,17 @@
             <a href="mailto:support@casmen.jp">support@casmen.jp</a>
         </div>
     </footer>
+
+    <!-- 送信確認モーダル -->
+    <div id="submit-confirm-modal">
+        <div class="modal-content">
+            <p class="modal-message">この内容で送信しても<br>よろしいですか？</p>
+            <div class="modal-btns">
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="hideSubmitConfirmModal()">キャンセル</button>
+                <button type="button" class="modal-btn modal-btn-ok" onclick="submitFromPreview()">OK</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <footer class="footer">

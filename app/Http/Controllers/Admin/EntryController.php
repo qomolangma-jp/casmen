@@ -30,13 +30,13 @@ class EntryController extends Controller
             ->where('status', 'completed')
             ->whereNull('decision_at')
             ->orderBy('entry_id', 'desc')
-            ->paginate(5, ['*'], 'waiting_page')
+            ->paginate(10, ['*'], 'waiting_page')
             ->onEachSide(0);
 
         // 全応募者（ページネーション）
         $entries = Entry::where('user_id', Auth::id())
             ->orderBy('entry_id', 'desc')
-            ->paginate(5, ['*'], 'all_page')
+            ->paginate(10, ['*'], 'all_page')
             ->onEachSide(0);
 
         return view('admin.entry.index', compact('entries', 'waitingEntries', 'filter'));
