@@ -420,19 +420,23 @@ main {
 
 .paging-btns {
 	display: flex;
-	gap: 2rem;
+	gap: 1rem;
 	/* width: 14rem; */
     width: auto;
     justify-content: center;
 	margin: 0 auto;
+    flex-wrap: wrap;
+    max-width: 100%;
 }
 
 .paging-btns a {
-	padding: 1rem 2rem;
+	padding: 0.8rem 1.5rem;
 	border: .2rem solid #4d9aff;
 	border-radius: .3rem;
 	color: #4d9aff;
 	background-color :#fff;
+    min-width: 4rem;
+    text-align: center;
 }
 
 .paging-btns a:hover {
@@ -446,7 +450,7 @@ main {
 }
 
 .paging-btns .dots {
-	padding: 1rem;
+	padding: 0.8rem 0.5rem;
 	color: #666;
 	display: flex;
 	align-items: center;

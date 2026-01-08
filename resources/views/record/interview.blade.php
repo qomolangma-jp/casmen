@@ -132,12 +132,69 @@
     }
 
     /* プレビュー用のビデオサイズ調整 */
+    .instruction__preview-video {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
     .instruction__preview-video > video {
         height: 48rem;
         width: 28rem;
         margin: 0;
         object-fit: contain;
         background-color: #000;
+    }
+
+    /* プレビュー動画のカスタムコントロール */
+    .preview-custom-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 3px 15px;
+        width: 28rem;
+        box-sizing: border-box;
+        position: absolute;
+        bottom: 0px;
+    }
+
+    .preview-play-pause-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: white;
+        font-size: 18px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .preview-play-pause-btn:hover {
+        color: #ddd;
+    }
+
+    .preview-volume-container {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .preview-volume-icon {
+        color: white;
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+    }
+
+    .preview-volume-slider {
+        width: 80px;
+        cursor: pointer;
     }
 
     /* プレビューボタンのスタイル調整 */
@@ -190,18 +247,18 @@
 
     #submit-confirm-modal .modal-content {
         background-color: #fff;
-        padding: 3rem 2rem;
+        padding: 5rem 4rem;
         border-radius: 1.5rem;
         width: 90%;
-        max-width: 32rem;
+        max-width: 60rem;
         text-align: center;
         box-shadow: 0 0 20px rgba(0,0,0,0.2);
     }
 
     #submit-confirm-modal .modal-message {
-        font-size: 1.8rem;
+        font-size: 2.4rem;
         font-weight: bold;
-        margin-bottom: 3rem;
+        margin-bottom: 4rem;
         color: #333;
         line-height: 1.5;
     }
@@ -209,14 +266,14 @@
     #submit-confirm-modal .modal-btns {
         display: flex;
         justify-content: space-between;
-        gap: 1.5rem;
+        gap: 2rem;
     }
 
     #submit-confirm-modal .modal-btn {
         flex: 1;
-        padding: 1.2rem 0;
+        padding: 1.8rem 0;
         border-radius: 5rem;
-        font-size: 1.6rem;
+        font-size: 2rem;
         font-weight: bold;
         cursor: pointer;
         border: none;
@@ -308,7 +365,8 @@
             videoElement.srcObject = stream;
             videoElement.muted = true;
             videoElement.setAttribute('playsinline', ''); // iOS対応
-            await videoElement.play();
+            // 自動再生はせず、ユーザーが再生ボタンを押すまで待機
+            // await videoElement.play();
 
             // 最初の質問を表示（タイマーは開始しない）
             displayQuestion(0);
@@ -645,7 +703,7 @@
 
                         // キャラクター画像を表示
                         const charaImgUrl = `{{ asset('assets/user/img/Chara-') }}${batchNumber}.png`;
-                        uploadMessage.innerHTML = `<img src="${charaImgUrl}" alt="送信完了" style="width: 18rem; height: auto; display: block; margin: 0 auto;">`;
+                        uploadMessage.innerHTML = `<img src="${charaImgUrl}" alt="送信完了" style="width: 30rem; height: auto; display: block; margin: 0 auto;">`;
                     } else {
                         // 4回目以降はチェックマークと「完了！」テキストを表示
                         if (checkMark) checkMark.style.display = 'block';
@@ -855,10 +913,10 @@
 
         videoElement.oncanplay = function() {
             console.log('動画の再生準備完了');
-            // 動画の準備ができたら自動再生
-            videoElement.play().catch(err => {
-                console.error('自動再生エラー:', err);
-            });
+            // 自動再生はせず、ユーザーが再生ボタンを押すまで待機
+            // videoElement.play().catch(err => {
+            //     console.error('自動再生エラー:', err);
+            // });
         };
 
         // 動画再生中に字幕を更新
@@ -868,6 +926,57 @@
         // 送信ボタンは常に表示
         const submitBtn = document.getElementById('preview-submit-btn');
         submitBtn.style.display = 'block';
+
+        // プレビュー動画のカスタムコントロールを初期化
+        initPreviewVideoControls();
+    }
+
+    // プレビュー動画のカスタムコントロールを初期化
+    function initPreviewVideoControls() {
+        const video = document.getElementById('preview-video');
+        const playBtn = document.querySelector('.preview-play-pause-btn');
+        const volumeSlider = document.querySelector('.preview-volume-slider');
+        const volumeIcon = document.querySelector('.preview-volume-icon');
+
+        if (!video || !playBtn || !volumeSlider || !volumeIcon) return;
+
+        // 再生・一時停止
+        playBtn.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        });
+
+        // ビデオの状態に応じてボタン表示を更新
+        video.addEventListener('play', () => {
+            playBtn.textContent = '❚❚';
+        });
+
+        video.addEventListener('pause', () => {
+            playBtn.textContent = '▶';
+        });
+
+        video.addEventListener('ended', () => {
+            playBtn.textContent = '▶';
+        });
+
+        // 音量調整
+        volumeSlider.addEventListener('input', (e) => {
+            video.volume = e.target.value;
+            updatePreviewVolumeIcon(e.target.value);
+        });
+
+        function updatePreviewVolumeIcon(vol) {
+            if (vol == 0) {
+                volumeIcon.textContent = '🔇';
+            } else if (vol < 0.5) {
+                volumeIcon.textContent = '🔉';
+            } else {
+                volumeIcon.textContent = '🔊';
+            }
+        }
     }
 
     // 動画再生中に字幕を更新（6秒ごと）
@@ -1200,7 +1309,14 @@
                     </div>
 
                     <div class="instruction__preview-video">
-                        <video id="preview-video" controls></video>
+                        <video id="preview-video" controlslist="nodownload nofullscreen noremoteplayback" disablePictureInPicture></video>
+                        <div class="preview-custom-controls">
+                            <button type="button" class="preview-play-pause-btn">▶</button>
+                            <div class="preview-volume-container">
+                                <span class="preview-volume-icon">🔊</span>
+                                <input type="range" class="preview-volume-slider" min="0" max="1" step="0.1" value="1">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="instruction__preview-btns">
