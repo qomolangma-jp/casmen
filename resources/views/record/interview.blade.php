@@ -26,7 +26,7 @@
     #interview-video {
         /* user.cssのサイズ(17.3rem x 29.2rem)を強制適用 */
         width: 17.3rem !important;
-        height: 29.2rem !important;
+        height: 27.2rem !important;
         object-fit: contain !important; /* 枠内に全体を収める */
         background-color: #000; /* 余白を黒くする */
     }
@@ -1154,7 +1154,7 @@
         <div class="instruction instruction__interview bg-frame">
             <div class="instruction__inner">
                 <div class="instruction__video">
-                    <video id="interview-video" autoplay playsinline muted></video>
+                    <video id="interview-video" autoplay playsinline muted webkit-playsinline></video>
 
                     <!-- アップロード中表示 -->
                     <div id="upload-status" style="display: none;">

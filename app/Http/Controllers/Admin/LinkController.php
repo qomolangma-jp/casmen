@@ -58,7 +58,7 @@ class LinkController extends Controller
 
         // 一意なURLトークンを生成
         $token = Str::random(32);
-        $interviewUrl = url("/record?token={$token}");
+        $interviewUrl = url("/record?token={$token}") . '&openExternalBrowser=1';
 
         // Entryテーブルに保存
         try {
@@ -161,7 +161,7 @@ class LinkController extends Controller
         }
 
         $client = new Client($sid, $token);
-        $message = "【{$shopName}】より\nらくらくセルフ面接のご案内です。\n24問の質問に答え、あなたの雰囲気を伝えることができます。\n下記URLより24時間いつでもスタートできます。\n{$url}";
+        $message = "【{$shopName}】より\nらくらくセルフ面接のご案内です。\n20問の質問に答え、あなたの雰囲気を伝えることができます。\n下記URLより24時間いつでもスタートできます。\n{$url}";
 
         $client->messages->create(
             $to,

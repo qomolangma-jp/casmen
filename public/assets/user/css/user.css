@@ -364,7 +364,9 @@ span.instruction__notice {
 }
 
 .instruction__current-status {
-	color: #fb9ecd;
+        font-size: 2.8rem;
+        padding: 1rem 0 0 0;
+        color: #fb9ecd;
 }
 
 .instruction__question {
@@ -482,20 +484,21 @@ span.instruction__notice {
 	font-size: 2.2rem;
 }
 
+/* 変更点 — 文字サイズと余白追加 */
 .main__btn {
-	background-color: #9f4ecd;
-	display: block;
-	margin: 1.1rem auto 0 auto;
-	width: 56rem;
-	color: #fff;
-	border-radius: 4rem;
-	text-align: center;
-	font-weight: 500;
-	font-size: 2.6rem;
-	padding: 1.5rem 0;
-	font-family: "M PLUS Rounded 1c";
-	border: none;
-	cursor: pointer;
+        background-color: #9f4ecd;
+        display: block;
+        margin: 1.1rem auto 0 auto;
+        width: 56rem;
+        color: #fff;
+        border-radius: 4rem;
+        text-align: center;
+        font-weight: 500;
+        font-size: 3.8rem;
+        padding: 1.0rem 0;
+        font-family: "M PLUS Rounded 1c";
+        border: none;
+        cursor: pointer;
 }
 
 .main__btn:hover {
@@ -586,6 +589,13 @@ span.instruction__notice {
 }
 
 /* === フッター === */
+.footer {
+        font-size: 2.8rem;
+        background-color: #fff5fa;
+        font-family: "M PLUS Rounded 1c";
+        color: #5c5c5c;
+}
+
 .footer__container {
 	width: 640px;
 	margin: 0 auto;

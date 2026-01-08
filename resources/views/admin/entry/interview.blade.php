@@ -71,7 +71,7 @@
                                 <div class="flex items-center space-x-2">
                                     <input type="text"
                                            id="interview-url"
-                                           value="{{ config('app.url') }}/interview/{{ $entry->interview_uuid }}"
+                                           value="{{ config('app.url') }}/interview/{{ $entry->interview_uuid }}?openExternalBrowser=1"
                                            readonly
                                            class="flex-1 px-3 py-2 bg-white border border-blue-300 rounded-md text-sm">
                                     <button onclick="copyToClipboard('interview-url')"
@@ -94,7 +94,7 @@
 
                         <!-- アクションボタン -->
                         <div class="mt-6 flex space-x-4">
-                            <a href="{{ config('app.url') }}/interview/{{ $entry->interview_uuid }}"
+                            <a href="{{ config('app.url') }}/interview/{{ $entry->interview_uuid }}?openExternalBrowser=1"
                                target="_blank"
                                class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 URLをテスト

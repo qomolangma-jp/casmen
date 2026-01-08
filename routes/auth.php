@@ -15,6 +15,10 @@ Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 
+    Route::get('register/confirm', function () {
+        return redirect()->route('register');
+    });
+
     Route::post('register/confirm', [RegisteredUserController::class, 'confirm'])
         ->name('register.confirm');
 

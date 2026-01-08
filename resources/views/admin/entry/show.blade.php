@@ -393,7 +393,7 @@
                     @endif
                     <p class="copy-url-description">LINEやSNSで送る場合は、下記の面接URLをコピーしてご利用ください。</p>
                     <div class="copy-url">
-                        <input id="url-display" class="display" type="url" value="{{ route('record.welcome', ['token' => $entry->interview_uuid]) }}" readonly>
+                        <input id="url-display" class="display" type="url" value="{{ route('record.welcome', ['token' => $entry->interview_uuid]) }}&openExternalBrowser=1" readonly>
                         <span id="copy-btn">
                             <img src="{{ asset('assets/admin/img/copy-icon.png') }}" alt="コピーアイコン">
                         </span>

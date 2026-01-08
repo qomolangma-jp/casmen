@@ -183,7 +183,7 @@ class EntryController extends Controller
             }
 
             // 面接URLの生成 (welcomeページへのリンク)
-            $interviewUrl = route('record.welcome', ['token' => $entry->interview_uuid]);
+            $interviewUrl = route('record.welcome', ['token' => $entry->interview_uuid]) . '&openExternalBrowser=1';
             $sentMethod = '';
 
             if ($entry->email) {
@@ -246,7 +246,7 @@ class EntryController extends Controller
         }
 
         $client = new Client($sid, $token);
-        $message = "【{$shopName}】より\nらくらくセルフ面接のご案内です。\n24問の質問に答え、あなたの雰囲気を伝えることができます。\n下記URLより24時間いつでもスタートできます。\n{$url}";
+        $message = "【{$shopName}】より\nらくらくセルフ面接のご案内です。\n20問の質問に答え、あなたの雰囲気を伝えることができます。\n下記URLより24時間いつでもスタートできます。\n{$url}";
 
         $client->messages->create(
             $to,

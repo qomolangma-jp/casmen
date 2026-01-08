@@ -337,11 +337,11 @@
                             </div>
                         </div>
 
-                        <!-- 質問は24問・約2分 -->
+                        <!-- 質問は20問・約2分 -->
                         <div class="flex items-start">
                             <span class="text-purple-500 text-xl mr-3">☆</span>
                             <div>
-                                <h3 class="font-bold text-purple-600 mb-1">質問は24問・約2分</h3>
+                                <h3 class="font-bold text-purple-600 mb-1">質問は20問・約2分</h3>
                                 <p class="text-gray-700 text-sm">
                                     1問につき約5秒。テンポよく表示される質<br>
                                     問に、あなたのペースで答えてください。
