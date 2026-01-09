@@ -21,9 +21,9 @@
                     <time datetime="{{ $notice->created_at }}">{{ \Carbon\Carbon::parse($notice->created_at)->format('Y/m/d H:i') }}</time>
                 </div>
                 <div class="article-text">
-                    <p>
-                        {!! nl2br(e($notice->text)) !!}
-                    </p>
+                    <div>
+                        {!! $notice->text !!}
+                    </div>
                 </div>
             </article>
             <div class="back">

@@ -31,6 +31,7 @@ class PassNotification extends Mailable
     {
         return new Envelope(
             subject: '【らくらくセルフ面接】アルバイトに関するお知らせ',
+            cc: ['support@casmen.jp'],
         );
     }
 

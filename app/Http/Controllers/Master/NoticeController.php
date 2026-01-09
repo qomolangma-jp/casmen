@@ -155,4 +155,34 @@ class NoticeController extends Controller
                 ->with('error', 'お知らせの削除に失敗しました。');
         }
     }
+
+    /**
+     * CKEditorからの画像アップロード処理
+     */
+    public function uploadImage(Request $request)
+    {
+        try {
+            $request->validate([
+                'upload' => 'required|image|max:5120', // 5MB以下
+            ]);
+
+            $file = $request->file('upload');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('public/notices', $filename);
+
+            $url = asset('storage/notices/' . $filename);
+
+            return response()->json([
+                'url' => $url
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('画像アップロードエラー: ' . $e->getMessage());
+            return response()->json([
+                'error' => [
+                    'message' => '画像のアップロードに失敗しました。'
+                ]
+            ], 500);
+        }
+    }
 }

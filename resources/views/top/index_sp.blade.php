@@ -30,7 +30,7 @@
 			<div class="video">
 				<img src="{{ asset('assets/lp/img/sm-hand-sm.png') }}" alt="スマホ">
 				<!-- ここに動画を入れてください -->
-				<video src="{{ asset('assets/lp/video/casmen.mp4') }}" loop autoplay muted></video>
+				<video src="{{ asset('assets/lp/video/casmen.mp4') }}" loop autoplay muted playsinline></video>
 			</div>
 			<div class="appeal-text">
 				<img src="{{ asset('assets/lp/img/appeal-text-sm.png') }}" alt="累計78万人の応募データから導かれた”素顔を引き出す“セルフ録画面接サービス">

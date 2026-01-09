@@ -26,9 +26,7 @@ https://casmen.jp/admin
 
 操作方法やご不明点がございましたら、お気軽にお問い合わせください。
 
+【らくらくセルフ面接】
+
 ◆お問い合わせはこちら◆
 support@casmen.jp
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-【CASMEN】
-https://casmen.jp/

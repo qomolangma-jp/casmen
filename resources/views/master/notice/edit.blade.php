@@ -5,6 +5,14 @@
         </h2>
     </x-slot>
 
+    @push('styles')
+    <style>
+        .ck-editor__editable {
+            min-height: 400px;
+        }
+    </style>
+    @endpush
+
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -67,9 +75,9 @@
                         <div class="mb-6">
                             <x-input-label for="content" :value="__('本文')" />
                             <textarea id="content" name="content" rows="10"
-                                      class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                      required>{{ old('content', $notice->text) }}</textarea>
+                                      class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('content', $notice->text) }}</textarea>
                             <x-input-error class="mt-2" :messages="$errors->get('content')" />
+                            <p class="mt-2 text-sm text-gray-600">※ HTML形式で記述できます。画像のアップロードも可能です。</p>
                         </div>
 
                         <!-- 送信ボタン -->
@@ -83,4 +91,62 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script>
+        let editorInstance;
+        ClassicEditor
+            .create(document.querySelector('#content'), {
+                toolbar: {
+                    items: [
+                        'heading', '|',
+                        'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+                        'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+                        'alignment', '|',
+                        'imageUpload', 'blockQuote', 'insertTable', 'mediaEmbed', '|',
+                        'undo', 'redo', '|',
+                        'sourceEditing'
+                    ]
+                },
+                language: 'ja',
+                image: {
+                    toolbar: [
+                        'imageTextAlternative', 'imageStyle:inline', 'imageStyle:block', 'imageStyle:side', 'linkImage'
+                    ]
+                },
+                table: {
+                    contentToolbar: [
+                        'tableColumn', 'tableRow', 'mergeTableCells'
+                    ]
+                },
+                simpleUpload: {
+                    uploadUrl: '{{ route('master.notice.upload-image') }}',
+                    withCredentials: true,
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                }
+            })
+            .then(editor => {
+                editorInstance = editor;
+                console.log('CKEditor初期化成功');
+            })
+            .catch(error => {
+                console.error('CKEditor初期化エラー:', error);
+            });
+
+        // フォーム送信時にCKEditorの内容をtextareaに反映
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (editorInstance) {
+                const content = editorInstance.getData();
+                if (!content || content.trim() === '') {
+                    e.preventDefault();
+                    alert('本文を入力してください。');
+                    return false;
+                }
+            }
+        });
+    </script>
+    @endpush
 </x-master-layout>

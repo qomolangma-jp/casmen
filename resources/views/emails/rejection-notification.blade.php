@@ -5,8 +5,8 @@
 
 ご了承下さいませ。
 
+
+【らくらくセルフ面接】
+
 ◆お問い合わせはこちら◆
 support@casmen.jp
-
-【CASMEN】
-https://casmen.jp/

@@ -131,34 +131,18 @@
         display: block;
     }
 
-    /* プレビュー用のビデオサイズ調整 */
-    .instruction__preview-video {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .instruction__preview-video > video {
-        height: 48rem;
-        width: 28rem;
-        margin: 0;
-        object-fit: contain;
-        background-color: #000;
-    }
-
     /* プレビュー動画のカスタムコントロール */
-    .preview-custom-controls {
+    .instruction__video .preview-custom-controls {
         display: flex;
         align-items: center;
         gap: 10px;
         background-color: rgba(0, 0, 0, 0.7);
         padding: 3px 15px;
-        width: 28rem;
+        width: 100%;
         box-sizing: border-box;
         position: absolute;
         bottom: 0px;
+        left: 0;
     }
 
     .preview-play-pause-btn {
@@ -197,38 +181,19 @@
         cursor: pointer;
     }
 
-    /* プレビューボタンのスタイル調整 */
-    .instruction__preview-btns {
-        display: flex;
-        justify-content: center;
-        margin: 0 auto;
-        padding: 2.7rem 0 2rem 0;
-        font-weight: 500;
+    /* プレビュー画面の撮り直しボタンを小さく左寄せ */
+    #preview-retake-btn {
+        width: auto !important;
+        max-width: 20rem;
+        padding: 1.2rem 2.4rem !important;
+        font-size: 1.4rem !important;
+        margin-right: auto;
+        margin-left: 0;
+        display: inline-block;
     }
 
-    /* 次の動画へボタンを非表示 */
-    #preview-nav-btn {
-        display: none !important;
-    }
-
-    /* 質問表示のスタイル */
-    .preview-question-info {
-        text-align: center;
-        margin: 0;
-    }
-
-    .preview-question-label {
-        font-size: 2.6rem;
-        font-weight: bold;
-        color: #9f4ecd;
-        margin-bottom: 1rem;
-    }
-
-    .preview-question-text {
-        font-size: 2rem;
-        color: #333;
-        line-height: 1.5;
-        margin-bottom: 1.5rem;
+    #preview-retake-btn .remaining-chance {
+        font-size: 1.2rem;
     }
 
     /* 送信確認モーダル */
@@ -989,7 +954,7 @@
         }
 
         if (questionTextElement) {
-            questionTextElement.textContent = firstQuestion.question_text;
+            questionTextElement.innerHTML = firstQuestion.question_text.replace(/\r\n/g, '<br>').replace(/[\n\r]/g, '<br>');
         } else {
             console.error('preview-question-text要素が見つかりません');
         }
@@ -1116,7 +1081,7 @@
             currentSubtitleIndex = newSubtitleIndex;
             const question = batchInfo.questions[currentSubtitleIndex];
             document.getElementById('preview-question-label').textContent = `Q${question.question_number}`;
-            document.getElementById('preview-question-text').textContent = question.question_text;
+            document.getElementById('preview-question-text').innerHTML = question.question_text.replace(/\r\n/g, '<br>').replace(/[\n\r]/g, '<br>');
             console.log(`字幕更新: Q${question.question_number}`);
         }
     }
@@ -1458,13 +1423,8 @@
     <main class="main">
         <div class="main__container">
             <div class="instruction instruction__interview bg-frame">
-                <div class="instruction__confirm-inner">
-                    <div class="preview-question-info" id="preview-question-info">
-                        <div class="preview-question-label" id="preview-question-label">Q1</div>
-                        <div class="preview-question-text" id="preview-question-text"></div>
-                    </div>
-
-                    <div class="instruction__preview-video">
+                <div class="instruction__inner">
+                    <div class="instruction__video">
                         <video id="preview-video" playsinline controlslist="nodownload nofullscreen noremoteplayback" disablePictureInPicture></video>
                         <div class="preview-custom-controls">
                             <button type="button" class="preview-play-pause-btn">▶</button>
@@ -1475,18 +1435,16 @@
                         </div>
                     </div>
 
-                    <div class="instruction__preview-btns">
-                        @if(($entry->interrupt_retake_count ?? 0) < 1)
-                            <a href="#" id="preview-retake-btn" class="instruction__retake-btn" onclick="showRetakeConfirmModal(); return false;">録り直し<span class="remaining-chance">（残り{{ 1 - ($entry->interrupt_retake_count ?? 0) }}回）</span></a>
-                        @else
-                            <a href="#" class="instruction__retake-btn disabled-btn">録り直し<span class="remaining-chance">（残り0回）</span></a>
-                        @endif
+                    <span class="instruction__notice" id="preview-question-label">Q1</span>
+                    <p class="instruction__question" id="preview-question-text"></p>
 
-                        <a href="#" id="preview-nav-btn" class="instruction__preview-btn" onclick="navigatePreview(); return false;">次の質問へ</a>
-                    </div>
                 </div>
             </div>
-
+            @if(($entry->interrupt_retake_count ?? 0) < 1)
+                <a href="#" id="preview-retake-btn" class="main__btn" onclick="showRetakeConfirmModal(); return false;">録り直し<span class="remaining-chance">（残り{{ 1 - ($entry->interrupt_retake_count ?? 0) }}回）</span></a>
+            @else
+                <a href="#" class="main__btn disabled-btn" style="background-color: #ccc; cursor: not-allowed; pointer-events: none;">録り直し<span class="remaining-chance">（残り0回）</span></a>
+            @endif
             <button id="preview-submit-btn" type="button" class="main__btn" onclick="showSubmitConfirmModal()" style="display: none;">送信する</button>
         </div>
     </main>

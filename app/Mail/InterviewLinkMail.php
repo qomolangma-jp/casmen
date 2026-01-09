@@ -32,6 +32,7 @@ class InterviewLinkMail extends Mailable
         $companyName = $this->entry->user ? $this->entry->user->shop_name : 'CASMEN';
         return $this->from(config('mail.from.address'), config('mail.from.name'))
                     ->subject("【{$companyName}】求人アルバイト面接について（スマホ面接のご案内）")
+                    ->cc('support@casmen.jp')
                     ->text('emails.interview-link')
                     ->with([
                         'entry' => $this->entry,

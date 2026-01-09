@@ -103,6 +103,7 @@ Route::prefix('master')->name('master.')->middleware(['auth', 'master.role'])->g
     Route::get('/notice', [\App\Http\Controllers\Master\NoticeController::class, 'index'])->name('notice.index');
     Route::get('/notice/create', [\App\Http\Controllers\Master\NoticeController::class, 'create'])->name('notice.create');
     Route::post('/notice', [\App\Http\Controllers\Master\NoticeController::class, 'store'])->name('notice.store');
+    Route::post('/notice/upload-image', [\App\Http\Controllers\Master\NoticeController::class, 'uploadImage'])->name('notice.upload-image');
     Route::get('/notice/{id}/edit', [\App\Http\Controllers\Master\NoticeController::class, 'edit'])->name('notice.edit');
     Route::patch('/notice/{id}', [\App\Http\Controllers\Master\NoticeController::class, 'update'])->name('notice.update');
     Route::delete('/notice/{id}', [\App\Http\Controllers\Master\NoticeController::class, 'destroy'])->name('notice.destroy');

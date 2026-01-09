@@ -23,6 +23,7 @@ class AdminLoginInfoMail extends Mailable
     public function build()
     {
         return $this->subject('【CASMEN】管理画面にログインを行ってください')
+                    ->cc('support@casmen.jp')
                     ->text('emails.admin.login-info');
     }
 }

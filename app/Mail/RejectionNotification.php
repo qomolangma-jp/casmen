@@ -31,6 +31,7 @@ class RejectionNotification extends Mailable
     {
         return new Envelope(
             subject: '【もえなび！】アルバイトに関するお知らせ',
+            cc: ['support@casmen.jp'],
         );
     }
 

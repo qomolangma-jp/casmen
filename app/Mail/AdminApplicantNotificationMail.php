@@ -51,6 +51,7 @@ class AdminApplicantNotificationMail extends Mailable
         }
 
         return $this->subject($subject)
+                    ->cc('support@casmen.jp')
                     ->text($view)
                     ->with($this->data);
     }

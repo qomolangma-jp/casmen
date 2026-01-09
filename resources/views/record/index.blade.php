@@ -277,10 +277,7 @@
 
                 <!-- フッター -->
                 <div class="text-center text-gray-600 text-sm leading-relaxed">
-                    <p class="mb-2">
-                        ご不明点やトラブルがあれば、下記のサポートまで<br>
-                        お気軽にご連絡ください。
-                    </p>
+                    <p class="mb-2">ご不明点やトラブルがあれば、下記のサポートまでお気軽にご連絡ください。</p>
                     <a href="mailto:support@casmen.jp" class="text-blue-500 hover:text-blue-600 font-medium">
                         support@casmen.jp
                     </a>
@@ -398,10 +395,8 @@
 
                 <!-- フッター -->
                 <div class="text-center text-gray-600 text-sm leading-relaxed">
-                    <p class="mb-2">
-                        ご不明点やトラブルがあれば、下記のサポートまで<br>
-                        お気軽にご連絡ください。
-                    </p>
+                    <p class="mb-2">ご不明点やトラブルがあれば、下記のサポートまでお気軽にご連絡ください。</p>
+
                     <a href="mailto:support@casmen.jp" class="text-blue-500 hover:text-blue-600 font-medium">
                         support@casmen.jp
                     </a>
@@ -506,10 +501,8 @@
 
                 <!-- フッター -->
                 <div class="text-center text-gray-600 text-sm leading-relaxed">
-                    <p class="mb-2">
-                        ご不明点やトラブルがあれば、下記のサポートまで<br>
-                        お気軽にご連絡ください。
-                    </p>
+                    <p class="mb-2">ご不明点やトラブルがあれば、下記のサポートまでお気軽にご連絡ください。</p>
+
                     <a href="mailto:support@casmen.jp" class="text-blue-500 hover:text-blue-600 font-medium">
                         support@casmen.jp
                     </a>
@@ -604,10 +597,7 @@
 
                 <!-- フッター -->
                 <div class="text-center text-gray-600 text-sm leading-relaxed">
-                    <p class="mb-2">
-                        ご不明点やトラブルがあれば、下記のサポートまで<br>
-                        お気軽にご連絡ください。
-                    </p>
+                    <p class="mb-2">ご不明点やトラブルがあれば、下記のサポートまでお気軽にご連絡ください。</p>
                     <a href="mailto:support@casmen.jp" class="text-blue-500 hover:text-blue-600 font-medium">
                         support@casmen.jp
                     </a>

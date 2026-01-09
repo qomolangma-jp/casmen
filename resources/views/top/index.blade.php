@@ -39,7 +39,7 @@
 					<div class="video">
 						<img src="{{ asset('assets/lp/img/sm-hand.png') }}" alt="スマホ">
 						<!-- ここに動画を入れてください -->
-						<video src="{{ asset('assets/lp/video/casmen.mp4') }}" loop autoplay muted></video>
+						<video src="{{ asset('assets/lp/video/casmen.mp4') }}" loop autoplay muted playsinline></video>
 					</div>
 				</div>
 				<div class="appeal-bottom">
