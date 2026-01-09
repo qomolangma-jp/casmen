@@ -100,10 +100,27 @@ class EntryController extends Controller
 
             Log::info("応募者不採用処理: entry_id={$id}, name={$entry->name}");
 
-            // 不採用通知メールを送信（メールアドレスがある場合）
+            // 不採用通知を送信
+            $sentMethods = [];
+
+            // メール送信
             if ($entry->email) {
                 Mail::to($entry->email)->send(new RejectionNotification($entry));
                 Log::info("不採用通知メール送信: email={$entry->email}");
+                $sentMethods[] = 'メール';
+            }
+
+            // SMS送信
+            if ($entry->tel) {
+                try {
+                    $shopName = $entry->user->shop_name ?? 'CASMEN';
+                    $message = "この度は、【らくらくセルフ面接】よりアルバイトの応募をいただき、誠にありがとうございました。\n\n{$shopName}にてご検討させていただいた結果、大変心苦しくはありますが今回は採用を見送らせていただくとのことでした。\nご了承下さいませ。";
+                    $this->sendSmsMessage($entry->tel, $message, $shopName);
+                    Log::info("不採用通知SMS送信: tel={$entry->tel}");
+                    $sentMethods[] = 'SMS';
+                } catch (\Exception $e) {
+                    Log::error("不採用通知SMS送信失敗: " . $e->getMessage());
+                }
             }
 
             // 管理者へ不採用通知送信のお知らせ
@@ -118,7 +135,7 @@ class EntryController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => '応募者を不採用にし、メール通知を送信しました。'
+                'message' => '応募者を不採用にし' . (count($sentMethods) > 0 ? '、' . implode('と', $sentMethods) . 'で通知を送信しました。' : 'ました。')
             ]);
 
         } catch (\Exception $e) {
@@ -146,15 +163,32 @@ class EntryController extends Controller
 
             Log::info("応募者合格処理: entry_id={$id}, name={$entry->name}");
 
-            // 合格通知メールを送信（メールアドレスがある場合）
+            // 合格通知を送信
+            $sentMethods = [];
+
+            // メール送信
             if ($entry->email) {
                 Mail::to($entry->email)->send(new PassNotification($entry));
                 Log::info("合格通知メール送信: email={$entry->email}");
+                $sentMethods[] = 'メール';
+            }
+
+            // SMS送信
+            if ($entry->tel) {
+                try {
+                    $shopName = $entry->user->shop_name ?? 'CASMEN';
+                    $message = "この度は、【らくらくセルフ面接】よりアルバイトの応募をいただき、誠にありがとうございました。\n\n{$shopName}にてご検討させていただいた結果、今回は録画面接を通過されたとのことでした。\n担当者より改めてご連絡させていただきますので、しばらくお待ちください。";
+                    $this->sendSmsMessage($entry->tel, $message, $shopName);
+                    Log::info("合格通知SMS送信: tel={$entry->tel}");
+                    $sentMethods[] = 'SMS';
+                } catch (\Exception $e) {
+                    Log::error("合格通知SMS送信失敗: " . $e->getMessage());
+                }
             }
 
             return response()->json([
                 'success' => true,
-                'message' => '応募者を合格にし、メール通知を送信しました。'
+                'message' => '応募者を合格にし' . (count($sentMethods) > 0 ? '、' . implode('と', $sentMethods) . 'で通知を送信しました。' : 'ました。')
             ]);
 
         } catch (\Exception $e) {
@@ -232,6 +266,12 @@ class EntryController extends Controller
 
     private function sendSms($to, $url, $shopName)
     {
+        $message = "【{$shopName}】より\nらくらくセルフ面接のご案内です。\n20問の質問に答え、あなたの雰囲気を伝えることができます。\n下記URLより24時間いつでもスタートできます。\n{$url}";
+        $this->sendSmsMessage($to, $message, $shopName);
+    }
+
+    private function sendSmsMessage($to, $message, $shopName)
+    {
         $sid = config('services.twilio.sid');
         $token = config('services.twilio.token');
         $from = config('services.twilio.from');
@@ -246,7 +286,6 @@ class EntryController extends Controller
         }
 
         $client = new Client($sid, $token);
-        $message = "【{$shopName}】より\nらくらくセルフ面接のご案内です。\n20問の質問に答え、あなたの雰囲気を伝えることができます。\n下記URLより24時間いつでもスタートできます。\n{$url}";
 
         $client->messages->create(
             $to,

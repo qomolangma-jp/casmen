@@ -256,7 +256,7 @@
     }
 
     #submit-confirm-modal .modal-message {
-        font-size: 2.4rem;
+        font-size: 2.0rem;
         font-weight: bold;
         margin-bottom: 4rem;
         color: #333;
@@ -288,6 +288,130 @@
     }
 
     #submit-confirm-modal .modal-btn-ok {
+        background-color: #9f4ecd;
+        color: #fff;
+        border: 0.2rem solid #9f4ecd;
+    }
+
+    /* 録り直し確認モーダル */
+    #retake-confirm-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 10001;
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #retake-confirm-modal .modal-content {
+        background-color: #fff;
+        padding: 5rem 4rem;
+        border-radius: 1.5rem;
+        width: 90%;
+        max-width: 60rem;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    #retake-confirm-modal .modal-message {
+        font-size: 2.0rem;
+        font-weight: bold;
+        margin-bottom: 4rem;
+        color: #333;
+        line-height: 1.5;
+    }
+
+    #retake-confirm-modal .modal-btns {
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+    }
+
+    #retake-confirm-modal .modal-btn {
+        flex: 1;
+        padding: 1.8rem 0;
+        border-radius: 5rem;
+        font-size: 2rem;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        outline: none;
+        appearance: none;
+    }
+
+    #retake-confirm-modal .modal-btn-cancel {
+        background-color: #fff;
+        color: #9f4ecd;
+        border: 0.2rem solid #9f4ecd;
+    }
+
+    #retake-confirm-modal .modal-btn-retake {
+        background-color: #9f4ecd;
+        color: #fff;
+        border: 0.2rem solid #9f4ecd;
+    }
+
+    /* 途中やり直し確認モーダル */
+    #interrupt-confirm-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 10001;
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #interrupt-confirm-modal .modal-content {
+        background-color: #fff;
+        padding: 5rem 4rem;
+        border-radius: 1.5rem;
+        width: 90%;
+        max-width: 60rem;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    #interrupt-confirm-modal .modal-message {
+        font-size: 2.0rem;
+        font-weight: bold;
+        margin-bottom: 4rem;
+        color: #333;
+        line-height: 1.5;
+    }
+
+    #interrupt-confirm-modal .modal-btns {
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+    }
+
+    #interrupt-confirm-modal .modal-btn {
+        flex: 1;
+        padding: 1.8rem 0;
+        border-radius: 5rem;
+        font-size: 2rem;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        outline: none;
+        appearance: none;
+    }
+
+    #interrupt-confirm-modal .modal-btn-cancel {
+        background-color: #fff;
+        color: #9f4ecd;
+        border: 0.2rem solid #9f4ecd;
+    }
+
+    #interrupt-confirm-modal .modal-btn-interrupt {
         background-color: #9f4ecd;
         color: #fff;
         border: 0.2rem solid #9f4ecd;
@@ -1029,6 +1153,28 @@
         console.log('ユーザーがキャンセルしました');
     }
 
+    // 録り直し確認モーダルを表示
+    function showRetakeConfirmModal() {
+        document.getElementById('retake-confirm-modal').style.display = 'flex';
+    }
+
+    // 録り直し確認モーダルを非表示
+    function hideRetakeConfirmModal() {
+        document.getElementById('retake-confirm-modal').style.display = 'none';
+        console.log('録り直しをキャンセルしました');
+    }
+
+    // 途中やり直し確認モーダルを表示
+    function showInterruptConfirmModal() {
+        document.getElementById('interrupt-confirm-modal').style.display = 'flex';
+    }
+
+    // 途中やり直し確認モーダルを非表示
+    function hideInterruptConfirmModal() {
+        document.getElementById('interrupt-confirm-modal').style.display = 'none';
+        console.log('途中やり直しをキャンセルしました');
+    }
+
     // プレビュー画面から提出
     async function submitFromPreview() {
         // モーダルを閉じる
@@ -1131,11 +1277,16 @@
         }
     }
 
-    // プレビュー画面から録り直し
-    async function retakeFromPreview() {
-        if (!confirm('最初からやり直しますか？\n※今回の録画内容は削除され、元に戻せません。\n※やり直しは1回だけなので、次の面接が最後になります。')) {
-            return;
-        }
+    // プレビュー画面から録り直し（モーダル表示）
+    function retakeFromPreview() {
+        showRetakeConfirmModal();
+        return false;
+    }
+
+    // 録り直しを実行
+    async function executeRetake() {
+        // モーダルを閉じる
+        hideRetakeConfirmModal();
 
         try {
             const formData = new FormData();
@@ -1152,6 +1303,51 @@
             if (result.success) {
                 // ページをリロードして最初から開始
                 window.location.href = "{{ route('record.interview') }}?token=" + token + "&t=" + new Date().getTime();
+            } else {
+                alert(result.message || 'やり直しの開始に失敗しました。');
+            }
+        } catch (error) {
+            console.error('やり直しエラー:', error);
+            alert('通信エラーが発生しましたもう一度お試しください。');
+        }
+    }
+
+    // 途中やり直しを実行
+    async function executeInterrupt() {
+        // モーダルを閉じる
+        hideInterruptConfirmModal();
+
+        // ボタンを無効化
+        const interruptBtn = document.getElementById('interrupt-btn');
+        if (interruptBtn) {
+            interruptBtn.classList.add('disabled-btn');
+            interruptBtn.style.pointerEvents = 'none';
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('token', token);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            const response = await fetch('{{ route("record.interrupt") }}', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // IndexedDBをクリア
+                try {
+                    const db = await openDB();
+                    const transaction = db.transaction(storeName, 'readwrite');
+                    const store = transaction.objectStore(storeName);
+                    store.clear();
+                } catch (err) {
+                    console.error('IndexedDBクリアエラー:', err);
+                }
+
+                window.location.href = "{{ route('record.interview-preview') }}?token=" + token + "&t=" + new Date().getTime();
             } else {
                 alert(result.message || 'やり直しの開始に失敗しました。');
             }
@@ -1196,49 +1392,9 @@
     document.addEventListener('DOMContentLoaded', () => {
         const interruptBtn = document.getElementById('interrupt-btn');
         if (interruptBtn) {
-            interruptBtn.addEventListener('click', async (e) => {
+            interruptBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-
-                if (!confirm('最初からやり直しますか？\n※今回の録画内容は削除され、元に戻せません。\n※やり直しは1回だけなので、次の面接が最後になります。')) {
-                    return;
-                }
-
-
-                // ボタンを無効化
-                interruptBtn.classList.add('disabled-btn');
-                interruptBtn.style.pointerEvents = 'none';
-
-                try {
-                    const formData = new FormData();
-                    formData.append('token', token);
-                    formData.append('_token', '{{ csrf_token() }}');
-
-                    const response = await fetch('{{ route("record.interrupt") }}', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        // IndexedDBをクリア
-                        try {
-                            const db = await openDB();
-                            const transaction = db.transaction(storeName, 'readwrite');
-                            const store = transaction.objectStore(storeName);
-                            store.clear();
-                        } catch (err) {
-                            console.error('IndexedDBクリアエラー:', err);
-                        }
-
-                        window.location.href = "{{ route('record.interview-preview') }}?token=" + token + "&t=" + new Date().getTime();
-                    } else {
-                        alert(result.message || 'やり直しの開始に失敗しました。');
-                    }
-                } catch (error) {
-                    console.error('やり直しエラー:', error);
-                    alert('通信エラーが発生しましたもう一度お試しください。');
-                }
+                showInterruptConfirmModal();
             });
         }
     });
@@ -1309,7 +1465,7 @@
                     </div>
 
                     <div class="instruction__preview-video">
-                        <video id="preview-video" controlslist="nodownload nofullscreen noremoteplayback" disablePictureInPicture></video>
+                        <video id="preview-video" playsinline controlslist="nodownload nofullscreen noremoteplayback" disablePictureInPicture></video>
                         <div class="preview-custom-controls">
                             <button type="button" class="preview-play-pause-btn">▶</button>
                             <div class="preview-volume-container">
@@ -1321,7 +1477,7 @@
 
                     <div class="instruction__preview-btns">
                         @if(($entry->interrupt_retake_count ?? 0) < 1)
-                            <a href="#" id="preview-retake-btn" class="instruction__retake-btn" onclick="retakeFromPreview(); return false;">録り直し<span class="remaining-chance">（残り{{ 1 - ($entry->interrupt_retake_count ?? 0) }}回）</span></a>
+                            <a href="#" id="preview-retake-btn" class="instruction__retake-btn" onclick="showRetakeConfirmModal(); return false;">録り直し<span class="remaining-chance">（残り{{ 1 - ($entry->interrupt_retake_count ?? 0) }}回）</span></a>
                         @else
                             <a href="#" class="instruction__retake-btn disabled-btn">録り直し<span class="remaining-chance">（残り0回）</span></a>
                         @endif
@@ -1350,6 +1506,28 @@
                 <button type="button" class="modal-btn modal-btn-cancel" onclick="hideSubmitConfirmModal()">キャンセル</button>
                 <button type="button" class="modal-btn modal-btn-ok" onclick="submitFromPreview()">OK</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 録り直し確認モーダル -->
+    <div id="retake-confirm-modal">
+        <div class="modal-content">
+            <p class="modal-message">最初からやり直しますか？<br><br>※今回の録画内容は削除され、元に戻せません。<br>※やり直しは1回だけなので、<br>次の面接が最後になります。</p>
+            <div class="modal-btns">
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="hideRetakeConfirmModal()">キャンセル</button>
+                <button type="button" class="modal-btn modal-btn-retake" onclick="executeRetake()">もう一度やり直す</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 途中やり直し確認モーダル -->
+<div id="interrupt-confirm-modal">
+    <div class="modal-content">
+        <p class="modal-message">最初からやり直しますか？<br><br>※今回の録画内容は削除され、元に戻せません。<br>※やり直しは1回だけなので、<br>次の面接が最後になります。</p>
+        <div class="modal-btns">
+            <button type="button" class="modal-btn modal-btn-cancel" onclick="hideInterruptConfirmModal()">キャンセル</button>
+            <button type="button" class="modal-btn modal-btn-interrupt" onclick="executeInterrupt()">もう一度やり直す</button>
         </div>
     </div>
 </div>
