@@ -118,18 +118,60 @@
                     contentToolbar: [
                         'tableColumn', 'tableRow', 'mergeTableCells'
                     ]
-                },
-                simpleUpload: {
-                    uploadUrl: '{{ route('master.notice.upload-image') }}',
-                    withCredentials: true,
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
                 }
             })
             .then(editor => {
                 editorInstance = editor;
                 console.log('CKEditor初期化成功');
+                console.log('画像アップロードURL:', '{{ route('master.notice.upload-image') }}');
+
+                // 画像アップロードのカスタムアダプターを設定
+                editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+                    return {
+                        upload: () => {
+                            return loader.file.then(file => {
+                                console.log('画像アップロード開始:', file.name);
+                                return new Promise((resolve, reject) => {
+                                    const formData = new FormData();
+                                    formData.append('upload', file);
+
+                                    fetch('{{ route('master.notice.upload-image') }}', {
+                                        method: 'POST',
+                                        body: formData,
+                                        headers: {
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                        },
+                                        credentials: 'same-origin'
+                                    })
+                                    .then(response => {
+                                        console.log('サーバーレスポンス:', response.status, response.statusText);
+                                        if (!response.ok) {
+                                            return response.text().then(text => {
+                                                console.error('エラーレスポンス:', text);
+                                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                                            });
+                                        }
+                                        return response.json();
+                                    })
+                                    .then(data => {
+                                        console.log('アップロード結果:', data);
+                                        if (data.uploaded) {
+                                            resolve({
+                                                default: data.url
+                                            });
+                                        } else {
+                                            reject(data.error?.message || 'アップロードに失敗しました');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('アップロードエラー:', error);
+                                        reject(error.message || 'アップロードに失敗しました');
+                                    });
+                                });
+                            });
+                        }
+                    };
+                };
             })
             .catch(error => {
                 console.error('CKEditor初期化エラー:', error);

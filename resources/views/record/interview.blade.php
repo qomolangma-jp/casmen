@@ -127,6 +127,10 @@
         overflow-y: auto;
     }
 
+    #preview-retake-btn {
+        margin-bottom: 2rem;
+    }
+
     #preview-screen.active {
         display: block;
     }
@@ -179,21 +183,6 @@
     .preview-volume-slider {
         width: 80px;
         cursor: pointer;
-    }
-
-    /* プレビュー画面の撮り直しボタンを小さく左寄せ */
-    #preview-retake-btn {
-        width: auto !important;
-        max-width: 20rem;
-        padding: 1.2rem 2.4rem !important;
-        font-size: 1.4rem !important;
-        margin-right: auto;
-        margin-left: 0;
-        display: inline-block;
-    }
-
-    #preview-retake-btn .remaining-chance {
-        font-size: 1.2rem;
     }
 
     /* 送信確認モーダル */
@@ -1441,7 +1430,7 @@
                 </div>
             </div>
             @if(($entry->interrupt_retake_count ?? 0) < 1)
-                <a href="#" id="preview-retake-btn" class="main__btn" onclick="showRetakeConfirmModal(); return false;">録り直し<span class="remaining-chance">（残り{{ 1 - ($entry->interrupt_retake_count ?? 0) }}回）</span></a>
+                <a href="#" id="preview-retake-btn" class="instruction__retake-btn" onclick="showRetakeConfirmModal(); return false;">録り直し<span class="remaining-chance">（残り{{ 1 - ($entry->interrupt_retake_count ?? 0) }}回）</span></a>
             @else
                 <a href="#" class="main__btn disabled-btn" style="background-color: #ccc; cursor: not-allowed; pointer-events: none;">録り直し<span class="remaining-chance">（残り0回）</span></a>
             @endif

@@ -162,23 +162,49 @@ class NoticeController extends Controller
     public function uploadImage(Request $request)
     {
         try {
+            Log::info('画像アップロード開始');
+            Log::info('リクエストファイル:', ['files' => $request->allFiles()]);
+
             $request->validate([
                 'upload' => 'required|image|max:5120', // 5MB以下
             ]);
 
             $file = $request->file('upload');
             $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('public/notices', $filename);
 
-            $url = asset('storage/notices/' . $filename);
-
-            return response()->json([
-                'url' => $url
+            Log::info('アップロード情報:', [
+                'filename' => $filename,
+                'original_name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'mime' => $file->getMimeType()
             ]);
 
+            // 'notices'のみを指定（Laravelが自動的にpublicディスクのルート＝storage/app/publicに保存）
+            $path = $file->storeAs('notices', $filename, 'public');
+
+            Log::info('保存パス: ' . $path);
+            Log::info('実際のファイルパス: ' . storage_path('app/public/' . $path));
+            Log::info('ファイル存在確認: ' . (file_exists(storage_path('app/public/' . $path)) ? 'はい' : 'いいえ'));
+
+            // CKEditor 5形式のレスポンス
+            return response()->json([
+                'uploaded' => true,
+                'url' => asset('storage/notices/' . $filename)
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('画像バリデーションエラー: ' . json_encode($e->errors()));
+            return response()->json([
+                'uploaded' => false,
+                'error' => [
+                    'message' => $e->errors()['upload'][0] ?? '画像のアップロードに失敗しました。'
+                ]
+            ], 400);
         } catch (\Exception $e) {
             Log::error('画像アップロードエラー: ' . $e->getMessage());
+            Log::error('スタックトレース: ' . $e->getTraceAsString());
             return response()->json([
+                'uploaded' => false,
                 'error' => [
                     'message' => '画像のアップロードに失敗しました。'
                 ]
